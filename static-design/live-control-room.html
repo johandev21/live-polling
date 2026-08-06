@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans%3Awght%40100..1000&family=JetBrains+Mono%3Awght%40100..800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *, ::before, ::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      data-pencil-name="Live Control Room · Desktop"
+      class="box-border w-[1440px] h-[1100px] flex flex-col gap-0 justify-start items-start bg-[#F3F6F5] overflow-hidden"
+    >
+      <div
+        data-pencil-name="Live Room Navigation"
+        class="box-border w-full h-[72px] shrink-0 flex flex-row gap-0 p-[18px_64px] justify-between items-center bg-[#FCFDFC]"
+      >
+        <div
+          class="box-border w-fit shrink-0 h-fit flex flex-row gap-[9px] justify-start items-center"
+        >
+          <div
+            data-pencil-name="Live Room Brand Mark"
+            class="box-border w-[25px] shrink-0 h-[25px] bg-[#1B4C50] rounded-full"
+          ></div>
+          <div
+            data-pencil-name="Live Room Brand Name"
+            class="text-[19px]/[normal] box-border text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+          >
+            pulse
+          </div>
+        </div>
+        <div
+          class="box-border w-fit shrink-0 h-fit flex flex-row gap-[14px] justify-start items-center"
+        >
+          <div
+            class="box-border w-fit shrink-0 h-fit flex flex-row gap-[7px] p-[7px_10px] justify-start items-center bg-[#E0EFEC] rounded-[20px]"
+          >
+            <div
+              data-pencil-name="Sync Dot"
+              class="box-border w-[7px] shrink-0 h-[7px] bg-[#2F7A63] rounded-full"
+            ></div>
+            <div
+              data-pencil-name="Sync Label"
+              class="text-[12px]/[normal] box-border text-[#2F7A63] font-['DM_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+            >
+              Synchronized
+            </div>
+          </div>
+          <div
+            data-pencil-name="Exit Live Room"
+            class="text-[12px]/[normal] box-border text-[#566C6D] font-['DM_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+          >
+            Exit control room
+          </div>
+        </div>
+      </div>
+      <div
+        data-pencil-name="Live Room Header"
+        class="box-border w-full h-[128px] shrink-0 flex flex-row gap-0 p-[28px_64px] justify-between items-center"
+      >
+        <div
+          class="box-border w-fit shrink-0 h-fit flex flex-col gap-[8px] justify-start items-start"
+        >
+          <div
+            class="box-border w-fit h-fit shrink-0 flex flex-row gap-[12px] justify-start items-center"
+          >
+            <div
+              data-pencil-name="Live Session Title"
+              class="text-[28px]/[normal] box-border text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+            >
+              Team offsite · June 2025
+            </div>
+            <div
+              class="box-border w-fit shrink-0 h-fit flex flex-row gap-[7px] p-[7px_10px] justify-start items-center bg-[#E7F6F0] rounded-[20px]"
+            >
+              <div
+                data-pencil-name="Live Status Dot"
+                class="box-border w-[7px] shrink-0 h-[7px] bg-[#2F7A63] rounded-full"
+              ></div>
+              <div
+                data-pencil-name="Live Status Label"
+                class="text-[12px]/[normal] box-border text-[#2F7A63] font-['DM_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+              >
+                Live session
+              </div>
+            </div>
+          </div>
+          <div
+            data-pencil-name="Live Session Subtitle"
+            class="text-[13px]/[normal] box-border text-[#566C6D] font-['DM_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+          >
+            Keep the room moving one clear response at a time.
+          </div>
+        </div>
+        <div
+          class="box-border w-fit shrink-0 h-fit flex flex-row gap-[10px] justify-start items-center"
+        >
+          <svg
+            data-pencil-name="Participant Count Icon"
+            data-icon-name="users"
+            data-icon-set="lucide"
+            viewBox="0 0 13.99993896484375 14"
+            preserveAspectRatio="xMidYMid meet"
+            xmlns="http://www.w3.org/2000/svg"
+            class="box-border w-[18px] shrink-0 h-[18px]"
+          >
+            <path
+              d="M4.84326 1.20313q-0.81006 0.11279-1.42871 0.61865-0.61523 0.50244-0.89551 1.24414-0.18115 0.48877-0.18115 1.02197 0 0.28027 0.04102 0.50586 0.04443 0.22217 0.14013 0.48877 0.15381 0.46143 0.46826 0.84766 0.31787 0.38281 0.7212 0.63574 0.36572 0.22559 0.73486 0.32471 0.37256 0.0957 0.80664 0.0957 0.22559 0 0.3623-0.01367 0.14014-0.01367 0.35206-0.05811 0.60156-0.15381 1.104-0.55713 0.50586-0.40674 0.7998-0.98096 0.19482-0.39307 0.26661-0.88183 0.02734-0.14014 0.02734-0.40674 0-0.2666-0.02734-0.40674-0.09912-0.65625-0.46485-1.20312-0.3623-0.54688-0.93652-0.89551-0.43408-0.2666-0.98096-0.36572-0.15381-0.02734-0.45459-0.03418-0.30078-0.00684-0.45459 0.02051z m4.34082 0.0581q-0.14014 0.04102-0.25293 0.14014-0.11279 0.0957-0.15381 0.2666-0.04102 0.16748 0 0.32129 0.04102 0.15381 0.15381 0.25293 0.11279 0.0957 0.33838 0.18115 0.24951 0.08203 0.40332 0.17432 0.15381 0.08887 0.30762 0.25976 0.33838 0.33496 0.45459 0.76904 0.11963 0.43408 0.01367 0.86817-0.10254 0.43408-0.41699 0.76904-0.31445 0.33496-0.7793 0.48877-0.19482 0.07178-0.28711 0.14356-0.08887 0.06836-0.16064 0.20849-0.05469 0.09912-0.05469 0.23926 0 0.13672 0.05469 0.23584 0.08545 0.19482 0.28027 0.29395 0.12646 0.05811 0.25293 0.05126 0.12646-0.01025 0.33496-0.07861 0.35205-0.11279 0.6084-0.27344 0.25977-0.16064 0.5127-0.42724 0.78271-0.78271 0.85449-1.84912 0.09912-1.18945-0.70069-2.12598-0.48877-0.58789-1.2749-0.85449-0.33496-0.11279-0.48877-0.05469z m-3.73926 1.09033q0.40674 0.02734 0.78272 0.28711 0.37939 0.25977 0.58105 0.65967 0.20508 0.39648 0.18457 0.88184-0.02051 0.48193-0.28711 0.86132-0.15381 0.23584-0.37939 0.41358-0.22217 0.17432-0.46143 0.27002-0.19482 0.05811-0.2871 0.07861-0.08887 0.02051-0.32813 0.02051-0.23926 0-0.33154-0.02051-0.08887-0.02051-0.28369-0.07861-0.39307-0.14014-0.68018-0.46826-0.28711-0.32813-0.3999-0.73487-0.10938-0.46143 0.01367-0.90918 0.12646-0.44775 0.45459-0.76904 0.33154-0.32471 0.79297-0.45117 0.08545-0.02734 0.24609-0.04785 0.16064-0.02051 0.21533-0.00684l0.16748 0.01367z m-2.35156 5.85156q-0.96387 0.14014-1.65088 0.82715-0.54687 0.54688-0.75537 1.31592-0.07178 0.23926-0.08545 0.44092-0.01367 0.20166-0.01367 0.82031l0 0.76904 0.04102 0.1128q0.05811 0.0957 0.14013 0.18115 0.21191 0.19482 0.50586 0.14697 0.29395-0.04785 0.42041-0.31445l0.04102-0.09912 0.01367-0.79639q0.01367-0.61865 0.02734-0.77246 0.01367-0.15381 0.07178-0.34863 0.14014-0.37939 0.46826-0.68018 0.32813-0.30078 0.73487-0.41357 0.15381-0.04102 0.53662-0.05469 0.38623-0.01367 1.66113-0.01367 1.2749 0 1.65771 0.01367 0.38623 0.01367 0.54004 0.05469 0.42041 0.11279 0.75538 0.43066 0.33838 0.31445 0.46142 0.71778 0.05811 0.16748 0.06494 0.3247 0.00684 0.15381 0.02051 0.7417l0.01367 0.79639 0.04102 0.09912q0.12646 0.2666 0.42041 0.31445 0.29395 0.04785 0.50586-0.14697 0.08203-0.08545 0.14013-0.18115l0.04102-0.1128 0-0.76904q0-0.61865-0.01367-0.82031-0.01367-0.20166-0.08545-0.44092-0.08203-0.32129-0.23584-0.61523-0.2666-0.51953-0.73828-0.90235-0.46826-0.38623-1.02539-0.54004l-0.04444-0.01367q-0.16748-0.05811-0.29394-0.07178-0.15381-0.01367-0.56055-0.01367l-1.60986-0.01367q-2.05762 0-2.21143 0.02734z m7.85449 0.05811q-0.23926 0.05469-0.36572 0.27344-0.12305 0.21533-0.05469 0.45459 0.05811 0.19482 0.21192 0.30761 0.06836 0.04102 0.28027 0.12647 0.24951 0.08203 0.40332 0.17432 0.15381 0.08887 0.32471 0.27343 0.33496 0.34863 0.44775 0.78272 0.02734 0.11279 0.03418 0.24609 0.00684 0.1333 0.02051 0.70752l0.01367 0.79639 0.04102 0.09912q0.12646 0.2666 0.42041 0.31445 0.29395 0.04785 0.50586-0.14697 0.08203-0.08545 0.14013-0.18115l0.04102-0.1128 0.01367-0.64599q0-0.64258-0.02734-0.95703-0.02734-0.31445-0.12647-0.59473-0.14014-0.42041-0.42724-0.81006-0.28711-0.39307-0.64942-0.65967-0.31103-0.22559-0.69726-0.35888-0.38281-0.1333-0.5503-0.08887z"
+              fill="#1B4C50"
+            ></path>
+          </svg>
+          <div
+            class="box-border w-fit shrink-0 h-fit flex flex-col gap-[2px] justify-start items-end"
+          >
+            <div
+              data-pencil-name="Participant Count Value"
+              class="text-[20px]/[normal] box-border text-[#173034] font-['JetBrains_Mono',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+            >
+              128
+            </div>
+            <div
+              data-pencil-name="Participant Count Label"
+              class="text-[11px]/[normal] box-border text-[#566C6D] font-['DM_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+            >
+              participants connected
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        data-pencil-name="Live Room Body"
+        class="box-border w-full h-[900px] shrink-0 flex flex-row gap-[24px] p-[0px_64px_56px_64px] justify-start items-start"
+      >
+        <div
+          data-pencil-name="Active Poll Column"
+          class="box-border w-[850px] shrink-0 h-fit flex flex-col gap-[16px] justify-start items-start"
+        >
+          <div
+            data-pencil-name="Active Poll Card"
+            class="box-border w-full h-[560px] shrink-0 flex flex-col gap-[18px] p-[28px] justify-start items-start bg-[#FCFDFC] [outline:1px_solid_#D3DFDC] [outline-offset:-0.5px] rounded-[16px]"
+          >
+            <div
+              data-pencil-name="Active Poll Header"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center"
+            >
+              <div
+                data-pencil-name="Active Poll Kicker"
+                class="text-[11px]/[normal] box-border text-[#1B4C50] font-['JetBrains_Mono',system-ui,sans-serif] font-bold tracking-[1px] text-left [white-space:nowrap]"
+              >
+                ACTIVE POLL · 01 OF 03
+              </div>
+              <div
+                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[7px] p-[7px_10px] justify-start items-center bg-[#E7F6F0] rounded-[20px]"
+              >
+                <div
+                  data-pencil-name="Open Poll Dot"
+                  class="box-border w-[7px] shrink-0 h-[7px] bg-[#2F7A63] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="Open Poll Label"
+                  class="text-[12px]/[normal] box-border text-[#2F7A63] font-['DM_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                >
+                  Open poll
+                </div>
+              </div>
+            </div>
+            <div
+              data-pencil-name="Active Poll Question"
+              class="text-[30px]/[35px] box-border w-full text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-bold text-left"
+            >
+              What should we make more time for?
+            </div>
+            <div
+              data-pencil-name="Active Poll Type"
+              class="text-[11px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+            >
+              Single-choice poll · Responses update live
+            </div>
+            <div
+              data-pencil-name="Live Deep work Result"
+              class="box-border w-full h-fit shrink-0 flex flex-col gap-[8px] p-[16px] justify-start items-start bg-[#FCFDFC] [outline:1px_solid_#D3DFDC] [outline-offset:-0.5px] rounded-[12px]"
+            >
+              <div
+                data-pencil-name="Result Header"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-start"
+              >
+                <div
+                  data-pencil-name="Result Option"
+                  class="text-[14px]/[normal] box-border text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  Deep work
+                </div>
+                <div
+                  data-pencil-name="Result Percent"
+                  class="text-[13px]/[normal] box-border text-[#1B4C50] font-['JetBrains_Mono',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                >
+                  58%
+                </div>
+              </div>
+              <div
+                data-pencil-name="Result Track"
+                class="box-border w-full h-[8px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#E8F0EE] rounded-[8px]"
+              >
+                <div
+                  data-pencil-name="Result Fill"
+                  class="box-border w-[180px] shrink-0 h-[8px] bg-[#1B4C50] rounded-[8px]"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="Result Count"
+                class="text-[11px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                74 responses
+              </div>
+            </div>
+            <div
+              data-pencil-name="Live Team connection Result"
+              class="box-border w-full h-fit shrink-0 flex flex-col gap-[8px] p-[16px] justify-start items-start bg-[#FCFDFC] [outline:1px_solid_#D3DFDC] [outline-offset:-0.5px] rounded-[12px]"
+            >
+              <div
+                data-pencil-name="Result Header"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-start"
+              >
+                <div
+                  data-pencil-name="Result Option"
+                  class="text-[14px]/[normal] box-border text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  Team connection
+                </div>
+                <div
+                  data-pencil-name="Result Percent"
+                  class="text-[13px]/[normal] box-border text-[#1B4C50] font-['JetBrains_Mono',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                >
+                  27%
+                </div>
+              </div>
+              <div
+                data-pencil-name="Result Track"
+                class="box-border w-full h-[8px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#E8F0EE] rounded-[8px]"
+              >
+                <div
+                  data-pencil-name="Result Fill"
+                  class="box-border w-[180px] shrink-0 h-[8px] bg-[#1B4C50] rounded-[8px]"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="Result Count"
+                class="text-[11px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                35 responses
+              </div>
+            </div>
+            <div
+              data-pencil-name="Live Learning time Result"
+              class="box-border w-full h-fit shrink-0 flex flex-col gap-[8px] p-[16px] justify-start items-start bg-[#FCFDFC] [outline:1px_solid_#D3DFDC] [outline-offset:-0.5px] rounded-[12px]"
+            >
+              <div
+                data-pencil-name="Result Header"
+                class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-start"
+              >
+                <div
+                  data-pencil-name="Result Option"
+                  class="text-[14px]/[normal] box-border text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  Learning time
+                </div>
+                <div
+                  data-pencil-name="Result Percent"
+                  class="text-[13px]/[normal] box-border text-[#1B4C50] font-['JetBrains_Mono',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                >
+                  15%
+                </div>
+              </div>
+              <div
+                data-pencil-name="Result Track"
+                class="box-border w-full h-[8px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#E8F0EE] rounded-[8px]"
+              >
+                <div
+                  data-pencil-name="Result Fill"
+                  class="box-border w-[180px] shrink-0 h-[8px] bg-[#1B4C50] rounded-[8px]"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="Result Count"
+                class="text-[11px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                19 responses
+              </div>
+            </div>
+            <div
+              data-pencil-name="Active Poll Footer"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center"
+            >
+              <div
+                data-pencil-name="Active Total"
+                class="text-[11px]/[normal] box-border text-[#566C6D] font-['JetBrains_Mono',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+              >
+                128 total responses
+              </div>
+              <div
+                data-pencil-name="Results Visibility"
+                class="text-[12px]/[normal] box-border text-[#A66C32] font-['DM_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                Results hidden from participants
+              </div>
+            </div>
+          </div>
+          <div
+            data-pencil-name="Active Poll Controls"
+            class="box-border w-full h-[72px] shrink-0 flex flex-row gap-0 p-[12px_16px] justify-between items-center bg-[#FCFDFC] [outline:1px_solid_#D3DFDC] [outline-offset:-0.5px] rounded-[12px]"
+          >
+            <div
+              class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center"
+            >
+              <div
+                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[7px] p-[11px_14px] justify-start items-center bg-[#E8F0EE] rounded-[8px]"
+              >
+                <svg
+                  data-pencil-name="Close Active Poll Icon"
+                  data-icon-name="pause"
+                  data-icon-set="lucide"
+                  viewBox="0 0 13.99993896484375 14"
+                  preserveAspectRatio="xMidYMid meet"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="box-border w-[16px] shrink-0 h-[16px]"
+                >
+                  <path
+                    d="M3.21973 1.20313q-0.28027 0.05811-0.53321 0.30761-0.12305 0.12646-0.19482 0.23242-0.06836 0.10596-0.11279 0.27344l-0.04102 0.12647 0 9.71386 0.04102 0.12647q0.04443 0.16748 0.11279 0.27344 0.07178 0.10596 0.19482 0.23242 0.23926 0.23584 0.53321 0.30761 0.12646 0.02734 1.15527 0.02735 1.02881 0 1.15527-0.02735 0.29395-0.07178 0.53321-0.30761 0.12305-0.12646 0.1914-0.23242 0.07178-0.10596 0.11621-0.27344l0.04102-0.12647 0-9.71386-0.04102-0.12647q-0.04443-0.16748-0.11621-0.27344-0.06836-0.10596-0.1914-0.23242-0.25293-0.24951-0.54688-0.30761-0.12646-0.02734-1.14844-0.02735-1.02197 0-1.14843 0.02735z m5.25-0.00001q-0.28027 0.05811-0.53321 0.30762-0.12305 0.12646-0.19482 0.23242-0.06836 0.10596-0.11279 0.27344l-0.04102 0.12647 0 9.71386 0.04102 0.12647q0.04443 0.16748 0.11279 0.27344 0.07178 0.10596 0.19482 0.23242 0.23926 0.23584 0.53321 0.30761 0.12646 0.02734 1.15527 0.02735 1.02881 0 1.15527-0.02735 0.29395-0.07178 0.53321-0.30761 0.12305-0.12646 0.1914-0.23242 0.07178-0.10596 0.11621-0.27344l0.04102-0.12647 0-9.71386-0.04102-0.12647q-0.04443-0.16748-0.11621-0.27344-0.06836-0.10596-0.1914-0.23242-0.25293-0.24951-0.54688-0.30761-0.12647-0.02734-1.14844-0.02735-1.02197 0-1.14843 0.02735z m-3.21973 5.79688l0 4.67578-1.75 0 0-9.35156 1.75 0 0 4.67578z m5.25 0l0 4.67578-1.75 0 0-9.35156 1.75 0 0 4.67578z"
+                    fill="#566C6D"
+                  ></path>
+                </svg>
+                <div
+                  data-pencil-name="Close Active Poll Label"
+                  class="text-[13px]/[normal] box-border text-[#566C6D] font-['DM_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                >
+                  Close poll
+                </div>
+              </div>
+              <div
+                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[7px] p-[11px_14px] justify-start items-center [outline:1px_solid_#D3DFDC] [outline-offset:-0.5px] rounded-[8px]"
+              >
+                <svg
+                  data-pencil-name="Reveal Results Icon"
+                  data-icon-name="eye"
+                  data-icon-set="lucide"
+                  viewBox="0 0 13.99993896484375 14"
+                  preserveAspectRatio="xMidYMid meet"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="box-border w-[16px] shrink-0 h-[16px]"
+                >
+                  <path
+                    d="M6.67871 2.35156q-1.23389 0.04102-2.38916 0.54004-1.15186 0.49561-2.05078 1.37744-0.9502 0.92627-1.46973 2.05762-0.10938 0.25293-0.14697 0.37939-0.03418 0.12646-0.03418 0.29395 0 0.16748 0.03418 0.28711 0.0376 0.11963 0.1333 0.35547 0.37939 0.82715 0.97412 1.5415 0.59473 0.71436 1.33643 1.24756 1.45605 1.00488 3.2915 1.20313 0.2085 0.02734 0.64258 0.02734 0.43408 0 0.62891-0.02734 1.20654-0.12647 2.24902-0.60157 1.04248-0.47851 1.8833-1.28857 0.96387-0.93994 1.4834-2.10205 0.0957-0.23584 0.12988-0.35547 0.0376-0.11963 0.0376-0.28711 0-0.16748-0.0376-0.28711-0.03418-0.11963-0.12988-0.35547-0.36572-0.78613-0.93311-1.4834-0.56396-0.70068-1.27832-1.22021-0.84082-0.61523-1.82861-0.9502-0.98779-0.33838-2.02344-0.36572-0.2085 0-0.50244 0.01367z m0.99463 1.18946q1.46973 0.16748 2.67285 1.05273 1.20313 0.88184 1.81836 2.2251l0.08545 0.18115-0.08545 0.19482q-0.62891 1.34668-1.83203 2.22168-1.20313 0.875-2.73096 1.05616-0.18115 0.01367-0.60156 0.01367-0.42041 0-0.60156-0.01367-1.10742-0.12647-2.0542-0.62207-0.94336-0.49902-1.65772-1.32618-0.51611-0.61523-0.85107-1.34326l-0.08545-0.18115 0.08545-0.18115q0.43408-0.95361 1.18945-1.69531 0.75537-0.7417 1.75-1.16211 0.90918-0.39307 1.94483-0.44776 0.14014-0.01367 0.46142 0 0.32129 0.01367 0.49219 0.02735z m-1.03564 1.1621q-0.89893 0.15381-1.44239 0.82715-0.18457 0.22217-0.29052 0.44776-0.10254 0.22559-0.18799 0.51953-0.02734 0.10938-0.03418 0.19482-0.00684 0.08203-0.00684 0.30762 0 0.28027 0.02735 0.43408 0.02734 0.15381 0.11279 0.3794 0.16748 0.4751 0.52978 0.84082 0.36572 0.3623 0.84082 0.52978 0.22559 0.08545 0.3794 0.11279 0.15381 0.02734 0.43408 0.02735 0.28027 0 0.43408-0.02735 0.15381-0.02734 0.3794-0.11279 0.4751-0.16748 0.8374-0.52978 0.36572-0.36572 0.5332-0.84082 0.08545-0.22559 0.1128-0.3794 0.02734-0.15381 0.02734-0.43408 0-0.28027-0.02734-0.43408-0.02734-0.15381-0.1128-0.3794-0.2085-0.55713-0.6665-0.95019-0.45459-0.39307-1.04248-0.51953-0.14014-0.02734-0.42725-0.03418-0.28711-0.00684-0.41015 0.02051z m0.65625 1.16211q0.28027 0.07178 0.52294 0.31788 0.24609 0.24268 0.31788 0.52294 0.02734 0.12646 0.02734 0.29395 0 0.16748-0.02734 0.28027-0.07178 0.29395-0.3042 0.53321-0.229 0.23584-0.53662 0.32129-0.11279 0.02734-0.29395 0.02734-0.18115 0-0.29395-0.02734-0.30762-0.08545-0.54003-0.32129-0.229-0.23926-0.30079-0.53321-0.02734-0.11279-0.02734-0.28027 0-0.16748 0.02734-0.29395 0.05811-0.22559 0.22559-0.43408 0.16748-0.2085 0.40674-0.32129 0.34863-0.18115 0.79639-0.08545z"
+                    fill="#1B4C50"
+                  ></path>
+                </svg>
+                <div
+                  data-pencil-name="Reveal Results Label"
+                  class="text-[13px]/[normal] box-border text-[#1B4C50] font-['DM_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                >
+                  Reveal results
+                </div>
+              </div>
+            </div>
+            <div
+              data-pencil-name="Control Hint"
+              class="text-[10px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+            >
+              Actions apply immediately
+            </div>
+          </div>
+          <div
+            data-pencil-name="Live Poll Navigation"
+            class="box-border w-full h-[108px] shrink-0 flex flex-col gap-[10px] p-[16px_20px] justify-start items-start bg-[#FCFDFC] [outline:1px_solid_#D3DFDC] [outline-offset:-0.5px] rounded-[12px]"
+          >
+            <div
+              data-pencil-name="Live Poll Sequence Label"
+              class="text-[10px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-bold tracking-[1px] text-left [white-space:nowrap]"
+            >
+              POLL SEQUENCE
+            </div>
+            <div
+              data-pencil-name="Live Poll Sequence Items"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Sequence 01"
+                class="box-border w-[240px] shrink-0 h-[42px] flex flex-row gap-[8px] p-[0px_10px] justify-start items-center bg-[#E0EFEC] rounded-[8px]"
+              >
+                <div
+                  data-pencil-name="Sequence 01 Number"
+                  class="text-[10px]/[normal] box-border text-[#1B4C50] font-['JetBrains_Mono',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                >
+                  01
+                </div>
+                <div
+                  data-pencil-name="Sequence 01 Label"
+                  class="text-[11px]/[normal] box-border [flex:1_1_0] text-[#1B4C50] font-['DM_Sans',system-ui,sans-serif] font-bold text-left"
+                >
+                  What should we make more time for?
+                </div>
+              </div>
+              <div
+                data-pencil-name="Sequence 02"
+                class="box-border w-[240px] shrink-0 h-[42px] flex flex-row gap-[8px] p-[0px_10px] justify-start items-center bg-[#F3F6F5] rounded-[8px]"
+              >
+                <div
+                  data-pencil-name="Sequence 02 Number"
+                  class="text-[10px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                >
+                  02
+                </div>
+                <div
+                  data-pencil-name="Sequence 02 Label"
+                  class="text-[11px]/[normal] box-border [flex:1_1_0] text-[#566C6D] font-['DM_Sans',system-ui,sans-serif] font-semibold text-left"
+                >
+                  Which format helps you learn best?
+                </div>
+              </div>
+              <div
+                data-pencil-name="Sequence 03"
+                class="box-border w-[240px] shrink-0 h-[42px] flex flex-row gap-[8px] p-[0px_10px] justify-start items-center bg-[#F3F6F5] rounded-[8px]"
+              >
+                <div
+                  data-pencil-name="Sequence 03 Number"
+                  class="text-[10px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                >
+                  03
+                </div>
+                <div
+                  data-pencil-name="Sequence 03 Label"
+                  class="text-[11px]/[normal] box-border [flex:1_1_0] text-[#566C6D] font-['DM_Sans',system-ui,sans-serif] font-semibold text-left"
+                >
+                  What is one thing you want to leave with?
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          data-pencil-name="Live Room Rail"
+          class="box-border w-[430px] shrink-0 h-fit flex flex-col gap-[16px] justify-start items-start"
+        >
+          <div
+            data-pencil-name="Share Session Card"
+            class="box-border w-full h-[250px] shrink-0 flex flex-col gap-[14px] p-[24px] justify-start items-start bg-[#1B4C50] rounded-[16px]"
+          >
+            <div
+              data-pencil-name="Share Card Label"
+              class="text-[11px]/[normal] box-border text-[#C7E4DE] font-['JetBrains_Mono',system-ui,sans-serif] font-bold tracking-[1px] text-left [white-space:nowrap]"
+            >
+              SHARE THIS SESSION
+            </div>
+            <div
+              data-pencil-name="Room Code"
+              class="text-[42px]/[normal] box-border text-[#FFFFFF] font-['JetBrains_Mono',system-ui,sans-serif] font-bold tracking-[3px] text-left [white-space:nowrap]"
+            >
+              7K4P9D
+            </div>
+            <div
+              data-pencil-name="Share Instruction"
+              class="text-[13px]/[18px] box-border w-full text-[#D6EAE6] font-['DM_Sans',system-ui,sans-serif] font-normal text-left"
+            >
+              Participants can join with this Room Code or the Invitation Link.
+            </div>
+            <div
+              data-pencil-name="Invitation Link Row"
+              class="box-border w-full h-[42px] shrink-0 flex flex-row gap-0 p-[0px_12px] justify-between items-center bg-[#FFFFFF18] rounded-[8px]"
+            >
+              <div
+                data-pencil-name="Invitation Link Text"
+                class="text-[11px]/[normal] box-border text-[#FFFFFF] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                pulse.app/join/7K4P9D
+              </div>
+              <svg
+                data-pencil-name="Copy Link Icon"
+                data-icon-name="copy"
+                data-icon-set="lucide"
+                viewBox="0 0 13.99993896484375 14"
+                preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg"
+                class="box-border w-[16px] shrink-0 h-[16px]"
+              >
+                <path
+                  d="M2.15674 0.60156q-0.29395 0.02734-0.58789 0.16748-0.29395 0.14014-0.50586 0.36573-0.30762 0.32129-0.43408 0.78271l-0.04102 0.16748 0 6.33008 0.04102 0.16748q0.22559 0.78271 0.91259 1.13477 0.2085 0.10938 0.46827 0.16748 0.25977 0.05469 0.41357 0.02734 0.24951-0.05469 0.38965-0.24268 0.14014-0.19141 0.08545-0.44433-0.02734-0.16748-0.16065-0.30762-0.1333-0.14014-0.3999-0.16748-0.39307-0.04102-0.5332-0.34863l-0.04102-0.09912 0-6.1045 0.04102-0.09912q0.09912-0.19482 0.29394-0.29394l0.09912-0.04102 6.1045 0 0.09912 0.04102q0.30762 0.14014 0.34863 0.51953 0.02734 0.2666 0.18115 0.42041 0.12646 0.12646 0.30762 0.15381 0.29395 0.05469 0.50586-0.15381 0.11279-0.11279 0.14697-0.24609 0.03418-0.1333 0.02051-0.32813-0.08545-0.646-0.52637-1.07666-0.44092-0.43408-1.08349-0.49219-0.16748-0.02734-3.06592-0.02734-2.89844 0-3.07959 0.02734z m3.5 3.5q-0.29395 0.02734-0.58789 0.16748-0.29395 0.14014-0.50586 0.3794-0.30762 0.32129-0.43408 0.79638l-0.04102 0.1709 0 6.29932 0.04102 0.16748q0.07178 0.25293 0.18115 0.44092 0.11279 0.18799 0.29394 0.37256 0.18457 0.18115 0.37256 0.29394 0.18799 0.10938 0.44092 0.18115l0.16748 0.04102 6.33008 0 0.16748-0.04102q0.25293-0.07178 0.44092-0.18115 0.18799-0.11279 0.36914-0.29394 0.18457-0.18457 0.29394-0.37256 0.11279-0.18799 0.18457-0.44092l0.04102-0.16748 0-6.33008-0.04102-0.16748q-0.12646-0.46143-0.43408-0.78271-0.44775-0.4751-1.13476-0.54688-0.16748-0.01367-3.06592-0.01367-2.89844 0-3.07959 0.02734z m6.24463 1.20313q0.19482 0.09912 0.29394 0.29394l0.04102 0.09912 0 6.1045-0.02735 0.08545q-0.12646 0.26318-0.37939 0.33496-0.08203 0.02734-3.07959 0.02734-2.99756 0-3.07959-0.02734-0.25293-0.07178-0.37939-0.33496l-0.02735-0.08545 0-6.1045 0.04102-0.09912q0.11279-0.24951 0.37939-0.32129 0.08545-0.02734 3.10694-0.02734l3.01123 0.01367 0.09912 0.04102z"
+                  fill="#FFFFFF"
+                ></path>
+              </svg>
+            </div>
+          </div>
+          <div
+            data-pencil-name="Presence Card"
+            class="box-border w-full h-[300px] shrink-0 flex flex-col gap-[14px] p-[24px] justify-start items-start bg-[#FCFDFC] [outline:1px_solid_#D3DFDC] [outline-offset:-0.5px] rounded-[16px]"
+          >
+            <div
+              data-pencil-name="Presence Header"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center"
+            >
+              <div
+                data-pencil-name="Presence Title"
+                class="text-[18px]/[normal] box-border text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+              >
+                Participant presence
+              </div>
+              <div
+                data-pencil-name="Presence Count"
+                class="text-[11px]/[normal] box-border text-[#2F7A63] font-['JetBrains_Mono',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+              >
+                128 online
+              </div>
+            </div>
+            <div
+              data-pencil-name="Presence Approximate"
+              class="text-[12px]/[normal] box-border text-[#819291] font-['DM_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+            >
+              Approximate and host-only
+            </div>
+            <div
+              data-pencil-name="Avery Morgan presence"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center"
+            >
+              <div
+                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="Avery Morgan dot"
+                  class="box-border w-[8px] shrink-0 h-[8px] bg-[#2F7A63] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="Avery Morgan name"
+                  class="text-[13px]/[normal] box-border text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                >
+                  Avery Morgan
+                </div>
+              </div>
+              <div
+                data-pencil-name="Avery Morgan status"
+                class="text-[10px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                Online
+              </div>
+            </div>
+            <div
+              data-pencil-name="Jordan Lee presence"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center"
+            >
+              <div
+                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="Jordan Lee dot"
+                  class="box-border w-[8px] shrink-0 h-[8px] bg-[#2F7A63] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="Jordan Lee name"
+                  class="text-[13px]/[normal] box-border text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                >
+                  Jordan Lee
+                </div>
+              </div>
+              <div
+                data-pencil-name="Jordan Lee status"
+                class="text-[10px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                Online
+              </div>
+            </div>
+            <div
+              data-pencil-name="Sam Rivera presence"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center"
+            >
+              <div
+                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="Sam Rivera dot"
+                  class="box-border w-[8px] shrink-0 h-[8px] bg-[#A66C32] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="Sam Rivera name"
+                  class="text-[13px]/[normal] box-border text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                >
+                  Sam Rivera
+                </div>
+              </div>
+              <div
+                data-pencil-name="Sam Rivera status"
+                class="text-[10px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                Away
+              </div>
+            </div>
+            <div
+              data-pencil-name="Taylor Kim presence"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center"
+            >
+              <div
+                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="Taylor Kim dot"
+                  class="box-border w-[8px] shrink-0 h-[8px] bg-[#2F7A63] rounded-full"
+                ></div>
+                <div
+                  data-pencil-name="Taylor Kim name"
+                  class="text-[13px]/[normal] box-border text-[#173034] font-['DM_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                >
+                  Taylor Kim
+                </div>
+              </div>
+              <div
+                data-pencil-name="Taylor Kim status"
+                class="text-[10px]/[normal] box-border text-[#819291] font-['JetBrains_Mono',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+              >
+                Online
+              </div>
+            </div>
+            <div
+              data-pencil-name="Presence Privacy"
+              class="text-[11px]/[15px] box-border w-full text-[#819291] font-['DM_Sans',system-ui,sans-serif] font-normal text-left"
+            >
+              Presence does not determine whether a response is retained.
+            </div>
+          </div>
+          <div
+            data-pencil-name="End Session Action"
+            class="box-border w-full h-[48px] shrink-0 flex flex-row gap-[8px] justify-center items-center bg-[#FCFDFC] [outline:1px_solid_#A94C4C] [outline-offset:-0.5px] rounded-[8px]"
+          >
+            <svg
+              data-pencil-name="End Session Icon"
+              data-icon-name="square"
+              data-icon-set="lucide"
+              viewBox="0 0 13.99993896484375 14"
+              preserveAspectRatio="xMidYMid meet"
+              xmlns="http://www.w3.org/2000/svg"
+              class="box-border w-[16px] shrink-0 h-[16px]"
+            >
+              <path
+                d="M2.60449 1.20313q-0.50586 0.08545-0.87842 0.43749-0.36914 0.34863-0.50927 0.86475-0.02734 0.08545-0.02735 0.71436l-0.01367 3.78027 0.01367 3.78027q0 0.62891 0.02735 0.71436 0.14014 0.48877 0.46826 0.82031 0.33154 0.32813 0.82031 0.46826 0.08545 0.02734 0.71436 0.02735l3.78027 0.01367 3.78027-0.01367q0.62891 0 0.71436-0.02735 0.48877-0.14014 0.81689-0.46826 0.33154-0.33154 0.47168-0.82031 0.02734-0.08545 0.02735-0.71436l0.01367-3.78027-0.01367-3.78027q0-0.62891-0.02735-0.71436-0.12646-0.48877-0.458-0.81689-0.32813-0.33154-0.80323-0.47168l-0.14013-0.04102-4.32715 0q-4.3374 0-4.4502 0.02734z m8.70899 1.17578q0.2085 0.09912 0.30761 0.30761l0.04102 0.09912 0 8.42871-0.04102 0.09913q-0.14014 0.27685-0.43408 0.33496-0.09912 0.02734-4.18701 0.02734-4.08789 0-4.18701-0.02734-0.29395-0.05811-0.43408-0.33496l-0.04102-0.09913 0-8.42871 0.04102-0.09912q0.07178-0.14014 0.18798-0.229 0.11963-0.09229 0.25977-0.11963 0.08545 0 4.22803 0l4.15967 0 0.09912 0.04102z"
+                fill="#A94C4C"
+              ></path>
+            </svg>
+            <div
+              data-pencil-name="End Session Label"
+              class="text-[13px]/[normal] box-border text-[#A94C4C] font-['DM_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+            >
+              End session
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

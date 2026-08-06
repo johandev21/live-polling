@@ -1,0 +1,7 @@
+packages:
+  - "apps/*"
+
+catalog:
+  oxlint: ^1.77.0
+  oxlint-tsgolint: ^7.0.2001
+  oxfmt: ^0.62.0

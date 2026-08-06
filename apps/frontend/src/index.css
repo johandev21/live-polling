@@ -1,0 +1,87 @@
+@import 'tailwindcss';
+
+/* Pulse Design System */
+
+:root {
+  /* Colors — light theme */
+  --color-bg-canvas: #f3f6f5;
+  --color-surface: #fcfdfc;
+  --color-surface-muted: #e8f0ee;
+
+  --color-text-primary: #173034;
+  --color-text-secondary: #566c6d;
+  --color-text-tertiary: #819291;
+
+  --color-border: #d3dfdc;
+
+  --color-primary: #1b4c50;
+  --color-primary-soft: #e0efec;
+
+  --color-success: #2f7a63;
+  --color-warning: #a66c32;
+  --color-error: #a94c4c;
+  --color-info: #3f7180;
+
+  /* Typography */
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+/* Dark theme */
+[data-theme='dark'] {
+  --color-bg-canvas: #0c1b1d;
+  --color-surface: #122628;
+  --color-surface-muted: #193537;
+
+  --color-text-primary: #eff6f4;
+  --color-text-secondary: #a9c0be;
+  --color-text-tertiary: #7b9998;
+
+  --color-border: #2a4748;
+
+  --color-primary: #77b7ac;
+  --color-primary-soft: #214346;
+
+  --color-success: #6bc3a4;
+  --color-warning: #d5a76b;
+  --color-error: #e38383;
+  --color-info: #83b9c0;
+}
+
+/* Optional system-preference dark mode */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg-canvas: #0c1b1d;
+    --color-surface: #122628;
+    --color-surface-muted: #193537;
+
+    --color-text-primary: #eff6f4;
+    --color-text-secondary: #a9c0be;
+    --color-text-tertiary: #7b9998;
+
+    --color-border: #2a4748;
+
+    --color-primary: #77b7ac;
+    --color-primary-soft: #214346;
+
+    --color-success: #6bc3a4;
+    --color-warning: #d5a76b;
+    --color-error: #e38383;
+    --color-info: #83b9c0;
+  }
+}
