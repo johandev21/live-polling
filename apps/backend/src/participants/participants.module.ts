@@ -10,6 +10,6 @@ import { ParticipantsService } from './participants.service';
   imports: [RateLimitModule, PollsModule],
   controllers: [ParticipantsController],
   providers: [ParticipantsService, ParticipantTokenService, ParticipantGuard],
-  exports: [ParticipantsService],
+  exports: [ParticipantsService, ParticipantGuard, ParticipantTokenService],
 })
 export class ParticipantsModule {}

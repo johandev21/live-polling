@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { PollsModule } from './polls/polls.module';
 import { ParticipantsModule } from './participants/participants.module';
+import { ResponsesModule } from './responses/responses.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ParticipantsModule } from './participants/participants.module';
     SessionsModule,
     PollsModule,
     ParticipantsModule,
+    ResponsesModule,
     HealthModule,
   ],
   controllers: [AppController],

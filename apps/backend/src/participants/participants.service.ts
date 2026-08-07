@@ -88,6 +88,11 @@ export class ParticipantsService {
     return this.buildResponse(session.id, participant, token);
   }
 
+  async sessionIdForParticipant(participantId: string): Promise<string> {
+    const participant = await this.requireParticipant(participantId);
+    return participant.sessionId;
+  }
+
   async snapshot(participantId: string): Promise<ParticipantSessionSnapshot> {
     const participant = await this.requireParticipant(participantId);
     return this.buildSnapshot(participant.sessionId);

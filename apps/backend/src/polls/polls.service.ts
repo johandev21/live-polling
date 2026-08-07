@@ -310,6 +310,21 @@ export class PollsService {
     return this.groupedPollRows(this.db, sessionId);
   }
 
+  async pollGroup(pollId: string): Promise<PollGroup | null> {
+    const [poll] = await this.db
+      .select()
+      .from(schema.polls)
+      .where(eq(schema.polls.id, pollId))
+      .limit(1);
+    if (!poll) return null;
+    const options = await this.db
+      .select()
+      .from(schema.pollOptions)
+      .where(eq(schema.pollOptions.pollId, pollId))
+      .orderBy(asc(schema.pollOptions.position));
+    return { poll, options };
+  }
+
   private async groupedPollRows(
     tx: DbHandle,
     sessionId: string,

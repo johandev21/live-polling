@@ -180,3 +180,54 @@ export const participants = pgTable(
   },
   (table) => [index('participants_session_id_idx').on(table.sessionId)],
 );
+
+export const responses = pgTable(
+  'responses',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => sessions.id, { onDelete: 'cascade' }),
+    pollId: uuid('poll_id')
+      .notNull()
+      .references(() => polls.id, { onDelete: 'cascade' }),
+    participantId: uuid('participant_id')
+      .notNull()
+      .references(() => participants.id, { onDelete: 'cascade' }),
+    text: text('text'),
+    idempotencyKey: text('idempotency_key').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('responses_participant_poll_unique').on(
+      table.participantId,
+      table.pollId,
+    ),
+    index('responses_poll_id_idx').on(table.pollId),
+  ],
+);
+
+export const responseOptions = pgTable(
+  'response_options',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    responseId: uuid('response_id')
+      .notNull()
+      .references(() => responses.id, { onDelete: 'cascade' }),
+    optionId: uuid('option_id')
+      .notNull()
+      .references(() => pollOptions.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    uniqueIndex('response_options_response_option_unique').on(
+      table.responseId,
+      table.optionId,
+    ),
+    index('response_options_response_id_idx').on(table.responseId),
+  ],
+);

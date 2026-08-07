@@ -43,6 +43,13 @@
       "when": 1786125932602,
       "tag": "0005_whole_juggernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786126818189,
+      "tag": "0006_sparkling_james_howlett",
+      "breakpoints": true
     }
   ]
 }

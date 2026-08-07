@@ -76,6 +76,23 @@ export class SessionAccessService {
     });
   }
 
+  async withSessionLock<T>(
+    sessionId: string,
+    mutate: (row: SessionRow, tx: DbHandle) => Promise<T>,
+  ): Promise<T> {
+    return this.db.transaction(async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(schema.sessions)
+        .where(eq(schema.sessions.id, sessionId))
+        .for('update');
+      if (!row) {
+        throw new NotFoundException({ code: ERROR_CODES.SESSION_NOT_FOUND });
+      }
+      return mutate(row, tx);
+    });
+  }
+
   async bumpRevision(tx: DbHandle, sessionId: string) {
     await tx
       .update(schema.sessions)
