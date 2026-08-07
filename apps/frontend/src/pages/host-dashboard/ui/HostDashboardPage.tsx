@@ -1,5 +1,6 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useState } from 'react';
 import { ArrowUpRight, Layers, Plus, Radio, Users } from 'lucide-react';
+import { Tabs } from '@base-ui/react/tabs';
 
 import { Brand, Button, StatusBadge, Surface } from '@/shared/ui';
 
@@ -90,7 +91,6 @@ export function HostDashboardPage({
 }: HostDashboardPageProps) {
   const [activeFilter, setActiveFilter] = useState<SessionFilter>('all');
   const [actionMessage, setActionMessage] = useState<string | null>(null);
-  const filterButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const liveSessions = sessions.filter(
     (session) => session.lifecycle === 'live',
@@ -116,33 +116,6 @@ export function HostDashboardPage({
   function handleOpenSession(session: DashboardSession) {
     setActionMessage(`Opened ${session.name}.`);
     onOpenSession?.(session);
-  }
-
-  function handleFilterKeyDown(
-    event: KeyboardEvent<HTMLButtonElement>,
-    currentIndex: number,
-  ) {
-    let nextIndex: number | undefined;
-
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-      nextIndex = currentIndex + 1;
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-      nextIndex = currentIndex - 1;
-    } else if (event.key === 'Home') {
-      nextIndex = 0;
-    } else if (event.key === 'End') {
-      nextIndex = filterOrder.length - 1;
-    }
-
-    if (nextIndex === undefined) {
-      return;
-    }
-
-    event.preventDefault();
-    const filterCount = filterOrder.length;
-    const nextIndexInRange = (nextIndex + filterCount) % filterCount;
-    setActiveFilter(filterOrder[nextIndexInRange]);
-    filterButtonRefs.current[nextIndexInRange]?.focus();
   }
 
   return (
@@ -258,42 +231,31 @@ export function HostDashboardPage({
             </span>
           </div>
 
-          <div
-            aria-controls="session-library"
-            aria-label="Filter sessions"
-            className="flex w-full flex-wrap gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] p-1"
-            role="radiogroup"
+          <Tabs.Root
+            value={activeFilter}
+            onValueChange={(val) =>
+              val && setActiveFilter(val as SessionFilter)
+            }
           >
-            {filterOrder.map((filter, index) => {
-              const isSelected = activeFilter === filter;
-              return (
-                <button
-                  aria-checked={isSelected}
-                  className={[
-                    'min-h-9 rounded-[calc(var(--radius-sm)-2px)] px-4 text-sm font-semibold transition-colors',
-                    isSelected
-                      ? 'bg-[var(--color-primary-soft)] text-[var(--color-primary)]'
-                      : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)]',
-                  ].join(' ')}
+            <Tabs.List
+              aria-label="Filter sessions"
+              className="flex w-full flex-wrap gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] p-1"
+            >
+              {filterOrder.map((filter) => (
+                <Tabs.Tab
+                  className="min-h-9 rounded-[calc(var(--radius-sm)-2px)] px-4 text-sm font-semibold text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-muted)] data-[selected]:bg-[var(--color-primary-soft)] data-[selected]:text-[var(--color-primary)]"
                   id={`session-filter-${filter}`}
                   key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  onKeyDown={(event) => handleFilterKeyDown(event, index)}
-                  ref={(element) => {
-                    filterButtonRefs.current[index] = element;
-                  }}
-                  role="radio"
-                  tabIndex={isSelected ? 0 : -1}
-                  type="button"
+                  value={filter}
                 >
                   {filterLabels[filter]}
                   <span className="ml-1 font-[var(--font-mono)] text-xs opacity-70">
                     {filterCounts[filter]}
                   </span>
-                </button>
-              );
-            })}
-          </div>
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs.Root>
 
           {visibleSessions.length === 0 ? (
             <Surface

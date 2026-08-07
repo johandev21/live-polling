@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react';
+import { Button as BaseButton } from '@base-ui/react/button';
 
 import { cx } from '@/shared/lib';
 import { Icon, type IconName } from '@/shared/ui/icon';
@@ -67,7 +68,7 @@ export function IconButton({
   ...props
 }: IconButtonProps) {
   return (
-    <button
+    <BaseButton
       {...props}
       aria-label={label}
       className={cx(
@@ -82,6 +83,6 @@ export function IconButton({
       type={type}
     >
       <Icon name={icon} size={iconSizes[size]} />
-    </button>
+    </BaseButton>
   );
 }

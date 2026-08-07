@@ -1,4 +1,5 @@
-import { cloneElement, type ReactElement, type ReactNode } from 'react';
+import { type ReactElement, type ReactNode } from 'react';
+import { Field as BaseField } from '@base-ui/react/field';
 
 import { cx } from '@/shared/lib';
 
@@ -29,24 +30,13 @@ export function Field({
   label,
   required = false,
 }: FieldProps) {
-  const describedBy = [
-    children.props['aria-describedby'],
-    hint ? `${id}-hint` : null,
-    error ? `${id}-error` : null,
-  ]
-    .filter(Boolean)
-    .join(' ');
-  const control = cloneElement(children, {
-    'aria-describedby': describedBy || undefined,
-    'aria-errormessage': error ? `${id}-error` : undefined,
-    'aria-invalid': error ? true : children.props['aria-invalid'],
-    id,
-    required: required || children.props.required,
-  });
-
   return (
-    <div className={cx('flex w-full flex-col gap-2', className)}>
-      <label
+    <BaseField.Root
+      className={cx('flex w-full flex-col gap-2', className)}
+      id={id}
+      invalid={Boolean(error)}
+    >
+      <BaseField.Label
         className="text-sm font-semibold text-[var(--color-text-primary)]"
         htmlFor={id}
       >
@@ -56,30 +46,29 @@ export function Field({
             *
           </span>
         ) : null}
-      </label>
-      {control}
+      </BaseField.Label>
+      <BaseField.Control render={children} />
       {hint || error ? (
         <div className="flex flex-col gap-1">
           {hint ? (
-            <p
+            <BaseField.Description
               className="text-xs leading-5 text-[var(--color-text-tertiary)]"
               id={`${id}-hint`}
             >
               {hint}
-            </p>
+            </BaseField.Description>
           ) : null}
           {error ? (
-            <p
-              aria-live="polite"
+            <BaseField.Error
               className="text-xs leading-5 text-[var(--color-error)]"
               id={`${id}-error`}
               role="alert"
             >
               {error}
-            </p>
+            </BaseField.Error>
           ) : null}
         </div>
       ) : null}
-    </div>
+    </BaseField.Root>
   );
 }

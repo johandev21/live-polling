@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react';
+import { Button as BaseButton } from '@base-ui/react/button';
 
 import { cx } from '@/shared/lib';
 import { Icon, type IconName } from '@/shared/ui/icon';
@@ -65,7 +66,7 @@ export function Button({
   const iconSize = iconSizes[size];
 
   return (
-    <button
+    <BaseButton
       {...props}
       className={cx(
         'inline-flex shrink-0 items-center justify-center gap-2 rounded-[var(--radius-sm)] border',
@@ -81,6 +82,6 @@ export function Button({
       {startIcon ? <Icon name={startIcon} size={iconSize} /> : null}
       <span>{children}</span>
       {endIcon ? <Icon name={endIcon} size={iconSize} /> : null}
-    </button>
+    </BaseButton>
   );
 }

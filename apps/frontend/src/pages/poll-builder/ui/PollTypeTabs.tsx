@@ -1,6 +1,6 @@
-import { useRef, type KeyboardEvent } from 'react';
 import { CircleDot, ListChecks, MessageSquare } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { Tabs } from '@base-ui/react/tabs';
 
 import type { PollType } from '../model/poll-builder';
 
@@ -22,78 +22,29 @@ export type PollTypeTabsProps = Readonly<{
 }>;
 
 export function PollTypeTabs({ onChange, value }: PollTypeTabsProps) {
-  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
-
-  function selectOption(index: number) {
-    const option = pollTypeOptions[index];
-    if (!option) {
-      return;
-    }
-
-    onChange(option.type);
-    optionRefs.current[index]?.focus();
-  }
-
-  function handleKeyDown(
-    event: KeyboardEvent<HTMLButtonElement>,
-    currentIndex: number,
-  ) {
-    let nextIndex: number | undefined;
-
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-      nextIndex = currentIndex + 1;
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-      nextIndex = currentIndex - 1;
-    } else if (event.key === 'Home') {
-      nextIndex = 0;
-    } else if (event.key === 'End') {
-      nextIndex = pollTypeOptions.length - 1;
-    }
-
-    if (nextIndex === undefined) {
-      return;
-    }
-
-    event.preventDefault();
-    const optionCount = pollTypeOptions.length;
-    selectOption((nextIndex + optionCount) % optionCount);
-  }
-
   return (
-    <div
-      aria-controls="poll-builder-form"
-      aria-label="Poll type"
-      className="flex w-full flex-wrap gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] p-1"
-      role="radiogroup"
+    <Tabs.Root
+      value={value}
+      onValueChange={(val) => val && onChange(val as PollType)}
     >
-      {pollTypeOptions.map(({ icon: TypeIcon, label, type }, index) => {
-        const isSelected = value === type;
-        return (
-          <button
+      <Tabs.List
+        aria-controls="poll-builder-form"
+        aria-label="Poll type"
+        className="flex w-full flex-wrap gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] p-1"
+      >
+        {pollTypeOptions.map(({ icon: TypeIcon, label, type }) => (
+          <Tabs.Tab
             aria-controls="poll-builder-form"
-            aria-checked={isSelected}
-            className={[
-              'inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-[calc(var(--radius-sm)-2px)] px-3 text-sm font-semibold transition-colors sm:flex-none sm:px-4',
-              isSelected
-                ? 'bg-[var(--color-primary-soft)] text-[var(--color-primary)]'
-                : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)]',
-            ].join(' ')}
+            className="inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-[calc(var(--radius-sm)-2px)] px-3 text-sm font-semibold text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-muted)] data-[selected]:bg-[var(--color-primary-soft)] data-[selected]:text-[var(--color-primary)] sm:flex-none sm:px-4"
             id={`poll-type-option-${type}`}
             key={type}
-            onClick={() => onChange(type)}
-            onKeyDown={(event) => handleKeyDown(event, index)}
-            ref={(element) => {
-              optionRefs.current[index] = element;
-            }}
-            role="radio"
-            tabIndex={isSelected ? 0 : -1}
-            type="button"
+            value={type}
           >
             <TypeIcon aria-hidden="true" size={16} />
             {label}
-          </button>
-        );
-      })}
-    </div>
+          </Tabs.Tab>
+        ))}
+      </Tabs.List>
+    </Tabs.Root>
   );
 }

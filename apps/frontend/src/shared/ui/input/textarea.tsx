@@ -13,7 +13,7 @@ const textareaClasses = [
   'placeholder:text-[var(--color-text-tertiary)]',
   'transition-[border-color,background-color]',
   'focus-visible:border-[var(--color-primary)]',
-  'aria-invalid:border-[var(--color-error)]',
+  'aria-invalid:border-[var(--color-error)] data-invalid:border-[var(--color-error)]',
   'disabled:cursor-not-allowed disabled:opacity-60',
 ].join(' ');
 
