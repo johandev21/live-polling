@@ -31,6 +31,9 @@ import { VerifiedHostGuard } from './auth.guards';
             storeSessionInDatabase: true,
             preserveSessionInDatabase: true,
           },
+          verification: {
+            storeInDatabase: true,
+          },
           secondaryStorage: {
             get: async (key: string) => {
               await connectRedis(redis);
@@ -45,10 +48,10 @@ import { VerifiedHostGuard } from './auth.guards';
               await connectRedis(redis);
               await redis.del(key);
             },
-            increment: async (key: string, amount: number) => {
+            increment: async (key: string, ttl: number) => {
               await connectRedis(redis);
-              const value = await redis.incrby(key, amount);
-              if (value === amount) await redis.expire(key, 60);
+              const value = await redis.incrby(key, 1);
+              if (value === 1) await redis.expire(key, ttl);
               return value;
             },
           },
@@ -79,29 +82,23 @@ import { VerifiedHostGuard } from './auth.guards';
             magicLink({
               expiresIn: 60 * 15,
               sendMagicLink: async ({ email, url }) => {
+                const link = new URL(url);
+                if (link.searchParams.get('callbackURL') === '/') {
+                  link.searchParams.set(
+                    'callbackURL',
+                    `${process.env.BETTER_AUTH_URL ?? 'http://localhost:3000'}/auth/callback`,
+                  );
+                }
                 await mailer.send({
                   to: email,
                   subject: 'Your Live Polling sign-in link',
-                  text: `Sign in to Live Polling by opening: ${url}`,
+                  text: `Sign in to Live Polling by opening: ${link.toString()}`,
                 });
               },
             }),
           ],
         }),
         bodyParser: { json: { limit: '64kb' }, urlencoded: { limit: '64kb' } },
-        middleware: (request, _response, next) => {
-          if (
-            request.method === 'POST' &&
-            request.path.endsWith('/sign-in/magic-link') &&
-            request.body &&
-            !request.body.callbackURL
-          ) {
-            request.body.callbackURL = `${
-              process.env.BETTER_AUTH_URL ?? 'http://localhost:3000'
-            }/auth/callback`;
-          }
-          next();
-        },
       }),
     }),
   ],
