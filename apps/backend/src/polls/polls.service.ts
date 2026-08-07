@@ -14,7 +14,16 @@ import type {
 import * as schema from '../infrastructure/database/schema';
 import { pollSnapshotSchema } from '../contracts/poll.contract';
 import type { PollSnapshot } from '../contracts/poll.contract';
+import {
+  REALTIME_EVENTS,
+  hostPollEventSchema,
+  participantPollEventSchema,
+  pollDeletedEventSchema,
+  pollReorderedEventSchema,
+  resultsVisibilityEventSchema,
+} from '../contracts/events.contract';
 import { ERROR_CODES } from '../contracts/errors.contract';
+import { RealtimeService } from '../realtime/realtime.service';
 import { SessionAccessService } from '../sessions/session-access.service';
 import { isDraft, isEnded, isLive } from '../sessions/session.domain';
 import type { PollType } from './poll.domain';
@@ -25,6 +34,7 @@ export class PollsService {
   constructor(
     @Inject(DATABASE) private readonly db: Database,
     @Inject(SessionAccessService) private readonly access: SessionAccessService,
+    @Inject(RealtimeService) private readonly realtime: RealtimeService,
   ) {}
 
   async create(
@@ -32,7 +42,7 @@ export class PollsService {
     sessionId: string,
     input: CreatePollInput,
   ): Promise<PollSnapshot> {
-    return this.access.withOwnedSessionLock(
+    const snapshot = await this.access.withOwnedSessionLock(
       userId,
       sessionId,
       async (session, tx) => {
@@ -60,6 +70,8 @@ export class PollsService {
         return this.snapshot(tx, poll.id);
       },
     );
+    await this.publishPollChanged(snapshot, REALTIME_EVENTS.POLL_CREATED);
+    return snapshot;
   }
 
   async list(userId: string, sessionId: string): Promise<PollSnapshot[]> {
@@ -82,7 +94,7 @@ export class PollsService {
     pollId: string,
     input: UpdatePollInput,
   ): Promise<PollSnapshot> {
-    return this.access.withOwnedSessionLock(
+    const snapshot = await this.access.withOwnedSessionLock(
       userId,
       sessionId,
       async (session, tx) => {
@@ -105,6 +117,8 @@ export class PollsService {
         return this.snapshot(tx, pollId, sessionId);
       },
     );
+    await this.publishPollChanged(snapshot, REALTIME_EVENTS.POLL_UPDATED);
+    return snapshot;
   }
 
   async remove(userId: string, sessionId: string, pollId: string) {
@@ -131,6 +145,18 @@ export class PollsService {
         await this.access.bumpRevision(tx, sessionId);
       },
     );
+    const revision = await this.realtime.currentRevision(sessionId);
+    const payload = pollDeletedEventSchema.parse({
+      sessionId,
+      revision,
+      pollId,
+    });
+    this.realtime.toAll(
+      sessionId,
+      REALTIME_EVENTS.POLL_DELETED,
+      payload,
+      payload,
+    );
   }
 
   async reorder(
@@ -138,7 +164,7 @@ export class PollsService {
     sessionId: string,
     pollIds: string[],
   ): Promise<PollSnapshot[]> {
-    return this.access.withOwnedSessionLock(
+    const snapshots = await this.access.withOwnedSessionLock(
       userId,
       sessionId,
       async (session, tx) => {
@@ -166,6 +192,19 @@ export class PollsService {
         return this.listSnapshots(tx, sessionId);
       },
     );
+    const revision = await this.realtime.currentRevision(sessionId);
+    const payload = pollReorderedEventSchema.parse({
+      sessionId,
+      revision,
+      pollIds,
+    });
+    this.realtime.toAll(
+      sessionId,
+      REALTIME_EVENTS.POLL_REORDERED,
+      payload,
+      payload,
+    );
+    return snapshots;
   }
 
   async open(
@@ -173,31 +212,47 @@ export class PollsService {
     sessionId: string,
     pollId: string,
   ): Promise<PollSnapshot> {
-    return this.access.withOwnedSessionLock(
+    const { snapshot, closedPoll } = await this.access.withOwnedSessionLock(
       userId,
       sessionId,
       async (session, tx) => {
         if (!isLive(session.status)) throw this.invalidTransition();
         const poll = await this.requirePoll(tx, pollId, sessionId);
         if (poll.isOpen) throw this.invalidTransition();
-        await tx
-          .update(schema.polls)
-          .set({ isOpen: false, updatedAt: new Date() })
+        const [previous] = await tx
+          .select()
+          .from(schema.polls)
           .where(
             and(
               eq(schema.polls.sessionId, sessionId),
-              ne(schema.polls.id, pollId),
               eq(schema.polls.isOpen, true),
+              ne(schema.polls.id, pollId),
             ),
-          );
+          )
+          .limit(1);
+        if (previous) {
+          await tx
+            .update(schema.polls)
+            .set({ isOpen: false, updatedAt: new Date() })
+            .where(eq(schema.polls.id, previous.id));
+        }
         await tx
           .update(schema.polls)
           .set({ isOpen: true, updatedAt: new Date() })
           .where(eq(schema.polls.id, pollId));
         await this.access.bumpRevision(tx, sessionId);
-        return this.snapshot(tx, pollId, sessionId);
+        return {
+          snapshot: await this.snapshot(tx, pollId, sessionId),
+          closedPoll: previous ?? null,
+        };
       },
     );
+    if (closedPoll) {
+      const closed = await this.snapshot(this.db, closedPoll.id, sessionId);
+      await this.publishPollChanged(closed, REALTIME_EVENTS.POLL_CLOSED);
+    }
+    await this.publishPollChanged(snapshot, REALTIME_EVENTS.POLL_OPENED);
+    return snapshot;
   }
 
   async close(
@@ -205,7 +260,7 @@ export class PollsService {
     sessionId: string,
     pollId: string,
   ): Promise<PollSnapshot> {
-    return this.access.withOwnedSessionLock(
+    const snapshot = await this.access.withOwnedSessionLock(
       userId,
       sessionId,
       async (session, tx) => {
@@ -220,6 +275,8 @@ export class PollsService {
         return this.snapshot(tx, pollId, sessionId);
       },
     );
+    await this.publishPollChanged(snapshot, REALTIME_EVENTS.POLL_CLOSED);
+    return snapshot;
   }
 
   async reveal(
@@ -227,7 +284,18 @@ export class PollsService {
     sessionId: string,
     pollId: string,
   ): Promise<PollSnapshot> {
-    return this.setResultsRevealed(userId, sessionId, pollId, true);
+    const snapshot = await this.setResultsRevealed(
+      userId,
+      sessionId,
+      pollId,
+      true,
+    );
+    await this.publishResultsVisibility(
+      sessionId,
+      pollId,
+      REALTIME_EVENTS.RESULTS_REVEALED,
+    );
+    return snapshot;
   }
 
   async hide(
@@ -235,7 +303,18 @@ export class PollsService {
     sessionId: string,
     pollId: string,
   ): Promise<PollSnapshot> {
-    return this.setResultsRevealed(userId, sessionId, pollId, false);
+    const snapshot = await this.setResultsRevealed(
+      userId,
+      sessionId,
+      pollId,
+      false,
+    );
+    await this.publishResultsVisibility(
+      sessionId,
+      pollId,
+      REALTIME_EVENTS.RESULTS_HIDDEN,
+    );
+    return snapshot;
   }
 
   private async setResultsRevealed(
@@ -412,6 +491,51 @@ export class PollsService {
 
   private invalidTransition() {
     return new ConflictException({ code: ERROR_CODES.INVALID_TRANSITION });
+  }
+
+  private async publishPollChanged(
+    snapshot: PollSnapshot,
+    eventName: string,
+  ): Promise<void> {
+    const revision = await this.realtime.currentRevision(snapshot.sessionId);
+    const participantPayload = participantPollEventSchema.parse({
+      sessionId: snapshot.sessionId,
+      revision,
+      poll: {
+        id: snapshot.id,
+        text: snapshot.text,
+        type: snapshot.type,
+        position: snapshot.position,
+        maxSelections: snapshot.maxSelections,
+        options: snapshot.options,
+        isOpen: snapshot.isOpen,
+        resultsRevealed: snapshot.resultsRevealed,
+      },
+    });
+    this.realtime.toAll(
+      snapshot.sessionId,
+      eventName,
+      hostPollEventSchema.parse({
+        sessionId: snapshot.sessionId,
+        revision,
+        poll: snapshot,
+      }),
+      participantPayload,
+    );
+  }
+
+  private async publishResultsVisibility(
+    sessionId: string,
+    pollId: string,
+    eventName: string,
+  ): Promise<void> {
+    const revision = await this.realtime.currentRevision(sessionId);
+    const payload = resultsVisibilityEventSchema.parse({
+      sessionId,
+      revision,
+      pollId,
+    });
+    this.realtime.toAll(sessionId, eventName, payload, payload);
   }
 
   private pollLocked() {

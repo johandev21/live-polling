@@ -24,6 +24,12 @@ import {
   participantResultsSchema,
   responseSnapshotSchema,
 } from '../contracts/response.contract';
+import {
+  REALTIME_EVENTS,
+  hostResponseEventSchema,
+  participantResponseEventSchema,
+} from '../contracts/events.contract';
+import { RealtimeService } from '../realtime/realtime.service';
 import { PollsService } from '../polls/polls.service';
 import { ParticipantsService } from '../participants/participants.service';
 import { SessionAccessService } from '../sessions/session-access.service';
@@ -44,6 +50,7 @@ export class ResponsesService {
     private readonly participants: ParticipantsService,
     @Inject(SessionAccessService)
     private readonly access: SessionAccessService,
+    @Inject(RealtimeService) private readonly realtime: RealtimeService,
   ) {}
 
   async submit(
@@ -54,78 +61,94 @@ export class ResponsesService {
     const sessionId =
       await this.participants.sessionIdForParticipant(participantId);
     const key = this.normalizeKey(input.idempotencyKey);
-    return this.access.withSessionLock(sessionId, async (session, tx) => {
-      const [poll] = await tx
-        .select()
-        .from(schema.polls)
-        .where(eq(schema.polls.id, pollId))
-        .for('update');
-      if (!poll) throw this.pollNotFound();
-      if (poll.sessionId !== sessionId) throw this.pollNotFound();
-      const gate = canSubmit(session.status, poll.isOpen);
-      if (!gate.allowed) {
-        throw gate.reason === 'session'
-          ? this.sessionGated()
-          : this.closedPoll();
-      }
-      const options = await tx
-        .select({ id: schema.pollOptions.id })
-        .from(schema.pollOptions)
-        .where(eq(schema.pollOptions.pollId, pollId))
-        .orderBy(asc(schema.pollOptions.position));
-      const selection = this.validateSelection(
-        poll.type,
-        poll.maxSelections,
-        options.map((option) => option.id),
-        input,
-      );
-      const [existing] = await tx
-        .select()
-        .from(schema.responses)
-        .where(
-          and(
-            eq(schema.responses.participantId, participantId),
-            eq(schema.responses.pollId, pollId),
-          ),
-        )
-        .limit(1);
-      if (existing) {
-        if (existing.idempotencyKey === key) {
-          return this.responseSnapshot(tx, existing.id);
+    const result = await this.access.withSessionLock(
+      sessionId,
+      async (session, tx) => {
+        const [poll] = await tx
+          .select()
+          .from(schema.polls)
+          .where(eq(schema.polls.id, pollId))
+          .for('update');
+        if (!poll) throw this.pollNotFound();
+        if (poll.sessionId !== sessionId) throw this.pollNotFound();
+        const gate = canSubmit(session.status, poll.isOpen);
+        if (!gate.allowed) {
+          throw gate.reason === 'session'
+            ? this.sessionGated()
+            : this.closedPoll();
         }
-        const [updated] = await tx
-          .update(schema.responses)
-          .set({
-            idempotencyKey: key,
+        const options = await tx
+          .select({ id: schema.pollOptions.id })
+          .from(schema.pollOptions)
+          .where(eq(schema.pollOptions.pollId, pollId))
+          .orderBy(asc(schema.pollOptions.position));
+        const selection = this.validateSelection(
+          poll.type,
+          poll.maxSelections,
+          options.map((option) => option.id),
+          input,
+        );
+        const [existing] = await tx
+          .select()
+          .from(schema.responses)
+          .where(
+            and(
+              eq(schema.responses.participantId, participantId),
+              eq(schema.responses.pollId, pollId),
+            ),
+          )
+          .limit(1);
+        if (existing) {
+          if (existing.idempotencyKey === key) {
+            return {
+              snapshot: await this.responseSnapshot(tx, existing.id),
+              changed: false,
+            };
+          }
+          const [updated] = await tx
+            .update(schema.responses)
+            .set({
+              idempotencyKey: key,
+              text: selection.text,
+              updatedAt: new Date(),
+            })
+            .where(eq(schema.responses.id, existing.id))
+            .returning();
+          await this.replaceSelections(tx, existing.id, selection.optionIds);
+          await this.access.bumpRevision(tx, sessionId);
+          return {
+            snapshot: await this.responseSnapshot(tx, updated.id),
+            changed: true,
+          };
+        }
+        const [created] = await tx
+          .insert(schema.responses)
+          .values({
+            sessionId,
+            pollId,
+            participantId,
             text: selection.text,
-            updatedAt: new Date(),
+            idempotencyKey: key,
           })
-          .where(eq(schema.responses.id, existing.id))
           .returning();
-        await this.replaceSelections(tx, existing.id, selection.optionIds);
+        await this.insertSelections(tx, created.id, selection.optionIds);
+        if (!poll.hasResponses) {
+          await tx
+            .update(schema.polls)
+            .set({ hasResponses: true, updatedAt: new Date() })
+            .where(eq(schema.polls.id, pollId));
+        }
         await this.access.bumpRevision(tx, sessionId);
-        return this.responseSnapshot(tx, updated.id);
-      }
-      const [created] = await tx
-        .insert(schema.responses)
-        .values({
-          sessionId,
-          pollId,
-          participantId,
-          text: selection.text,
-          idempotencyKey: key,
-        })
-        .returning();
-      await this.insertSelections(tx, created.id, selection.optionIds);
-      if (!poll.hasResponses) {
-        await tx
-          .update(schema.polls)
-          .set({ hasResponses: true, updatedAt: new Date() })
-          .where(eq(schema.polls.id, pollId));
-      }
-      await this.access.bumpRevision(tx, sessionId);
-      return this.responseSnapshot(tx, created.id);
-    });
+        return {
+          snapshot: await this.responseSnapshot(tx, created.id),
+          changed: true,
+        };
+      },
+    );
+    if (result.changed) {
+      await this.publishResponseAccepted(sessionId, pollId);
+    }
+    return result.snapshot;
   }
 
   async participantResults(
@@ -134,16 +157,13 @@ export class ResponsesService {
   ): Promise<ParticipantResults> {
     const sessionId =
       await this.participants.sessionIdForParticipant(participantId);
-    const group = await this.polls.pollGroup(pollId);
-    if (!group || group.poll.sessionId !== sessionId) {
-      throw this.pollNotFound();
-    }
+    const group = await this.requirePollInSession(sessionId, pollId);
     if (!group.poll.resultsRevealed) {
       throw new ForbiddenException({
         code: ERROR_CODES.RESULTS_NOT_REVEALED,
       });
     }
-    return this.choiceResults(pollId);
+    return this.participantResultsByPoll(pollId);
   }
 
   async hostResults(
@@ -152,8 +172,60 @@ export class ResponsesService {
     pollId: string,
   ): Promise<HostResults> {
     await this.access.getOwnedSession(userId, sessionId);
+    await this.requirePollInSession(sessionId, pollId);
+    return this.hostResultsByPoll(pollId);
+  }
+
+  private async publishResponseAccepted(
+    sessionId: string,
+    pollId: string,
+  ): Promise<void> {
+    const revision = await this.realtime.currentRevision(sessionId);
+    const hostResults = await this.hostResultsByPoll(pollId);
+    const participantResults = await this.participantResultsForEvent(pollId);
+    this.realtime.toAll(
+      sessionId,
+      REALTIME_EVENTS.RESPONSE_ACCEPTED,
+      hostResponseEventSchema.parse({
+        sessionId,
+        revision,
+        pollId,
+        results: hostResults,
+      }),
+      participantResponseEventSchema.parse({
+        sessionId,
+        revision,
+        pollId,
+        results: participantResults,
+      }),
+    );
+  }
+
+  private async requirePollInSession(sessionId: string, pollId: string) {
     const group = await this.polls.pollGroup(pollId);
     if (!group || group.poll.sessionId !== sessionId) {
+      throw this.pollNotFound();
+    }
+    return group;
+  }
+
+  private async participantResultsForEvent(
+    pollId: string,
+  ): Promise<ParticipantResults | null> {
+    const group = await this.polls.pollGroup(pollId);
+    if (!group?.poll.resultsRevealed) return null;
+    return this.participantResultsByPoll(pollId);
+  }
+
+  private async participantResultsByPoll(
+    pollId: string,
+  ): Promise<ParticipantResults> {
+    return this.choiceResults(pollId);
+  }
+
+  private async hostResultsByPoll(pollId: string): Promise<HostResults> {
+    const group = await this.polls.pollGroup(pollId);
+    if (!group) {
       throw this.pollNotFound();
     }
     const total = await this.responseCount(pollId);

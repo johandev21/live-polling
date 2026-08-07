@@ -22,6 +22,7 @@ import {
   participantSnapshotSchema,
 } from '../contracts/participant.contract';
 import { PollsService } from '../polls/polls.service';
+import { RealtimeService } from '../realtime/realtime.service';
 import {
   InvalidDisplayNameError,
   normalizeDisplayName,
@@ -35,6 +36,7 @@ export class ParticipantsService {
     @Inject(PollsService) private readonly polls: PollsService,
     @Inject(ParticipantTokenService)
     private readonly tokens: ParticipantTokenService,
+    @Inject(RealtimeService) private readonly realtime: RealtimeService,
   ) {}
 
   async join(input: {
@@ -117,6 +119,11 @@ export class ParticipantsService {
       .set({ displayName: name, updatedAt: new Date() })
       .where(eq(schema.participants.id, participantId))
       .returning();
+    await this.realtime.renamePresence(
+      participant.sessionId,
+      participantId,
+      name,
+    );
     return this.toParticipantSnapshot(updated);
   }
 

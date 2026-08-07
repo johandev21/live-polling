@@ -10,6 +10,7 @@ import { SessionsModule } from './sessions/sessions.module';
 import { PollsModule } from './polls/polls.module';
 import { ParticipantsModule } from './participants/participants.module';
 import { ResponsesModule } from './responses/responses.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ResponsesModule } from './responses/responses.module';
     PollsModule,
     ParticipantsModule,
     ResponsesModule,
+    RealtimeModule,
     HealthModule,
   ],
   controllers: [AppController],

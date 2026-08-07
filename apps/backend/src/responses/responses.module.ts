@@ -4,6 +4,7 @@ import { RateLimitModule } from '../infrastructure/rate-limit/rate-limit.module'
 import { SessionsModule } from '../sessions/sessions.module';
 import { PollsModule } from '../polls/polls.module';
 import { ParticipantsModule } from '../participants/participants.module';
+import { RealtimeModule } from '../realtime/realtime.module';
 import { ResponsesController } from './responses.controller';
 import { ResponsesService } from './responses.service';
 
@@ -14,6 +15,7 @@ import { ResponsesService } from './responses.service';
     SessionsModule,
     PollsModule,
     ParticipantsModule,
+    RealtimeModule,
   ],
   controllers: [ResponsesController],
   providers: [ResponsesService],

@@ -14,7 +14,14 @@ import type {
 import * as schema from '../infrastructure/database/schema';
 import { sessionSnapshotSchema } from '../contracts/session.contract';
 import type { SessionSnapshot } from '../contracts/session.contract';
+import {
+  REALTIME_EVENTS,
+  hostSessionEventSchema,
+  participantSessionEventSchema,
+  sessionDeletedEventSchema,
+} from '../contracts/events.contract';
 import { ERROR_CODES } from '../contracts/errors.contract';
+import { RealtimeService } from '../realtime/realtime.service';
 import type { SessionStatus } from './session.domain';
 import {
   InvalidSessionTransitionError,
@@ -31,6 +38,7 @@ export class SessionsService {
     @Inject(DATABASE) private readonly db: Database,
     @Inject(RoomCodeService) private readonly roomCodes: RoomCodeService,
     @Inject(SessionAccessService) private readonly access: SessionAccessService,
+    @Inject(RealtimeService) private readonly realtime: RealtimeService,
   ) {}
 
   async create(userId: string, name: string): Promise<SessionSnapshot> {
@@ -76,7 +84,7 @@ export class SessionsService {
     sessionId: string,
     name: string,
   ): Promise<SessionSnapshot> {
-    return this.access.withOwnedSessionLock(
+    const snapshot = await this.access.withOwnedSessionLock(
       userId,
       sessionId,
       async (row, tx) => {
@@ -84,10 +92,12 @@ export class SessionsService {
         return this.commitMutation(tx, row, { name });
       },
     );
+    this.publishSessionUpdate(snapshot);
+    return snapshot;
   }
 
   async start(userId: string, sessionId: string): Promise<SessionSnapshot> {
-    return this.access.withOwnedSessionLock(
+    const snapshot = await this.access.withOwnedSessionLock(
       userId,
       sessionId,
       async (row, tx) => {
@@ -106,10 +116,12 @@ export class SessionsService {
         });
       },
     );
+    this.publishSessionUpdate(snapshot);
+    return snapshot;
   }
 
   async end(userId: string, sessionId: string): Promise<SessionSnapshot> {
-    return this.access.withOwnedSessionLock(
+    const snapshot = await this.access.withOwnedSessionLock(
       userId,
       sessionId,
       async (row, tx) => {
@@ -117,6 +129,8 @@ export class SessionsService {
         return this.commitMutation(tx, row, { status, endedAt: new Date() });
       },
     );
+    this.publishSessionUpdate(snapshot);
+    return snapshot;
   }
 
   async delete(userId: string, sessionId: string, confirm: boolean) {
@@ -125,10 +139,12 @@ export class SessionsService {
         code: ERROR_CODES.CONFIRMATION_REQUIRED,
       });
     }
+    let revision = 1;
     await this.access.withOwnedSessionLock(
       userId,
       sessionId,
       async (row, tx) => {
+        revision = row.revision;
         await tx
           .delete(schema.sessions)
           .where(
@@ -139,6 +155,12 @@ export class SessionsService {
           );
         await this.roomCodes.markReleased(row.roomCode, tx);
       },
+    );
+    this.realtime.toAll(
+      sessionId,
+      REALTIME_EVENTS.SESSION_DELETED,
+      sessionDeletedEventSchema.parse({ sessionId, revision }),
+      sessionDeletedEventSchema.parse({ sessionId, revision }),
     );
   }
 
@@ -194,6 +216,31 @@ export class SessionsService {
 
   private invalidTransition() {
     return new ConflictException({ code: ERROR_CODES.INVALID_TRANSITION });
+  }
+
+  private publishSessionUpdate(snapshot: SessionSnapshot): void {
+    const revision = snapshot.revision;
+    this.realtime.toAll(
+      snapshot.id,
+      REALTIME_EVENTS.SESSION_UPDATED,
+      hostSessionEventSchema.parse({
+        sessionId: snapshot.id,
+        revision,
+        session: snapshot,
+      }),
+      participantSessionEventSchema.parse({
+        sessionId: snapshot.id,
+        revision,
+        session: {
+          id: snapshot.id,
+          name: snapshot.name,
+          status: snapshot.status,
+          revision: snapshot.revision,
+          startedAt: snapshot.startedAt,
+          endedAt: snapshot.endedAt,
+        },
+      }),
+    );
   }
 
   private notFound() {
