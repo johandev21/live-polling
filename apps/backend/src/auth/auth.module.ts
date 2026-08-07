@@ -23,7 +23,7 @@ import { VerifiedHostGuard } from './auth.guards';
         auth: betterAuth({
           database: drizzleAdapter(database, { provider: 'pg' }),
           basePath: '/api/auth',
-          baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:3000',
+          baseURL: baseUrl(),
           secret: requiredAuthSecret(),
           trustedOrigins: configuredOrigins(),
           session: {
@@ -86,7 +86,7 @@ import { VerifiedHostGuard } from './auth.guards';
                 if (link.searchParams.get('callbackURL') === '/') {
                   link.searchParams.set(
                     'callbackURL',
-                    `${process.env.BETTER_AUTH_URL ?? 'http://localhost:3000'}/auth/callback`,
+                    `${baseUrl()}/auth/callback`,
                   );
                 }
                 await mailer.send({
@@ -113,6 +113,10 @@ function requiredAuthSecret(): string {
     throw new Error('BETTER_AUTH_SECRET must be at least 32 characters');
   }
   return secret;
+}
+
+function baseUrl(): string {
+  return process.env.BETTER_AUTH_URL ?? 'http://localhost:3000';
 }
 
 function configuredOrigins(): string[] {

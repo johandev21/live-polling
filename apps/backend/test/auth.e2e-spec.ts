@@ -115,6 +115,17 @@ describe('Host authentication (e2e)', () => {
       .set('X-Forwarded-For', ip);
   }
 
+  function extractSessionCookie(response: {
+    headers: Record<string, unknown>;
+  }): string | undefined {
+    const setCookies = response.headers['set-cookie'] as unknown as
+      | string[]
+      | undefined;
+    return setCookies?.find((cookie) =>
+      cookie.startsWith(`${SESSION_COOKIE_NAME}=`),
+    );
+  }
+
   function signSessionToken(token: string): string {
     const signature = createHmac(
       'sha256',
@@ -132,9 +143,7 @@ describe('Host authentication (e2e)', () => {
     const link = await requestMagicLink(email, ip);
     const response = await consumeLink(link, ip);
     expect(response.status).toBe(302);
-    const sessionCookie = (
-      response.headers['set-cookie'] as unknown as string[]
-    ).find((cookie) => cookie.startsWith(`${SESSION_COOKIE_NAME}=`));
+    const sessionCookie = extractSessionCookie(response);
     expect(sessionCookie).toBeDefined();
     return (sessionCookie as string).split(';')[0] as string;
   }
@@ -157,11 +166,23 @@ describe('Host authentication (e2e)', () => {
     expect(response.headers.location).toBe(APP_CALLBACK_URL);
     expect(response.text).toBe('');
     expect(response.headers['set-cookie']).toBeDefined();
-    const sessionCookie = (
-      response.headers['set-cookie'] as unknown as string[]
-    ).find((cookie) => cookie.startsWith(`${SESSION_COOKIE_NAME}=`));
+    const sessionCookie = extractSessionCookie(response);
     expect(sessionCookie).toBeDefined();
     expect(sessionCookie).toContain('HttpOnly');
+  });
+
+  it('rejects an unknown magic-link token with the same machine-readable error', async () => {
+    const ip = uniqueIp();
+    const response = await consumeLink(
+      new URL(
+        `/api/auth/magic-link/verify?token=${'x'.repeat(32)}`,
+        BETTER_AUTH_URL,
+      ),
+      ip,
+    );
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toContain('error=INVALID_TOKEN');
   });
 
   it('rejects reuse of a consumed magic link', async () => {
