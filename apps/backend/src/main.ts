@@ -1,8 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { StructuredLogger } from './infrastructure/logging/structured-logger.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+    logger: new StructuredLogger(),
+  });
   app.enableShutdownHooks();
   app.enableCors({
     origin: (process.env.FRONTEND_ORIGINS ?? 'http://localhost:5173')

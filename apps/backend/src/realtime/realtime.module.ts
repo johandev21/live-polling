@@ -1,6 +1,7 @@
 import {
   Inject,
   Injectable,
+  Logger,
   Module,
   OnApplicationShutdown,
 } from '@nestjs/common';
@@ -8,8 +9,10 @@ import { createAdapter } from '@socket.io/redis-adapter';
 import { AuthModule as BetterAuthModule } from '@thallesp/nestjs-better-auth';
 import Redis from 'ioredis';
 import { RateLimitModule } from '../infrastructure/rate-limit/rate-limit.module';
+import { MetricsService } from '../infrastructure/metrics/metrics.service';
 import { ParticipantTokenService } from '../participants/participant-token.service';
 import { PresenceService } from './presence.service';
+import { guardPublishRejections } from './redis-publish-guard';
 import { RealtimeService } from './realtime.service';
 import { SOCKET_ADAPTER } from './session.gateway';
 import type { SocketAdapter } from './session.gateway';
@@ -47,7 +50,8 @@ class SocketAdapterShutdown implements OnApplicationShutdown {
     ParticipantTokenService,
     {
       provide: SOCKET_ADAPTER_CLIENTS,
-      useFactory: (): SocketAdapterClients => {
+      inject: [MetricsService],
+      useFactory: (metrics: MetricsService): SocketAdapterClients => {
         const url =
           process.env.REDIS_URL ??
           (() => {
@@ -56,6 +60,12 @@ class SocketAdapterShutdown implements OnApplicationShutdown {
         const pubClient = new Redis(url, {
           retryStrategy: () => null,
         }).on('error', () => undefined);
+        guardPublishRejections(pubClient, () => {
+          metrics.countRealtimeFailure('publish');
+          new Logger('Realtime').warn(
+            'redis publish rejected during realtime broadcast',
+          );
+        });
         const subClient = pubClient.duplicate().on('error', () => undefined);
         return { pubClient, subClient };
       },

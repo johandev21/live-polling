@@ -23,6 +23,7 @@ import * as schema from '../infrastructure/database/schema';
 import { DATABASE } from '../infrastructure/database/database.constants';
 import type { Database } from '../infrastructure/database/database.types';
 import { RateLimitService } from '../infrastructure/rate-limit/rate-limit.service';
+import { MetricsService } from '../infrastructure/metrics/metrics.service';
 import { ParticipantTokenService } from '../participants/participant-token.service';
 import { PRESENCE_HEARTBEAT_EVENT, PresenceService } from './presence.service';
 
@@ -91,6 +92,7 @@ export class SessionGateway
     @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
     @Inject(DATABASE) private readonly db: Database,
     @Inject(SOCKET_ADAPTER) private readonly adapter: SocketAdapter,
+    @Inject(MetricsService) private readonly metrics: MetricsService,
   ) {
     const configured = Number(
       process.env.PRESENCE_SWEEP_INTERVAL_MS ??
@@ -140,9 +142,7 @@ export class SessionGateway
             .heartbeat(principal.sessionId, principal.participantId)
             .then(() => this.syncPresence(principal.sessionId))
             .catch(() =>
-              this.logger.warn(
-                `presence heartbeat failed for session ${principal.sessionId}`,
-              ),
+              this.recordPresenceFailure(principal.sessionId, 'heartbeat'),
             );
         });
       }
@@ -175,11 +175,7 @@ export class SessionGateway
     void this.presence
       .detach(principal.sessionId, principal.participantId)
       .then(() => this.syncPresence(principal.sessionId))
-      .catch(() =>
-        this.logger.warn(
-          `presence detach failed for session ${principal.sessionId}`,
-        ),
-      );
+      .catch(() => this.recordPresenceFailure(principal.sessionId, 'detach'));
   }
 
   async syncPresence(sessionId: string, force = false): Promise<void> {
@@ -194,6 +190,7 @@ export class SessionGateway
     try {
       this.server.to(room).emit(eventName, payload);
     } catch {
+      this.metrics.countRealtimeFailure('publish');
       this.logger.warn(`realtime publish failed for ${eventName}`);
     }
   }
@@ -337,12 +334,18 @@ export class SessionGateway
       try {
         await this.syncPresence(sessionId);
       } catch {
-        this.logger.warn(`presence sweep failed for session ${sessionId}`);
+        this.recordPresenceFailure(sessionId, 'sweep');
       }
     }
   }
 
+  private recordPresenceFailure(sessionId: string, action: string): void {
+    this.metrics.countRealtimeFailure('presence');
+    this.logger.warn(`presence ${action} failed for session ${sessionId}`);
+  }
+
   private reject(client: Socket, error: SocketAuthError): void {
+    this.metrics.countRealtimeFailure('connect');
     client.emit(
       REALTIME_EVENTS.AUTH_ERROR,
       socketAuthErrorSchema.parse({ code: error.code }),

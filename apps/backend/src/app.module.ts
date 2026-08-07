@@ -1,8 +1,11 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
+import { LoggingModule } from './infrastructure/logging/logging.module';
+import { RequestCorrelationMiddleware } from './infrastructure/logging/request-correlation.middleware';
+import { MetricsModule } from './infrastructure/metrics/metrics.module';
 import { HealthModule } from './health/health.module';
 import { MailerModule } from './infrastructure/mailer/mailer.module';
 import { AuthModule } from './auth/auth.module';
@@ -17,6 +20,8 @@ import { RealtimeModule } from './realtime/realtime.module';
     DatabaseModule,
     RedisModule,
     MailerModule,
+    LoggingModule,
+    MetricsModule,
     AuthModule,
     SessionsModule,
     PollsModule,
@@ -28,4 +33,8 @@ import { RealtimeModule } from './realtime/realtime.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(RequestCorrelationMiddleware).forRoutes('*');
+  }
+}

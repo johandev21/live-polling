@@ -33,6 +33,7 @@ import { RealtimeService } from '../realtime/realtime.service';
 import { PollsService } from '../polls/polls.service';
 import { ParticipantsService } from '../participants/participants.service';
 import { SessionAccessService } from '../sessions/session-access.service';
+import { MetricsService } from '../infrastructure/metrics/metrics.service';
 import {
   InvalidResponseError,
   canSubmit,
@@ -51,6 +52,7 @@ export class ResponsesService {
     @Inject(SessionAccessService)
     private readonly access: SessionAccessService,
     @Inject(RealtimeService) private readonly realtime: RealtimeService,
+    @Inject(MetricsService) private readonly metrics: MetricsService,
   ) {}
 
   async submit(
@@ -146,6 +148,7 @@ export class ResponsesService {
       },
     );
     if (result.changed) {
+      this.metrics.countAcceptedResponse();
       await this.publishResponseAccepted(sessionId, pollId);
     }
     return result.snapshot;
