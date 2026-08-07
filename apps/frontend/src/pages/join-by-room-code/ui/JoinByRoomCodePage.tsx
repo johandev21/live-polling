@@ -131,7 +131,7 @@ export function JoinByRoomCodePage({
 
           {status === 'ready' ? (
             <Callout icon="check" title="Session found" tone="success">
-                You are ready to choose a session-local display name before
+              You are ready to choose a session-local display name before
               joining.
               <a
                 className="mt-3 inline-flex items-center gap-2 font-semibold text-[var(--color-primary)] hover:underline"

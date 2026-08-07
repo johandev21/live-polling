@@ -146,18 +146,16 @@ function ReadinessRail({ session }: { session: SessionEditorSession }) {
   const hasName = session.name.trim().length > 0;
   const hasPolls = session.polls.length > 0;
   const isDraft = session.lifecycle === 'draft';
-  const railTitle =
-    isDraft
-      ? 'Ready to go live?'
-      : session.lifecycle === 'live'
-        ? 'Session is live'
-        : 'Session ended';
-  const railFooter =
-    isDraft
-      ? 'Participants cannot join until the session is started.'
-      : session.lifecycle === 'live'
-        ? 'Use the live control room for lifecycle actions.'
-        : 'This session is read-only history.';
+  const railTitle = isDraft
+    ? 'Ready to go live?'
+    : session.lifecycle === 'live'
+      ? 'Session is live'
+      : 'Session ended';
+  const railFooter = isDraft
+    ? 'Participants cannot join until the session is started.'
+    : session.lifecycle === 'live'
+      ? 'Use the live control room for lifecycle actions.'
+      : 'This session is read-only history.';
   const lifecycleStepLabel = isDraft
     ? 'Start the session'
     : session.lifecycle === 'live'
@@ -270,14 +268,13 @@ export function SessionEditorPage({
   const isEmpty = session.polls.length === 0;
   const isDraft = session.lifecycle === 'draft';
   const startDisabled = !isDraft || isEmpty;
-  const startReason =
-    isDraft
-      ? isEmpty
-        ? 'Add at least one poll before starting the session.'
-        : 'Participants cannot join until you start the session.'
-      : session.lifecycle === 'live'
-        ? 'This live session is read-only here. Use the live control room for lifecycle actions.'
-        : 'This ended session is read-only. Review the completed history instead.';
+  const startReason = isDraft
+    ? isEmpty
+      ? 'Add at least one poll before starting the session.'
+      : 'Participants cannot join until you start the session.'
+    : session.lifecycle === 'live'
+      ? 'This live session is read-only here. Use the live control room for lifecycle actions.'
+      : 'This ended session is read-only. Review the completed history instead.';
 
   function handleAddPoll() {
     if (!isDraft) {
@@ -399,11 +396,7 @@ export function SessionEditorPage({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               {isDraft ? (
                 <>
-                  <Button
-                    onClick={handleAddPoll}
-                    size="md"
-                    variant="secondary"
-                  >
+                  <Button onClick={handleAddPoll} size="md" variant="secondary">
                     <Plus aria-hidden="true" className="mr-2" size={16} />
                     Add poll
                   </Button>
@@ -503,7 +496,9 @@ export function SessionEditorPage({
                   {session.polls.length === 1 ? '' : 's'}
                 </h2>
                 <span className="text-xs text-[var(--color-text-tertiary)]">
-                  {isDraft ? 'Reorder before starting' : 'Read-only poll history'}
+                  {isDraft
+                    ? 'Reorder before starting'
+                    : 'Read-only poll history'}
                 </span>
               </div>
               <ol className="flex flex-col gap-3">

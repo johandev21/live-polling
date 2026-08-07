@@ -2,10 +2,7 @@ import { BarChart3 } from 'lucide-react';
 
 import { Surface, StatusBadge } from '@/shared/ui';
 
-import {
-  hostPollTypeLabel,
-  type HostResultPoll,
-} from '../model/host-results';
+import { hostPollTypeLabel, type HostResultPoll } from '../model/host-results';
 
 type EmptyResultsProps = {
   poll: HostResultPoll;

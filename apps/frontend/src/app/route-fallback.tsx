@@ -1,11 +1,10 @@
+import { useLocation, useNavigate } from '@tanstack/react-router';
 import { Brand, Button, CenteredCardLayout } from '@/shared/ui';
 
-import type { RouteFallbackProps } from './router';
+export function DefaultRouteFallback() {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
-export function DefaultRouteFallback({
-  navigate,
-  pathname,
-}: RouteFallbackProps) {
   return (
     <CenteredCardLayout maxWidth="sm">
       <div className="flex flex-col gap-6">
@@ -25,7 +24,7 @@ export function DefaultRouteFallback({
             yet.
           </p>
         </div>
-        <Button endIcon="arrowRight" onClick={() => navigate('/')}>
+        <Button endIcon="arrowRight" onClick={() => navigate({ to: '/' })}>
           Return to Pulse home
         </Button>
       </div>

@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router';
+
 import { cx } from '@/shared/lib';
 
 export type BrandSize = 'sm' | 'md' | 'lg';
@@ -74,9 +76,9 @@ export function Brand({
 
   if (href) {
     return (
-      <a aria-label={ariaLabel} className={brandClassName} href={href}>
+      <Link aria-label={ariaLabel} className={brandClassName} to={href}>
         {content}
-      </a>
+      </Link>
     );
   }
 

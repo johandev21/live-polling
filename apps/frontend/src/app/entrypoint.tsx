@@ -1,6 +1,7 @@
-import { appRouter } from './routes';
-import { RouterView } from './router-view';
+import { RouterProvider } from '@tanstack/react-router';
+
+import { router } from './router';
 
 export function AppEntrypoint() {
-  return <RouterView router={appRouter} />;
+  return <RouterProvider router={router} />;
 }
