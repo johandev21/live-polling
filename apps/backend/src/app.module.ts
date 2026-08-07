@@ -6,6 +6,7 @@ import { RedisModule } from './infrastructure/redis/redis.module';
 import { HealthModule } from './health/health.module';
 import { MailerModule } from './infrastructure/mailer/mailer.module';
 import { AuthModule } from './auth/auth.module';
+import { SessionsModule } from './sessions/sessions.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AuthModule } from './auth/auth.module';
     RedisModule,
     MailerModule,
     AuthModule,
+    SessionsModule,
     HealthModule,
   ],
   controllers: [AppController],

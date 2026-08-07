@@ -1,4 +1,15 @@
-import { boolean, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  integer,
+  index,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -66,12 +77,52 @@ export const hosts = pgTable('hosts', {
     .notNull(),
 });
 
-export const sessions = pgTable('sessions', {
+export const sessionStatus = pgEnum('session_status', [
+  'draft',
+  'live',
+  'ended',
+]);
+
+export const sessions = pgTable(
+  'sessions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    hostId: uuid('host_id')
+      .notNull()
+      .references(() => hosts.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    roomCode: text('room_code').notNull(),
+    status: sessionStatus('status').notNull().default('draft'),
+    revision: integer('revision').notNull().default(1),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex('sessions_room_code_unique_ci').on(
+      sql`lower(${table.roomCode})`,
+    ),
+    index('sessions_host_id_idx').on(table.hostId),
+  ],
+);
+
+export const roomCodes = pgTable('room_codes', {
+  code: text('code').primaryKey(),
+  releasedAt: timestamp('released_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const polls = pgTable('polls', {
   id: uuid('id').defaultRandom().primaryKey(),
-  hostId: uuid('host_id')
+  sessionId: uuid('session_id')
     .notNull()
-    .references(() => hosts.id),
-  name: text('name').notNull(),
+    .references(() => sessions.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),

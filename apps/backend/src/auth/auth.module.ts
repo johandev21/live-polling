@@ -9,7 +9,7 @@ import { hosts } from '../infrastructure/database/schema';
 import { MAILER, Mailer } from '../infrastructure/mailer/mailer.constants';
 import { REDIS_CLIENT } from '../infrastructure/redis/redis.constants';
 import { AuthController } from './auth.controller';
-import { VerifiedHostGuard } from './auth.guards';
+import { HostSessionGuard, VerifiedHostGuard } from './auth.guards';
 
 @Module({
   imports: [
@@ -103,7 +103,8 @@ import { VerifiedHostGuard } from './auth.guards';
     }),
   ],
   controllers: [AuthController],
-  providers: [VerifiedHostGuard],
+  providers: [VerifiedHostGuard, HostSessionGuard],
+  exports: [VerifiedHostGuard, HostSessionGuard],
 })
 export class AuthModule {}
 
