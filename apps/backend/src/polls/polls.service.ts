@@ -306,10 +306,14 @@ export class PollsService {
       .values(options.map((text, position) => ({ pollId, text, position })));
   }
 
-  private async listSnapshots(
+  async pollGroups(sessionId: string): Promise<PollGroup[]> {
+    return this.groupedPollRows(this.db, sessionId);
+  }
+
+  private async groupedPollRows(
     tx: DbHandle,
     sessionId: string,
-  ): Promise<PollSnapshot[]> {
+  ): Promise<PollGroup[]> {
     const polls = await tx
       .select()
       .from(schema.polls)
@@ -326,15 +330,24 @@ export class PollsService {
         ),
       )
       .orderBy(asc(schema.pollOptions.position));
-    const optionsByPoll = new Map<string, typeof options>();
+    const optionsByPoll = new Map<string, PollOptionRow[]>();
     for (const option of options) {
       const group = optionsByPoll.get(option.pollId) ?? [];
       group.push(option);
       optionsByPoll.set(option.pollId, group);
     }
-    return polls.map((poll) =>
-      this.toSnapshot(poll, optionsByPoll.get(poll.id) ?? []),
-    );
+    return polls.map((poll) => ({
+      poll,
+      options: optionsByPoll.get(poll.id) ?? [],
+    }));
+  }
+
+  private async listSnapshots(
+    tx: DbHandle,
+    sessionId: string,
+  ): Promise<PollSnapshot[]> {
+    const groups = await this.groupedPollRows(tx, sessionId);
+    return groups.map(({ poll, options }) => this.toSnapshot(poll, options));
   }
 
   private async snapshot(
@@ -410,3 +423,8 @@ type UpdatePollInput = {
 
 type PollRow = typeof schema.polls.$inferSelect;
 type PollOptionRow = typeof schema.pollOptions.$inferSelect;
+
+export type PollGroup = {
+  poll: PollRow;
+  options: PollOptionRow[];
+};

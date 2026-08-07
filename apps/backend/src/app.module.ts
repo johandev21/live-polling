@@ -8,6 +8,7 @@ import { MailerModule } from './infrastructure/mailer/mailer.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { PollsModule } from './polls/polls.module';
+import { ParticipantsModule } from './participants/participants.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PollsModule } from './polls/polls.module';
     AuthModule,
     SessionsModule,
     PollsModule,
+    ParticipantsModule,
     HealthModule,
   ],
   controllers: [AppController],

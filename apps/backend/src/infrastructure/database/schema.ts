@@ -162,3 +162,21 @@ export const pollOptions = pgTable(
   },
   (table) => [index('poll_options_poll_id_idx').on(table.pollId)],
 );
+
+export const participants = pgTable(
+  'participants',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => sessions.id, { onDelete: 'cascade' }),
+    displayName: text('display_name').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index('participants_session_id_idx').on(table.sessionId)],
+);
