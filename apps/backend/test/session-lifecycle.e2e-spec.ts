@@ -138,8 +138,7 @@ describe('Host session lifecycle (e2e)', () => {
   async function seedPoll(sessionId: string) {
     await db
       .insert(schema.polls)
-      .values({ sessionId })
-      .returning({ id: schema.polls.id });
+      .values({ sessionId, text: 'Seeded poll', type: 'single_choice' });
   }
 
   it('creates a named draft session with a room code and snapshot revision', async () => {

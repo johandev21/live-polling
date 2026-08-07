@@ -24,3 +24,15 @@ export function transitionSessionStatus(
 export function canUpdateSessionName(status: SessionStatus): boolean {
   return status === 'draft';
 }
+
+export function isDraft(status: SessionStatus): boolean {
+  return status === 'draft';
+}
+
+export function isLive(status: SessionStatus): boolean {
+  return status === 'live';
+}
+
+export function isEnded(status: SessionStatus): boolean {
+  return status === 'ended';
+}

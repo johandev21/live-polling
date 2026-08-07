@@ -7,6 +7,7 @@ import { HealthModule } from './health/health.module';
 import { MailerModule } from './infrastructure/mailer/mailer.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionsModule } from './sessions/sessions.module';
+import { PollsModule } from './polls/polls.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { SessionsModule } from './sessions/sessions.module';
     MailerModule,
     AuthModule,
     SessionsModule,
+    PollsModule,
     HealthModule,
   ],
   controllers: [AppController],

@@ -1,17 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomInt } from 'node:crypto';
 import { and, eq, gt } from 'drizzle-orm';
-import type { ExtractTablesWithRelations } from 'drizzle-orm';
-import type { NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
-import type { PgDatabase } from 'drizzle-orm/pg-core';
 import { DATABASE } from '../infrastructure/database/database.constants';
+import type {
+  Database,
+  DbHandle,
+} from '../infrastructure/database/database.types';
 import * as schema from '../infrastructure/database/schema';
-
-export type SessionDb = PgDatabase<
-  NodePgQueryResultHKT,
-  typeof schema,
-  ExtractTablesWithRelations<typeof schema>
->;
 
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const ROOM_CODE_LENGTH = 6;
@@ -20,7 +15,7 @@ export const MAX_ROOM_CODE_ATTEMPTS = 30;
 
 @Injectable()
 export class RoomCodeService {
-  constructor(@Inject(DATABASE) private readonly db: SessionDb) {}
+  constructor(@Inject(DATABASE) private readonly db: Database) {}
 
   generate(): string {
     let code = '';
@@ -41,7 +36,7 @@ export class RoomCodeService {
     return tombstone !== undefined;
   }
 
-  async markReleased(code: string, db: SessionDb) {
+  async markReleased(code: string, db: DbHandle) {
     await db
       .insert(schema.roomCodes)
       .values({ code })

@@ -3,12 +3,14 @@ import {
   ConflictException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { and, desc, eq } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { DATABASE } from '../infrastructure/database/database.constants';
+import type {
+  Database,
+  DbHandle,
+} from '../infrastructure/database/database.types';
 import * as schema from '../infrastructure/database/schema';
 import { sessionSnapshotSchema } from '../contracts/session.contract';
 import type { SessionSnapshot } from '../contracts/session.contract';
@@ -20,17 +22,19 @@ import {
   transitionSessionStatus,
 } from './session.domain';
 import { MAX_ROOM_CODE_ATTEMPTS, RoomCodeService } from './room-code.service';
-import type { SessionDb } from './room-code.service';
+import type { SessionRow } from './session-access.service';
+import { SessionAccessService } from './session-access.service';
 
 @Injectable()
 export class SessionsService {
   constructor(
-    @Inject(DATABASE) private readonly db: NodePgDatabase<typeof schema>,
+    @Inject(DATABASE) private readonly db: Database,
     @Inject(RoomCodeService) private readonly roomCodes: RoomCodeService,
+    @Inject(SessionAccessService) private readonly access: SessionAccessService,
   ) {}
 
   async create(userId: string, name: string): Promise<SessionSnapshot> {
-    const hostId = await this.requireHostId(userId);
+    const hostId = await this.access.requireHostId(userId);
     for (let attempt = 0; attempt < MAX_ROOM_CODE_ATTEMPTS; attempt += 1) {
       const roomCode = this.roomCodes.generate();
       if (await this.roomCodes.recentlyReleased(roomCode)) continue;
@@ -52,7 +56,7 @@ export class SessionsService {
   }
 
   async list(userId: string): Promise<SessionSnapshot[]> {
-    const hostId = await this.requireHostId(userId);
+    const hostId = await this.access.requireHostId(userId);
     const rows = await this.db
       .select()
       .from(schema.sessions)
@@ -62,10 +66,9 @@ export class SessionsService {
   }
 
   async get(userId: string, sessionId: string): Promise<SessionSnapshot> {
-    const hostId = await this.requireHostId(userId);
-    const row = await this.findOwned(sessionId, hostId);
-    if (!row) throw this.notFound();
-    return this.toSnapshot(row);
+    return this.toSnapshot(
+      await this.access.getOwnedSession(userId, sessionId),
+    );
   }
 
   async updateName(
@@ -73,32 +76,47 @@ export class SessionsService {
     sessionId: string,
     name: string,
   ): Promise<SessionSnapshot> {
-    return this.mutateOwned(userId, sessionId, async (row, tx) => {
-      if (!canUpdateSessionName(row.status)) throw this.invalidTransition();
-      return this.commitMutation(tx, row, { name });
-    });
+    return this.access.withOwnedSessionLock(
+      userId,
+      sessionId,
+      async (row, tx) => {
+        if (!canUpdateSessionName(row.status)) throw this.invalidTransition();
+        return this.commitMutation(tx, row, { name });
+      },
+    );
   }
 
   async start(userId: string, sessionId: string): Promise<SessionSnapshot> {
-    return this.mutateOwned(userId, sessionId, async (row, tx) => {
-      const status = this.transition(row.status, 'live');
-      const [poll] = await tx
-        .select({ id: schema.polls.id })
-        .from(schema.polls)
-        .where(eq(schema.polls.sessionId, sessionId))
-        .limit(1);
-      if (!poll) {
-        throw new ConflictException({ code: ERROR_CODES.NO_POLLS });
-      }
-      return this.commitMutation(tx, row, { status, startedAt: new Date() });
-    });
+    return this.access.withOwnedSessionLock(
+      userId,
+      sessionId,
+      async (row, tx) => {
+        const status = this.transition(row.status, 'live');
+        const [poll] = await tx
+          .select({ id: schema.polls.id })
+          .from(schema.polls)
+          .where(eq(schema.polls.sessionId, sessionId))
+          .limit(1);
+        if (!poll) {
+          throw new ConflictException({ code: ERROR_CODES.NO_POLLS });
+        }
+        return this.commitMutation(tx, row, {
+          status,
+          startedAt: new Date(),
+        });
+      },
+    );
   }
 
   async end(userId: string, sessionId: string): Promise<SessionSnapshot> {
-    return this.mutateOwned(userId, sessionId, async (row, tx) => {
-      const status = this.transition(row.status, 'ended');
-      return this.commitMutation(tx, row, { status, endedAt: new Date() });
-    });
+    return this.access.withOwnedSessionLock(
+      userId,
+      sessionId,
+      async (row, tx) => {
+        const status = this.transition(row.status, 'ended');
+        return this.commitMutation(tx, row, { status, endedAt: new Date() });
+      },
+    );
   }
 
   async delete(userId: string, sessionId: string, confirm: boolean) {
@@ -107,23 +125,25 @@ export class SessionsService {
         code: ERROR_CODES.CONFIRMATION_REQUIRED,
       });
     }
-    await this.mutateOwned(userId, sessionId, async (row, tx) => {
-      await tx
-        .delete(schema.sessions)
-        .where(
-          and(
-            eq(schema.sessions.id, sessionId),
-            eq(schema.sessions.hostId, row.hostId),
-          ),
-        );
-      await this.roomCodes.markReleased(row.roomCode, tx);
-    });
+    await this.access.withOwnedSessionLock(
+      userId,
+      sessionId,
+      async (row, tx) => {
+        await tx
+          .delete(schema.sessions)
+          .where(
+            and(
+              eq(schema.sessions.id, sessionId),
+              eq(schema.sessions.hostId, row.hostId),
+            ),
+          );
+        await this.roomCodes.markReleased(row.roomCode, tx);
+      },
+    );
   }
 
   async invitation(userId: string, sessionId: string) {
-    const hostId = await this.requireHostId(userId);
-    const row = await this.findOwned(sessionId, hostId);
-    if (!row) throw this.notFound();
+    const row = await this.access.getOwnedSession(userId, sessionId);
     const origin = (process.env.FRONTEND_ORIGINS ?? 'http://localhost:5173')
       .split(',')[0]
       ?.trim();
@@ -133,59 +153,8 @@ export class SessionsService {
     };
   }
 
-  private async mutateOwned<T>(
-    userId: string,
-    sessionId: string,
-    mutate: (row: SessionRow, tx: SessionDb) => Promise<T>,
-  ): Promise<T> {
-    const hostId = await this.requireHostId(userId);
-    return this.db.transaction(async (tx) => {
-      const [row] = await tx
-        .select()
-        .from(schema.sessions)
-        .where(
-          and(
-            eq(schema.sessions.id, sessionId),
-            eq(schema.sessions.hostId, hostId),
-          ),
-        )
-        .for('update');
-      if (!row) throw this.notFound();
-      return mutate(row, tx);
-    });
-  }
-
-  private async findOwned(
-    sessionId: string,
-    hostId: string,
-  ): Promise<SessionRow | undefined> {
-    const [row] = await this.db
-      .select()
-      .from(schema.sessions)
-      .where(
-        and(
-          eq(schema.sessions.id, sessionId),
-          eq(schema.sessions.hostId, hostId),
-        ),
-      )
-      .limit(1);
-    return row;
-  }
-
-  private async requireHostId(userId: string): Promise<string> {
-    const [host] = await this.db
-      .select({ id: schema.hosts.id })
-      .from(schema.hosts)
-      .where(eq(schema.hosts.userId, userId))
-      .limit(1);
-    if (!host) {
-      throw new InternalServerErrorException({ code: ERROR_CODES.INTERNAL });
-    }
-    return host.id;
-  }
-
   private async commitMutation(
-    tx: SessionDb,
+    tx: DbHandle,
     row: SessionRow,
     changes: {
       name?: string;
@@ -196,7 +165,11 @@ export class SessionsService {
   ): Promise<SessionSnapshot> {
     const [updated] = await tx
       .update(schema.sessions)
-      .set({ ...changes, updatedAt: new Date(), revision: row.revision + 1 })
+      .set({
+        ...changes,
+        updatedAt: new Date(),
+        revision: sql`${schema.sessions.revision} + 1`,
+      })
       .where(
         and(
           eq(schema.sessions.id, row.id),
@@ -241,8 +214,6 @@ export class SessionsService {
     });
   }
 }
-
-type SessionRow = typeof schema.sessions.$inferSelect;
 
 function isUniqueViolation(error: unknown): boolean {
   if (typeof error !== 'object' || error === null) return false;

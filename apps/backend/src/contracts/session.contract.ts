@@ -5,7 +5,9 @@ export const sessionStatusSchema = z.enum(SESSION_STATUSES);
 
 export const sessionNameSchema = z.string().trim().min(1).max(120);
 
-export const sessionIdSchema = z.string().uuid();
+export const uuidSchema = z.string().uuid();
+
+export const sessionIdSchema = uuidSchema;
 
 export const createSessionRequestSchema = z.object({
   name: sessionNameSchema,

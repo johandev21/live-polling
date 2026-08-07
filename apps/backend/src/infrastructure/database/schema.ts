@@ -10,6 +10,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import { POLL_TYPES } from '../../polls/poll.domain';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -118,12 +119,46 @@ export const roomCodes = pgTable('room_codes', {
     .notNull(),
 });
 
-export const polls = pgTable('polls', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  sessionId: uuid('session_id')
-    .notNull()
-    .references(() => sessions.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
+export const pollType = pgEnum('poll_type', POLL_TYPES);
+
+export const polls = pgTable(
+  'polls',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => sessions.id, { onDelete: 'cascade' }),
+    text: text('text').notNull(),
+    type: pollType('type').notNull(),
+    maxSelections: integer('max_selections'),
+    position: integer('position').notNull().default(0),
+    isOpen: boolean('is_open').notNull().default(false),
+    resultsRevealed: boolean('results_revealed').notNull().default(false),
+    hasResponses: boolean('has_responses').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('polls_one_open_per_session')
+      .on(table.sessionId)
+      .where(sql`${table.isOpen}`),
+    index('polls_session_id_idx').on(table.sessionId),
+  ],
+);
+
+export const pollOptions = pgTable(
+  'poll_options',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    pollId: uuid('poll_id')
+      .notNull()
+      .references(() => polls.id, { onDelete: 'cascade' }),
+    text: text('text').notNull(),
+    position: integer('position').notNull().default(0),
+  },
+  (table) => [index('poll_options_poll_id_idx').on(table.pollId)],
+);
