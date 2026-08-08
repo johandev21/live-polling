@@ -47,6 +47,14 @@ import {
   useParticipantSessionSnapshot,
   useSubmitResponse,
 } from '@/shared/hooks/use-participant-session';
+import {
+  useClosePoll,
+  useEndSession,
+  useHideResults,
+  useOpenPoll,
+  useRealtimeSocket,
+  useRevealResults,
+} from '@/shared/hooks/use-realtime-session';
 import { getParticipantToken } from '@/shared/lib/participant-storage';
 import type { PollSnapshot, SessionSnapshot } from '@/shared/lib/contracts';
 import { DefaultRouteFallback } from './route-fallback';
@@ -384,12 +392,47 @@ const lockedPollRoute = createRoute({
 function LiveControlRoomRouteComponent() {
   const navigate = useNavigate();
   const { sessionSlug } = useParams({ from: liveControlRoomRoute.id });
-  const slug = sessionSlug || 'team-offsite';
+  const sessionId = sessionSlug || '';
+
+  useRealtimeSocket({
+    enabled: Boolean(sessionId),
+    role: 'host',
+    sessionId,
+  });
+
+  const openPoll = useOpenPoll();
+  const closePoll = useClosePoll();
+  const revealResults = useRevealResults();
+  const hideResults = useHideResults();
+  const endSession = useEndSession();
 
   return (
     <LiveControlRoomPage
+      errorMessage={
+        openPoll.error?.message ||
+        closePoll.error?.message ||
+        revealResults.error?.message ||
+        hideResults.error?.message ||
+        endSession.error?.message ||
+        null
+      }
+      onClosePollSubmit={async (pollId) => {
+        await closePoll.mutateAsync({ pollId, sessionId });
+      }}
+      onEndSessionSubmit={async () => {
+        await endSession.mutateAsync({ sessionId });
+      }}
+      onHideResultsSubmit={async (pollId) => {
+        await hideResults.mutateAsync({ pollId, sessionId });
+      }}
+      onOpenPollSubmit={async (pollId) => {
+        await openPoll.mutateAsync({ pollId, sessionId });
+      }}
+      onRevealResultsSubmit={async (pollId) => {
+        await revealResults.mutateAsync({ pollId, sessionId });
+      }}
       onSessionEnded={() => {
-        void navigate({ to: sessionHistoryPath(slug) });
+        void navigate({ to: sessionHistoryPath(sessionId || 'team-offsite') });
       }}
     />
   );
@@ -642,6 +685,12 @@ function ParticipantSessionRouteComponent() {
   const { sessionSlug } = useParams({ from: participantSessionRoute.id });
   const { participantName } = useSearch({ from: participantSessionRoute.id });
   const token = getParticipantToken(sessionSlug || '');
+  useRealtimeSocket({
+    enabled: Boolean(sessionSlug && token),
+    role: 'participant',
+    sessionId: sessionSlug || '',
+    token,
+  });
 
   const { data: rawSnapshot, isLoading } = useParticipantSessionSnapshot(token);
   const submitResponse = useSubmitResponse();

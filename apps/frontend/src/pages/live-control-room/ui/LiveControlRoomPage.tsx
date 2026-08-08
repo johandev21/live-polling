@@ -16,6 +16,7 @@ import {
 import {
   Brand,
   Button,
+  Callout,
   ConnectionStatus,
   ResultBar,
   StatusBadge,
@@ -36,6 +37,13 @@ import { ParticipantPresencePanel } from './ParticipantPresencePanel';
 import { ShareSessionPanel } from './ShareSessionPanel';
 
 export type LiveControlRoomPageProps = {
+  errorMessage?: string | null;
+  isLoading?: boolean;
+  onClosePollSubmit?: (pollId: string) => Promise<void> | void;
+  onEndSessionSubmit?: () => Promise<void> | void;
+  onHideResultsSubmit?: (pollId: string) => Promise<void> | void;
+  onOpenPollSubmit?: (pollId: string) => Promise<void> | void;
+  onRevealResultsSubmit?: (pollId: string) => Promise<void> | void;
   onSessionEnded?: () => void;
 };
 
@@ -148,6 +156,13 @@ function EndedSessionState({ sessionName }: { sessionName: string }) {
 }
 
 export function LiveControlRoomPage({
+  errorMessage,
+  isLoading = false,
+  onClosePollSubmit,
+  onEndSessionSubmit,
+  onHideResultsSubmit,
+  onOpenPollSubmit,
+  onRevealResultsSubmit,
   onSessionEnded,
 }: LiveControlRoomPageProps = {}) {
   const [activePollId, setActivePollId] = useState(
@@ -162,8 +177,21 @@ export function LiveControlRoomPage({
   );
   const [sessionEnded, setSessionEnded] = useState(false);
   const [showEndDialog, setShowEndDialog] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const activePoll = polls.find((poll) => poll.id === activePollId) ?? polls[0];
+
+  if (isLoading) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[var(--color-bg-canvas)] px-4">
+        <Surface elevation="card" padding="lg">
+          <p className="text-sm font-semibold text-[var(--color-text-secondary)]">
+            Loading control room...
+          </p>
+        </Surface>
+      </main>
+    );
+  }
 
   if (!activePoll) {
     return (
@@ -183,12 +211,59 @@ export function LiveControlRoomPage({
     );
   }
 
-  function updateActivePoll(
-    patch: Partial<Pick<LivePoll, 'lifecycle' | 'resultVisibility'>>,
-  ) {
+  async function handleToggleLifecycle() {
+    setActionError(null);
+    const nextLifecycle = activePoll.lifecycle === 'open' ? 'closed' : 'open';
+
+    if (nextLifecycle === 'open' && onOpenPollSubmit) {
+      try {
+        await onOpenPollSubmit(activePoll.id);
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : 'Failed to open poll.');
+        return;
+      }
+    } else if (nextLifecycle === 'closed' && onClosePollSubmit) {
+      try {
+        await onClosePollSubmit(activePoll.id);
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : 'Failed to close poll.');
+        return;
+      }
+    }
+
     setPolls((currentPolls) =>
       currentPolls.map((poll) =>
-        poll.id === activePoll.id ? { ...poll, ...patch } : poll,
+        poll.id === activePoll.id ? { ...poll, lifecycle: nextLifecycle } : poll,
+      ),
+    );
+  }
+
+  async function handleToggleVisibility() {
+    setActionError(null);
+    const nextVisibility =
+      activePoll.resultVisibility === 'hidden' ? 'revealed' : 'hidden';
+
+    if (nextVisibility === 'revealed' && onRevealResultsSubmit) {
+      try {
+        await onRevealResultsSubmit(activePoll.id);
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : 'Failed to reveal results.');
+        return;
+      }
+    } else if (nextVisibility === 'hidden' && onHideResultsSubmit) {
+      try {
+        await onHideResultsSubmit(activePoll.id);
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : 'Failed to hide results.');
+        return;
+      }
+    }
+
+    setPolls((currentPolls) =>
+      currentPolls.map((poll) =>
+        poll.id === activePoll.id
+          ? { ...poll, resultVisibility: nextVisibility }
+          : poll,
       ),
     );
   }
@@ -203,8 +278,18 @@ export function LiveControlRoomPage({
     }
   }
 
-  function handleEndSession() {
+  async function handleEndSession() {
     setShowEndDialog(false);
+
+    if (onEndSessionSubmit) {
+      try {
+        await onEndSessionSubmit();
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : 'Failed to end session.');
+        return;
+      }
+    }
+
     setSessionEnded(true);
     onSessionEnded?.();
   }
@@ -270,6 +355,14 @@ export function LiveControlRoomPage({
           </div>
         </header>
 
+        {errorMessage || actionError ? (
+          <div className="mt-4">
+            <Callout icon="alertCircle" title="Action failed" tone="error">
+              {errorMessage || actionError}
+            </Callout>
+          </div>
+        ) : null}
+
         <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
           <section
             className="min-w-0 space-y-4"
@@ -327,15 +420,7 @@ export function LiveControlRoomPage({
               padding="sm"
             >
               <div className="flex flex-col gap-2 sm:flex-row">
-                <Button
-                  onClick={() =>
-                    updateActivePoll({
-                      lifecycle:
-                        activePoll.lifecycle === 'open' ? 'closed' : 'open',
-                    })
-                  }
-                  variant="secondary"
-                >
+                <Button onClick={handleToggleLifecycle} variant="secondary">
                   <span className="inline-flex items-center gap-2">
                     {activePoll.lifecycle === 'open' ? (
                       <Pause aria-hidden="true" size={16} strokeWidth={1.8} />
@@ -347,17 +432,7 @@ export function LiveControlRoomPage({
                       : 'Open poll'}
                   </span>
                 </Button>
-                <Button
-                  onClick={() =>
-                    updateActivePoll({
-                      resultVisibility:
-                        activePoll.resultVisibility === 'hidden'
-                          ? 'revealed'
-                          : 'hidden',
-                    })
-                  }
-                  variant="primary"
-                >
+                <Button onClick={handleToggleVisibility} variant="primary">
                   <span className="inline-flex items-center gap-2">
                     {activePoll.resultVisibility === 'hidden' ? (
                       <Eye aria-hidden="true" size={16} strokeWidth={1.8} />
