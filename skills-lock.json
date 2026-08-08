@@ -121,6 +121,12 @@
       "skillPath": "skills/engineering/prototype/SKILL.md",
       "computedHash": "08c1a6d45a79180f795368e0bbf9820df9017d9ad2f5e4f858315d57ad357606"
     },
+    "readable-react": {
+      "source": "johandev21/skills",
+      "sourceType": "github",
+      "skillPath": "skills/readable-react/SKILL.md",
+      "computedHash": "f7fe827d2e9cc6141a7725372f0b1f488c97201803904cf5456b6c31ad44f6b3"
+    },
     "research": {
       "source": "mattpocock/skills",
       "sourceType": "github",
