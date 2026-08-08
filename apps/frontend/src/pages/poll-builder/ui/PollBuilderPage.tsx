@@ -14,9 +14,12 @@ import { OpenEndedPollFields } from './OpenEndedPollFields';
 import { PollTypeTabs } from './PollTypeTabs';
 
 export type PollBuilderPageProps = Readonly<{
+  errorMessage?: string | null;
   initialDraft?: PollDraft;
+  isSubmitting?: boolean;
   onCancel?: () => void;
   onSave?: (draft: PollDraft) => void;
+  onSavePollSubmit?: (draft: PollDraft) => Promise<void> | void;
 }>;
 
 const typeLabels: Record<PollType, string> = {
@@ -163,9 +166,12 @@ function normalizedOptionCounts(options: readonly string[]) {
 }
 
 export function PollBuilderPage({
+  errorMessage,
   initialDraft = fixturePollDraft,
+  isSubmitting = false,
   onCancel,
   onSave,
+  onSavePollSubmit,
 }: PollBuilderPageProps) {
   const [draft, setDraft] = useState<PollDraft>(() => ({
     ...initialDraft,
@@ -285,7 +291,7 @@ export function PollBuilderPage({
     setActionMessage(null);
   }
 
-  function handleSave(event: SubmitEvent<HTMLElement>) {
+  async function handleSave(event: SubmitEvent<HTMLElement>) {
     event.preventDefault();
     setHasSubmitted(true);
     if (hasErrors) {
@@ -293,6 +299,15 @@ export function PollBuilderPage({
         'Review the highlighted fields before saving this poll.',
       );
       return;
+    }
+
+    if (onSavePollSubmit) {
+      try {
+        await onSavePollSubmit(draft);
+      } catch (err) {
+        setActionMessage(err instanceof Error ? err.message : 'Failed to save poll.');
+        return;
+      }
     }
 
     setActionMessage('Poll saved to the session draft.');
@@ -314,6 +329,12 @@ export function PollBuilderPage({
           </div>
           <PollTypeTabs onChange={handleTypeChange} value={draft.type} />
         </section>
+
+        {errorMessage ? (
+          <Callout icon="alertCircle" title="Error saving poll" tone="error">
+            {errorMessage}
+          </Callout>
+        ) : null}
 
         <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,720px)_minmax(320px,520px)]">
           <Surface
@@ -377,9 +398,9 @@ export function PollBuilderPage({
               <Button onClick={onCancel} type="button" variant="quiet">
                 Cancel
               </Button>
-              <Button type="submit">
+              <Button disabled={isSubmitting} type="submit">
                 <Check aria-hidden="true" className="mr-2" size={16} />
-                Save poll
+                {isSubmitting ? 'Saving poll...' : 'Save poll'}
               </Button>
             </div>
             {actionMessage ? (

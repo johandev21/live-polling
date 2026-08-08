@@ -45,6 +45,33 @@ export const sessionListResponseSchema = z.object({
 
 export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>;
 
+export const pollOptionSchema = z.object({
+  id: z.string().uuid(),
+  text: z.string(),
+  position: z.number().int(),
+});
+
+export const pollSnapshotSchema = z.object({
+  id: z.string().uuid(),
+  sessionId: z.string().uuid(),
+  text: z.string(),
+  type: z.enum(['single_choice', 'multiple_choice', 'open_ended']),
+  position: z.number().int(),
+  maxSelections: z.number().int().nullable(),
+  isOpen: z.boolean(),
+  resultsRevealed: z.boolean(),
+  hasResponses: z.boolean(),
+  options: z.array(pollOptionSchema),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+export const pollListResponseSchema = z.object({
+  polls: z.array(pollSnapshotSchema),
+});
+
+export type PollSnapshot = z.infer<typeof pollSnapshotSchema>;
+
 export const authUserSchema = z.object({
   id: z.string(),
   email: z.string().email(),

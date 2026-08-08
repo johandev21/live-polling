@@ -27,12 +27,21 @@ import { ParticipantSessionPage } from '@/pages/participant-session';
 import { PollBuilderPage } from '@/pages/poll-builder';
 import { SessionEditorPage } from '@/pages/session-editor';
 
+import { fixtureSessionEditorSession } from '@/pages/session-editor/model/session-editor';
+import {
+  useCreatePoll,
+  useDeletePoll,
+  useReorderPolls,
+  useSessionDetails,
+  useSessionPolls,
+  useStartSession,
+} from '@/shared/hooks/use-host-polls';
 import {
   useCreateSession,
   useDeleteSession,
   useHostSessions,
 } from '@/shared/hooks/use-host-sessions';
-import type { SessionSnapshot } from '@/shared/lib/contracts';
+import type { PollSnapshot, SessionSnapshot } from '@/shared/lib/contracts';
 import { DefaultRouteFallback } from './route-fallback';
 
 function dashboardSessionSlug(id: string): string {
@@ -212,24 +221,89 @@ const createSessionRoute = createRoute({
   path: '/host/sessions/new',
 });
 
+function mapPollSnapshotToEditorPoll(poll: PollSnapshot) {
+  const typeMap: Record<string, 'multiple-choice' | 'open-ended' | 'single-choice'> = {
+    multiple_choice: 'multiple-choice',
+    open_ended: 'open-ended',
+    single_choice: 'single-choice',
+  };
+  return {
+    id: poll.id,
+    options: poll.options ? poll.options.map((opt) => opt.text) : [],
+    responses: poll.hasResponses ? 1 : 0,
+    status: (poll.isOpen ? 'open' : 'configured') as 'closed' | 'configured' | 'open',
+    text: poll.text,
+    type: typeMap[poll.type] || 'single-choice',
+  };
+}
+
 function SessionEditorRouteComponent() {
   const navigate = useNavigate();
   const { sessionSlug } = useParams({ from: sessionEditorRoute.id });
-  const slug = sessionSlug || 'team-offsite';
+  const sessionId = sessionSlug || '';
+
+  const { data: sessionSnapshot, isLoading: isSessionLoading } = useSessionDetails(sessionId);
+  const { data: pollSnapshots, isLoading: isPollsLoading } = useSessionPolls(sessionId);
+
+  const startSession = useStartSession();
+  const deletePoll = useDeletePoll();
+  const reorderPolls = useReorderPolls();
+
+  const sessionData = sessionSnapshot
+    ? {
+        id: sessionSnapshot.id,
+        lifecycle: sessionSnapshot.status,
+        name: sessionSnapshot.name,
+        polls: pollSnapshots ? pollSnapshots.map(mapPollSnapshotToEditorPoll) : [],
+      }
+    : fixtureSessionEditorSession;
+
+  const errorMessage =
+    startSession.error?.message ||
+    deletePoll.error?.message ||
+    reorderPolls.error?.message ||
+    null;
 
   return (
     <SessionEditorPage
+      errorMessage={errorMessage}
+      initialSession={sessionData}
+      isLoading={isSessionLoading || isPollsLoading}
       onAddPoll={() => {
-        void navigate({ to: sessionPollBuilderPath(slug) });
+        void navigate({ to: sessionPollBuilderPath(sessionId) });
+      }}
+      onDeletePollSubmit={async (pollId) => {
+        await deletePoll.mutateAsync({ pollId, sessionId });
       }}
       onEditPoll={() => {
-        void navigate({ to: sessionPollBuilderPath(slug) });
+        void navigate({ to: sessionPollBuilderPath(sessionId) });
+      }}
+      onMovePollSubmit={async (pollId, direction) => {
+        if (!pollSnapshots) return;
+        const currentIndex = pollSnapshots.findIndex((p) => p.id === pollId);
+        const targetIndex = currentIndex + direction;
+        if (currentIndex < 0 || targetIndex < 0 || targetIndex >= pollSnapshots.length) {
+          return;
+        }
+        const nextPolls = [...pollSnapshots];
+        const currentItem = nextPolls[currentIndex];
+        const targetItem = nextPolls[targetIndex];
+        if (!currentItem || !targetItem) return;
+        nextPolls[currentIndex] = targetItem;
+        nextPolls[targetIndex] = currentItem;
+        await reorderPolls.mutateAsync({
+          pollIds: nextPolls.map((p) => p.id),
+          sessionId,
+        });
       }}
       onOpenLockedPoll={() => {
-        void navigate({ to: sessionLockedPollPath(slug) });
+        void navigate({ to: sessionLockedPollPath(sessionId) });
       }}
       onStartSession={() => {
-        void navigate({ to: sessionLivePath(slug) });
+        void navigate({ to: sessionLivePath(sessionId) });
+      }}
+      onStartSessionSubmit={async () => {
+        await startSession.mutateAsync({ sessionId });
       }}
     />
   );
@@ -244,15 +318,31 @@ const sessionEditorRoute = createRoute({
 function PollBuilderRouteComponent() {
   const navigate = useNavigate();
   const { sessionSlug } = useParams({ from: pollBuilderRoute.id });
-  const slug = sessionSlug || 'team-offsite';
+  const sessionId = sessionSlug || '';
+
+  const createPoll = useCreatePoll();
 
   return (
     <PollBuilderPage
+      errorMessage={createPoll.error?.message || null}
+      isSubmitting={createPoll.isPending}
       onCancel={() => {
-        void navigate({ to: sessionEditorPath(slug) });
+        void navigate({ to: sessionEditorPath(sessionId) });
       }}
-      onSave={() => {
-        void navigate({ to: sessionEditorPath(slug) });
+      onSavePollSubmit={async (draft) => {
+        const typeMap: Record<string, 'single_choice' | 'multiple_choice' | 'open_ended'> = {
+          'multiple-choice': 'multiple_choice',
+          'open-ended': 'open_ended',
+          'single-choice': 'single_choice',
+        };
+        await createPoll.mutateAsync({
+          maxSelections: draft.maximumSelections ?? null,
+          options: draft.type === 'open-ended' ? undefined : draft.options,
+          sessionId,
+          text: draft.text,
+          type: typeMap[draft.type] || 'single_choice',
+        });
+        void navigate({ to: sessionEditorPath(sessionId) });
       }}
     />
   );
