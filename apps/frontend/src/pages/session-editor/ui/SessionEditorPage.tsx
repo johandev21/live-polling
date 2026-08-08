@@ -17,7 +17,11 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-import { Brand, Button, Callout, StatusBadge, Surface } from '@/shared/ui';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Brand } from '@/shared/ui/brand';
 
 import {
   type EditorPoll,
@@ -106,13 +110,13 @@ function LifecycleNavigationLink({
 
 function Header({ session }: { session: SessionEditorSession }) {
   return (
-    <header className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+    <header className="border-b border-border bg-background">
       <nav
         aria-label="Session editor navigation"
         className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 py-4 sm:px-6 lg:px-16"
       >
         <a
-          className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)]"
+          className="inline-flex items-center gap-2 rounded-sm text-sm font-semibold text-muted-foreground hover:text-foreground"
           href="/host/dashboard"
         >
           <ArrowLeft aria-hidden="true" size={17} />
@@ -120,7 +124,7 @@ function Header({ session }: { session: SessionEditorSession }) {
         </a>
         <div className="flex items-center gap-4">
           <LifecycleNavigationLink
-            className="inline-flex min-h-9 items-center gap-2 rounded-[var(--radius-sm)] px-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-primary)]"
+            className="inline-flex min-h-9 items-center gap-2 rounded-sm px-2 text-xs font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
             session={session}
           />
           <Brand aria-label="Pulse home" href="/" size="sm" />
@@ -133,18 +137,18 @@ function Header({ session }: { session: SessionEditorSession }) {
 function PollType({ poll }: { poll: EditorPoll }) {
   const TypeIcon = pollTypeIcons[poll.type];
   return (
-    <span className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+    <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
       <TypeIcon
         aria-hidden="true"
-        className="text-[var(--color-primary)]"
+        className="text-foreground"
         size={15}
       />
       <span>{pollTypeLabels[poll.type]}</span>
       <span
         className={
           poll.status === 'open'
-            ? 'font-semibold text-[var(--color-success)]'
-            : 'font-semibold text-[var(--color-text-tertiary)]'
+            ? 'font-semibold text-foreground'
+            : 'font-semibold text-muted-foreground'
         }
       >
         {pollStatusLabels[poll.status]}
@@ -178,12 +182,12 @@ function ReadinessRail({ session }: { session: SessionEditorSession }) {
       ? 'Open the live control room'
       : 'View the completed poll history';
   return (
-    <Surface as="aside" className="flex flex-col gap-5 p-6" padding="none">
+      <Card className="flex flex-col gap-5 p-6">
       <div>
-        <h2 className="text-lg font-bold text-[var(--color-text-primary)]">
+        <h2 className="text-lg font-bold text-foreground">
           {railTitle}
         </h2>
-        <p className="mt-2 text-sm leading-5 text-[var(--color-text-secondary)]">
+        <p className="mt-2 text-sm leading-5 text-muted-foreground">
           {isDraft
             ? 'Your polls are configured and will keep this order when the session starts.'
             : 'Editing is unavailable after a session starts. Use the permitted session view instead.'}
@@ -198,16 +202,16 @@ function ReadinessRail({ session }: { session: SessionEditorSession }) {
             aria-hidden="true"
             className={
               hasName
-                ? 'text-[var(--color-success)]'
-                : 'text-[var(--color-text-tertiary)]'
+                ? 'text-foreground'
+                : 'text-muted-foreground'
             }
             size={18}
           />
           <span>
-            <span className="block text-sm font-semibold text-[var(--color-text-primary)]">
+            <span className="block text-sm font-semibold text-foreground">
               Session name
             </span>
-            <span className="block text-xs text-[var(--color-text-tertiary)]">
+            <span className="block text-xs text-muted-foreground">
               {hasName ? 'Added' : 'Required'}
             </span>
           </span>
@@ -217,16 +221,16 @@ function ReadinessRail({ session }: { session: SessionEditorSession }) {
             aria-hidden="true"
             className={
               hasPolls
-                ? 'text-[var(--color-success)]'
-                : 'text-[var(--color-text-tertiary)]'
+                ? 'text-foreground'
+                : 'text-muted-foreground'
             }
             size={18}
           />
           <span>
-            <span className="block text-sm font-semibold text-[var(--color-text-primary)]">
+            <span className="block text-sm font-semibold text-foreground">
               Polls configured
             </span>
-            <span className="block text-xs text-[var(--color-text-tertiary)]">
+            <span className="block text-xs text-muted-foreground">
               {hasPolls
                 ? `${session.polls.length} ready`
                 : 'At least one required'}
@@ -238,31 +242,31 @@ function ReadinessRail({ session }: { session: SessionEditorSession }) {
             aria-hidden="true"
             className={
               isDraft
-                ? 'text-[var(--color-text-tertiary)]'
-                : 'text-[var(--color-success)]'
+                ? 'text-muted-foreground'
+                : 'text-foreground'
             }
             size={18}
           />
           <span>
-            <span className="block text-sm font-semibold text-[var(--color-text-primary)]">
+            <span className="block text-sm font-semibold text-foreground">
               {lifecycleStepLabel}
             </span>
-            <span className="block text-xs text-[var(--color-text-tertiary)]">
+            <span className="block text-xs text-muted-foreground">
               {lifecycleStepDetail}
             </span>
           </span>
         </li>
       </ul>
       <div className="space-y-2">
-        <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+        <p className="text-xs leading-5 text-muted-foreground">
           {railFooter}
         </p>
         <LifecycleNavigationLink
-          className="inline-flex items-center gap-2 text-xs font-bold text-[var(--color-primary)] hover:underline"
+          className="inline-flex items-center gap-2 text-xs font-bold text-foreground hover:underline"
           session={session}
         />
       </div>
-    </Surface>
+      </Card>
   );
 }
 
@@ -282,9 +286,9 @@ export function SessionEditorPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-canvas)]">
+      <div className="min-h-screen bg-background">
         <Header session={initialSession ?? undefinedSession} />
-        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-[var(--color-text-secondary)]">
+        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
           Loading session details...
         </main>
       </div>
@@ -293,9 +297,9 @@ export function SessionEditorPage({
 
   if (!initialSession) {
     return (
-      <div className="min-h-screen bg-[var(--color-bg-canvas)]">
+      <div className="min-h-screen bg-background">
         <Header session={undefinedSession} />
-        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-[var(--color-text-secondary)]">
+        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
           This session could not be loaded. Return to the dashboard and try
           again.
         </main>
@@ -411,42 +415,40 @@ export function SessionEditorPage({
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-canvas)]">
+    <div className="min-h-screen bg-background">
       <Header session={session} />
       <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
         <section className="flex flex-col gap-4">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-              <h1 className="break-words text-3xl font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
+              <h1 className="break-words text-3xl font-bold tracking-[-0.03em] text-foreground">
                 {session.name}
               </h1>
-              <StatusBadge
-                label={
+              <Badge
+                variant={
                   session.lifecycle === 'draft'
-                    ? 'Draft Session'
-                    : `${session.lifecycle} Session`
-                }
-                showDot
-                tone={
-                  session.lifecycle === 'draft'
-                    ? 'warning'
+                    ? 'secondary'
                     : session.lifecycle === 'live'
-                      ? 'success'
-                      : 'neutral'
+                      ? 'default'
+                      : 'outline'
                 }
-              />
+                role="status"
+              >
+                <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+                {session.lifecycle === 'draft' ? 'Draft Session' : `${session.lifecycle} Session`}
+              </Badge>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               {isDraft ? (
                 <>
-                  <Button onClick={handleAddPoll} size="md" variant="secondary">
+                  <Button onClick={handleAddPoll} size="lg" variant="outline">
                     <Plus aria-hidden="true" className="mr-2" size={16} />
                     Add poll
                   </Button>
                   <Button
                     disabled={startDisabled}
                     onClick={handleStartSession}
-                    size="md"
+                    size="lg"
                   >
                     <Play aria-hidden="true" className="mr-2" size={16} />
                     Start session
@@ -454,35 +456,45 @@ export function SessionEditorPage({
                 </>
               ) : (
                 <LifecycleNavigationLink
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--color-primary)] px-4 text-sm font-semibold text-[var(--color-text-on-primary)] hover:brightness-95"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-sm bg-primary px-4 text-sm font-semibold text-primary-foreground hover:brightness-95"
                   session={session}
                 />
               )}
             </div>
           </div>
           {errorMessage ? (
-            <Callout icon="alertCircle" title="Action failed" tone="error">
-              {errorMessage}
-            </Callout>
+              <Alert variant="destructive">
+                <AlertTitle>Action failed</AlertTitle>
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
           ) : null}
           {session.lifecycle === 'draft' ? (
-            <Callout icon="info" tone="warning">
+            <Alert role="note">
+              <AlertTitle>Session readiness</AlertTitle>
+              <AlertDescription>
               Participants cannot join yet. Add or edit polls before you start
               the session.
-            </Callout>
+              </AlertDescription>
+            </Alert>
           ) : session.lifecycle === 'live' ? (
-            <Callout icon="check" tone="success">
+            <Alert role="note">
+              <AlertTitle>Session is live</AlertTitle>
+              <AlertDescription>
               Participants can join this session. The first open poll is
               accepting responses.
-            </Callout>
+              </AlertDescription>
+            </Alert>
           ) : (
-            <Callout icon="info" tone="neutral">
+            <Alert role="note">
+              <AlertTitle>Session ended</AlertTitle>
+              <AlertDescription>
               This session has ended. Polls and results are available as
               read-only history.
-            </Callout>
+              </AlertDescription>
+            </Alert>
           )}
           <p
-            className="text-sm text-[var(--color-text-secondary)]"
+            className="text-sm text-muted-foreground"
             role="status"
           >
             {startReason}
@@ -490,7 +502,7 @@ export function SessionEditorPage({
           {actionMessage ? (
             <p
               aria-live="polite"
-              className="text-sm font-semibold text-[var(--color-success)]"
+              className="text-sm font-semibold text-muted-foreground"
             >
               {actionMessage}
             </p>
@@ -499,20 +511,17 @@ export function SessionEditorPage({
 
         {isEmpty ? (
           <section className="grid gap-6 lg:grid-cols-[minmax(0,900px)_320px]">
-            <Surface
-              as="section"
+            <Card
               className="flex min-h-[420px] flex-col items-center justify-center gap-5 px-6 py-12 text-center"
-              elevation="card"
-              padding="none"
             >
-              <span className="flex size-18 items-center justify-center rounded-full bg-[var(--color-primary-soft)] text-[var(--color-primary)]">
+              <span className="flex size-18 items-center justify-center rounded-full bg-muted text-foreground">
                 <Layers aria-hidden="true" size={30} />
               </span>
               <div className="max-w-lg">
-                <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">
+                <h2 className="text-2xl font-bold text-foreground">
                   No polls configured
                 </h2>
-                <p className="mt-2 text-base leading-6 text-[var(--color-text-secondary)]">
+                <p className="mt-2 text-base leading-6 text-muted-foreground">
                   {isDraft
                     ? 'Add at least one poll to start your session. You can reorder polls and edit them before going live.'
                     : 'This session has no editable poll list. Review the permitted session view instead.'}
@@ -525,11 +534,11 @@ export function SessionEditorPage({
                 </Button>
               ) : (
                 <LifecycleNavigationLink
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--color-primary)] px-5 text-base font-semibold text-[var(--color-text-on-primary)] hover:brightness-95"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-sm bg-primary px-5 text-base font-semibold text-primary-foreground hover:brightness-95"
                   session={session}
                 />
               )}
-            </Surface>
+            </Card>
             <ReadinessRail session={session} />
           </section>
         ) : (
@@ -537,13 +546,13 @@ export function SessionEditorPage({
             <section aria-labelledby="poll-sequence-heading">
               <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
                 <h2
-                  className="font-[var(--font-mono)] text-xs font-bold tracking-[0.14em] text-[var(--color-primary)]"
+                  className="text-xs font-bold tracking-[0.14em] text-foreground"
                   id="poll-sequence-heading"
                 >
                   Poll sequence - {session.polls.length} poll
                   {session.polls.length === 1 ? '' : 's'}
                 </h2>
-                <span className="text-xs text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-muted-foreground">
                   {isDraft
                     ? 'Reorder before starting'
                     : 'Read-only poll history'}
@@ -552,25 +561,23 @@ export function SessionEditorPage({
               <ol className="flex flex-col gap-3">
                 {session.polls.map((poll, index) => (
                   <li key={poll.id}>
-                    <Surface
-                      as="article"
+                    <Card
                       className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:gap-5 sm:p-5"
-                      padding="none"
                     >
                       <div className="flex items-center gap-3 sm:flex-col">
-                        <span className="flex min-h-10 min-w-10 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-surface-muted)] font-[var(--font-mono)] text-xs font-bold text-[var(--color-text-tertiary)]">
+                        <span className="flex min-h-10 min-w-10 items-center justify-center rounded-sm bg-muted font-mono text-xs font-bold text-muted-foreground">
                           {String(index + 1).padStart(2, '0')}
                         </span>
                         {isDraft ? (
                           <GripVertical
                             aria-hidden="true"
-                            className="hidden text-[var(--color-text-tertiary)] sm:block"
+                            className="hidden text-muted-foreground sm:block"
                             size={17}
                           />
                         ) : null}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="break-words text-base font-bold text-[var(--color-text-primary)]">
+                        <h3 className="break-words text-base font-bold text-foreground">
                           {poll.text}
                         </h3>
                         <div className="mt-2">
@@ -581,7 +588,7 @@ export function SessionEditorPage({
                         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                           <button
                             aria-label={`Move poll ${index + 1} earlier`}
-                            className="inline-flex size-9 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] disabled:cursor-not-allowed disabled:opacity-40"
+                            className="inline-flex size-9 items-center justify-center rounded-sm border border-border text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
                             disabled={index === 0}
                             onClick={() => handleMovePoll(poll.id, -1)}
                             type="button"
@@ -590,7 +597,7 @@ export function SessionEditorPage({
                           </button>
                           <button
                             aria-label={`Move poll ${index + 1} later`}
-                            className="inline-flex size-9 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] disabled:cursor-not-allowed disabled:opacity-40"
+                            className="inline-flex size-9 items-center justify-center rounded-sm border border-border text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
                             disabled={index === session.polls.length - 1}
                             onClick={() => handleMovePoll(poll.id, 1)}
                             type="button"
@@ -600,7 +607,7 @@ export function SessionEditorPage({
                           <Button
                             onClick={() => handleEditPoll(poll)}
                             size="sm"
-                            variant="secondary"
+                            variant="outline"
                           >
                             <Pencil
                               aria-hidden="true"
@@ -611,7 +618,7 @@ export function SessionEditorPage({
                           </Button>
                           <button
                             aria-label={`Delete poll ${index + 1}`}
-                            className="inline-flex size-9 items-center justify-center rounded-[var(--radius-sm)] border border-transparent text-[var(--color-error)] hover:bg-[var(--color-surface-error)]"
+                            className="inline-flex size-9 items-center justify-center rounded-sm border border-transparent text-destructive hover:bg-destructive/10"
                             onClick={() => handleDeletePoll(poll.id)}
                             type="button"
                           >
@@ -619,11 +626,11 @@ export function SessionEditorPage({
                           </button>
                         </div>
                       ) : (
-                        <span className="text-xs font-semibold text-[var(--color-text-tertiary)]">
+                        <span className="text-xs font-semibold text-muted-foreground">
                           Read-only
                         </span>
                       )}
-                    </Surface>
+                    </Card>
                   </li>
                 ))}
               </ol>

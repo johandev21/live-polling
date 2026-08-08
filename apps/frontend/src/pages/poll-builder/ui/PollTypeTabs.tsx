@@ -1,6 +1,7 @@
 import { CircleDot, ListChecks, MessageSquare } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Tabs } from '@base-ui/react/tabs';
+
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import type { PollType } from '../model/poll-builder';
 
@@ -23,28 +24,28 @@ export type PollTypeTabsProps = Readonly<{
 
 export function PollTypeTabs({ onChange, value }: PollTypeTabsProps) {
   return (
-    <Tabs.Root
+    <Tabs
       value={value}
       onValueChange={(val) => val && onChange(val as PollType)}
     >
-      <Tabs.List
+      <TabsList
         aria-controls="poll-builder-form"
         aria-label="Poll type"
-        className="flex w-full flex-wrap gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] p-1"
+        className="flex w-full flex-wrap gap-1 rounded-sm border border-border bg-background p-1"
       >
         {pollTypeOptions.map(({ icon: TypeIcon, label, type }) => (
-          <Tabs.Tab
+          <TabsTrigger
             aria-controls="poll-builder-form"
-            className="inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-[calc(var(--radius-sm)-2px)] px-3 text-sm font-semibold text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-muted)] data-[selected]:bg-[var(--color-primary-soft)] data-[selected]:text-[var(--color-primary)] sm:flex-none sm:px-4"
+            className="inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-[4px] px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted data-[selected]:bg-secondary data-[selected]:text-foreground sm:flex-none sm:px-4"
             id={`poll-type-option-${type}`}
             key={type}
             value={type}
           >
             <TypeIcon aria-hidden="true" size={16} />
             {label}
-          </Tabs.Tab>
+          </TabsTrigger>
         ))}
-      </Tabs.List>
-    </Tabs.Root>
+      </TabsList>
+    </Tabs>
   );
 }

@@ -1,4 +1,9 @@
-import type { ConnectionState } from '@/shared/ui';
+export type ConnectionState =
+  | 'connected'
+  | 'connecting'
+  | 'reconnecting'
+  | 'stale'
+  | 'synchronized';
 
 export type ParticipantPollType =
   | 'multiple-choice'

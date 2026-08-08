@@ -12,16 +12,37 @@ import {
   Users,
 } from 'lucide-react';
 
-import {
-  Brand,
-  Button,
-  Callout,
-  ConnectionStatus,
-  ResultBar,
-  StatusBadge,
-  Surface,
-  type ConnectionState,
-} from '@/shared/ui';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+
+type ConnectionState =
+  | 'connected'
+  | 'connecting'
+  | 'reconnecting'
+  | 'stale'
+  | 'synchronized';
+
+function Brand({ href = '/', ...props }: { 'aria-label'?: string; href?: string; size?: string }) {
+  const content = <><span aria-hidden="true" className="size-7 shrink-0 rounded-full bg-primary" /><span className="text-xl font-bold leading-none tracking-tight">pulse</span></>;
+  return href ? <a {...props} className="inline-flex items-center gap-2.5" href={href}>{content}</a> : <span {...props} className="inline-flex items-center gap-2.5">{content}</span>;
+}
+
+function StatusBadge({ label, tone = 'neutral' }: { label: string; tone?: 'neutral' | 'success' | 'warning' }) {
+  return <Badge className={cn(tone === 'success' && 'bg-primary text-primary-foreground', tone === 'warning' && 'bg-muted text-foreground')} variant={tone === 'neutral' ? 'secondary' : 'default'}><span aria-hidden="true" className="size-1.5 rounded-full bg-current" />{label}</Badge>;
+}
+
+function ConnectionStatus({ state }: { state: ConnectionState }) {
+  const labels: Record<ConnectionState, string> = { connected: 'Connected', connecting: 'Connecting', reconnecting: 'Reconnecting', stale: 'Resync needed', synchronized: 'Synchronized' };
+  return <StatusBadge label={labels[state]} tone={state === 'reconnecting' || state === 'stale' ? 'warning' : state === 'connecting' ? 'neutral' : 'success'} />;
+}
+
+function ResultBar({ ariaLabel, count, label, percentage }: { ariaLabel: string; count: number; label: string; percentage: number }) {
+  return <div aria-label={ariaLabel} className="flex w-full flex-col gap-2" role="group"><div className="flex items-baseline justify-between gap-4 text-sm"><span className="min-w-0 break-words font-semibold">{label}</span><span className="shrink-0 font-mono text-xs font-semibold text-primary">{percentage}%</span></div><Progress aria-label={ariaLabel} className="h-2" value={Math.min(100, Math.max(0, percentage))} /><span className="text-xs text-muted-foreground">{count} responses</span></div>;
+}
 
 import {
   pollTypeLabel,
@@ -82,10 +103,10 @@ function PollResults({ poll }: { poll: LivePoll }) {
     return (
       <div className="space-y-3">
         <div className="flex items-baseline justify-between gap-4">
-          <h3 className="text-sm font-bold text-[var(--color-text-primary)]">
+          <h3 className="text-sm font-bold text-foreground">
             Latest responses
           </h3>
-          <span className="font-[var(--font-mono)] text-xs font-bold text-[var(--color-primary)]">
+          <span className="font-mono text-xs font-bold text-primary">
             {poll.totalResponses} total
           </span>
         </div>
@@ -93,10 +114,10 @@ function PollResults({ poll }: { poll: LivePoll }) {
           <ul className="space-y-2">
             {poll.responses.map((response) => (
               <li
-                className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-bg-canvas)] px-3 py-2 text-sm text-[var(--color-text-secondary)]"
+                className="rounded-sm border border-border bg-background px-3 py-2 text-sm text-muted-foreground"
                 key={response.id}
               >
-                <span className="mr-2 font-[var(--font-mono)] text-[10px] text-[var(--color-text-tertiary)]">
+                <span className="mr-2 font-mono text-[10px] text-muted-foreground">
                   {response.submittedAt}
                 </span>
                 {response.text}
@@ -104,7 +125,7 @@ function PollResults({ poll }: { poll: LivePoll }) {
             ))}
           </ul>
         ) : (
-          <p className="rounded-[var(--radius-sm)] bg-[var(--color-surface-muted)] p-3 text-sm text-[var(--color-text-tertiary)]">
+          <p className="rounded-sm bg-muted p-3 text-sm text-muted-foreground">
             Responses will appear here as participants submit them.
           </p>
         )}
@@ -116,7 +137,7 @@ function PollResults({ poll }: { poll: LivePoll }) {
     <ul className="space-y-3">
       {poll.options.map((option) => (
         <li
-          className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+          className="rounded-md border border-border bg-card p-4"
           key={option.id}
         >
           <ResultBar
@@ -139,25 +160,25 @@ function EndedSessionState({
   sessionName: string;
 }) {
   return (
-    <main className="min-h-screen bg-[var(--color-bg-canvas)] px-4 py-8 sm:px-6 lg:px-12">
+    <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-12">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-3xl items-center justify-center">
-        <Surface className="w-full text-center" elevation="card" padding="lg">
+           <Card className="w-full p-8 text-center sm:p-10">
           <StatusBadge label="Ended session" tone="neutral" />
           <h1 className="mt-5 text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
             {sessionName} is now read-only
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[var(--color-text-secondary)]">
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted-foreground">
             Participants can no longer respond. The complete host-visible poll
             history remains available from the ended session history page.
           </p>
           <a
-            className="mt-7 inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--color-primary)] px-5 text-sm font-semibold text-[var(--color-text-on-primary)] transition-[filter,transform] hover:brightness-95 active:translate-y-px"
+            className="mt-7 inline-flex min-h-11 items-center justify-center gap-2 rounded-sm bg-primary px-5 text-sm font-semibold text-primary-foreground transition-[filter,transform] hover:brightness-95 active:translate-y-px"
             href={endedHistoryHref}
           >
             <ExternalLink aria-hidden="true" size={17} strokeWidth={1.8} />
             View ended history
           </a>
-        </Surface>
+           </Card>
       </div>
     </main>
   );
@@ -192,24 +213,24 @@ export function LiveControlRoomPage({
 
   if (isLoading) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[var(--color-bg-canvas)] px-4">
-        <Surface elevation="card" padding="lg">
-          <p className="text-sm font-semibold text-[var(--color-text-secondary)]">
+      <main className="grid min-h-screen place-items-center bg-background px-4">
+        <Card className="p-8 sm:p-10">
+          <p className="text-sm font-semibold text-muted-foreground">
             Loading control room...
           </p>
-        </Surface>
+        </Card>
       </main>
     );
   }
 
   if (!activePoll) {
     return (
-      <main className="grid min-h-screen place-items-center bg-[var(--color-bg-canvas)] px-4">
-        <Surface elevation="card" padding="lg">
-          <p className="text-sm text-[var(--color-text-secondary)]">
+      <main className="grid min-h-screen place-items-center bg-background px-4">
+        <Card className="p-8 sm:p-10">
+          <p className="text-sm text-muted-foreground">
             No active poll configured.
           </p>
-        </Surface>
+        </Card>
       </main>
     );
   }
@@ -277,14 +298,14 @@ export function LiveControlRoomPage({
   const nextPoll = polls[activePollIndex + 1];
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-canvas)] text-[var(--color-text-primary)]">
-      <header className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border bg-card">
         <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-12">
           <Brand aria-label="Pulse home" size="md" />
           <div className="flex items-center gap-2 sm:gap-4">
             <ConnectionStatus state={connectionState} />
             <a
-              className="hidden text-xs font-semibold text-[var(--color-text-secondary)] underline-offset-4 hover:text-[var(--color-primary)] hover:underline sm:inline"
+              className="hidden text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-primary hover:underline sm:inline"
               href="/host/dashboard"
             >
               Exit control room
@@ -294,7 +315,7 @@ export function LiveControlRoomPage({
       </header>
 
       <main className="mx-auto w-full max-w-[1440px] px-4 py-7 sm:px-6 lg:px-12 lg:py-9">
-        <header className="flex flex-col gap-6 border-b border-[var(--color-border)] pb-7 lg:flex-row lg:items-end lg:justify-between">
+        <header className="flex flex-col gap-6 border-b border-border pb-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
@@ -302,22 +323,22 @@ export function LiveControlRoomPage({
               </h1>
               <StatusBadge label="Live session" tone="success" />
             </div>
-            <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+            <p className="mt-2 text-sm text-muted-foreground">
               Room Code {roomCode}
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Users
               aria-hidden="true"
-              className="text-[var(--color-primary)]"
+              className="text-primary"
               size={20}
               strokeWidth={1.8}
             />
             <div>
-              <p className="font-[var(--font-mono)] text-xl font-bold leading-none">
+              <p className="font-mono text-xl font-bold leading-none">
                 {participantCount}
               </p>
-              <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 participants connected · approximate
               </p>
             </div>
@@ -326,9 +347,7 @@ export function LiveControlRoomPage({
 
         {errorMessage || actionError ? (
           <div className="mt-4">
-            <Callout icon="alertCircle" title="Action failed" tone="error">
-              {errorMessage || actionError}
-            </Callout>
+             <Alert variant="destructive"><AlertTitle>Action failed</AlertTitle><AlertDescription>{errorMessage || actionError}</AlertDescription></Alert>
           </div>
         ) : null}
 
@@ -337,15 +356,10 @@ export function LiveControlRoomPage({
             className="min-w-0 space-y-4"
             aria-labelledby="active-poll-title"
           >
-            <Surface
-              as="article"
-              className="space-y-6"
-              elevation="card"
-              padding="lg"
-            >
+             <Card className="space-y-6 p-8 sm:p-10">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="font-[var(--font-mono)] text-[11px] font-bold tracking-[0.14em] text-[var(--color-primary)]">
+                  <p className="font-mono text-[11px] font-bold tracking-[0.14em] text-primary">
                     ACTIVE POLL · {String(activePoll.position).padStart(2, '0')}{' '}
                     OF {String(polls.length).padStart(2, '0')}
                   </p>
@@ -355,7 +369,7 @@ export function LiveControlRoomPage({
                   >
                     {activePoll.question}
                   </h2>
-                  <p className="mt-3 font-[var(--font-mono)] text-xs text-[var(--color-text-tertiary)]">
+                  <p className="mt-3 font-mono text-xs text-muted-foreground">
                     {pollTypeLabel(activePoll.type)} · Responses update live
                   </p>
                 </div>
@@ -367,29 +381,25 @@ export function LiveControlRoomPage({
 
               <PollResults poll={activePoll} />
 
-              <div className="flex flex-col gap-3 border-t border-[var(--color-border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <p className="font-[var(--font-mono)] text-xs font-bold text-[var(--color-text-secondary)]">
+              <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="font-mono text-xs font-bold text-muted-foreground">
                   {activePoll.totalResponses} total responses
                 </p>
                 <p
                   className={
                     activePoll.resultVisibility === 'hidden'
-                      ? 'text-xs font-semibold text-[var(--color-warning)]'
-                      : 'text-xs font-semibold text-[var(--color-success)]'
+                      ? 'text-xs font-semibold text-muted-foreground'
+                      : 'text-xs font-semibold text-foreground'
                   }
                 >
                   {resultVisibilityLabels[activePoll.resultVisibility]}
                 </p>
               </div>
-            </Surface>
+             </Card>
 
-            <Surface
-              aria-label="Active poll controls"
-              className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-              padding="sm"
-            >
+             <Card aria-label="Active poll controls" className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-2 sm:flex-row">
-                <Button onClick={handleToggleLifecycle} variant="secondary">
+                 <Button onClick={handleToggleLifecycle} variant="secondary">
                   <span className="inline-flex items-center gap-2">
                     {activePoll.lifecycle === 'open' ? (
                       <Pause aria-hidden="true" size={16} strokeWidth={1.8} />
@@ -401,7 +411,7 @@ export function LiveControlRoomPage({
                       : 'Open poll'}
                   </span>
                 </Button>
-                <Button onClick={handleToggleVisibility} variant="primary">
+                 <Button onClick={handleToggleVisibility} variant="default">
                   <span className="inline-flex items-center gap-2">
                     {activePoll.resultVisibility === 'hidden' ? (
                       <Eye aria-hidden="true" size={16} strokeWidth={1.8} />
@@ -414,20 +424,20 @@ export function LiveControlRoomPage({
                   </span>
                 </Button>
               </div>
-              <p className="font-[var(--font-mono)] text-[10px] text-[var(--color-text-tertiary)]">
+              <p className="font-mono text-[10px] text-muted-foreground">
                 Actions apply immediately
               </p>
-            </Surface>
+             </Card>
 
-            <Surface aria-labelledby="poll-sequence-title" padding="md">
+             <Card aria-labelledby="poll-sequence-title" className="p-6">
               <div className="flex items-center justify-between gap-4">
                 <h2
-                  className="font-[var(--font-mono)] text-[10px] font-bold tracking-[0.14em] text-[var(--color-text-tertiary)]"
+                  className="font-mono text-[10px] font-bold tracking-[0.14em] text-muted-foreground"
                   id="poll-sequence-title"
                 >
                   POLL SEQUENCE
                 </h2>
-                <span className="text-xs text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-muted-foreground">
                   Select a poll
                 </span>
               </div>
@@ -440,36 +450,36 @@ export function LiveControlRoomPage({
                       aria-pressed={isActive}
                       className={
                         isActive
-                          ? 'min-w-0 rounded-[var(--radius-sm)] bg-[var(--color-primary-soft)] px-3 py-3 text-left text-[var(--color-primary)] ring-1 ring-[var(--color-primary)]'
-                          : 'min-w-0 rounded-[var(--radius-sm)] bg-[var(--color-bg-canvas)] px-3 py-3 text-left text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-muted)]'
+                          ? 'min-w-0 rounded-sm bg-secondary px-3 py-3 text-left text-primary ring-1 ring-primary'
+                          : 'min-w-0 rounded-sm bg-background px-3 py-3 text-left text-muted-foreground transition-colors hover:bg-muted'
                       }
                       key={poll.id}
                       onClick={() => setActivePollId(poll.id)}
                       type="button"
                     >
-                      <span className="font-[var(--font-mono)] text-[10px] font-bold">
+                      <span className="font-mono text-[10px] font-bold">
                         {String(poll.position).padStart(2, '0')}
                       </span>
                       <span className="mt-1 block line-clamp-2 text-xs font-semibold leading-4">
                         {poll.question}
                       </span>
-                      <span className="mt-2 block text-[10px] text-[var(--color-text-tertiary)]">
+                      <span className="mt-2 block text-[10px] text-muted-foreground">
                         {pollTypeShortLabels[poll.type]}
                       </span>
                     </button>
                   );
                 })}
               </div>
-            </Surface>
+             </Card>
           </section>
 
           <aside className="space-y-4" aria-label="Live session tools">
-            <section className="rounded-[var(--radius-lg)] bg-[var(--color-primary)] p-6 text-[var(--color-text-on-primary)] shadow-[var(--shadow-card)]">
-              <p className="font-[var(--font-mono)] text-[11px] font-bold tracking-[0.14em] text-[var(--color-text-on-primary-soft)]">
+            <section className="rounded-lg bg-primary p-6 text-primary-foreground shadow-sm">
+              <p className="font-mono text-[11px] font-bold tracking-[0.14em] text-primary-foreground/80">
                 SHARE THIS SESSION
               </p>
               <div className="mt-3 flex items-start justify-between gap-3">
-                <p className="break-all font-[var(--font-mono)] text-4xl font-bold tracking-[0.1em] sm:text-5xl">
+                <p className="break-all font-mono text-4xl font-bold tracking-[0.1em] sm:text-5xl">
                   {roomCode}
                 </p>
                 <Share2
@@ -479,12 +489,12 @@ export function LiveControlRoomPage({
                   strokeWidth={1.7}
                 />
               </div>
-              <p className="mt-4 text-sm leading-5 text-[var(--color-text-on-primary-muted)]">
+              <p className="mt-4 text-sm leading-5 text-primary-foreground/80">
                 Participants can join with this Room Code or the Invitation
                 Link.
               </p>
               <Button
-                className="mt-5 w-full border-[var(--color-border-inverse)] bg-[var(--color-surface-inverse-muted)] text-[var(--color-text-on-primary)] hover:bg-[var(--color-surface-inverse-muted)]"
+                className="mt-5 w-full border-0 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
                 onClick={() => setOpenPanel('share')}
                 variant="secondary"
               >
@@ -495,21 +505,16 @@ export function LiveControlRoomPage({
               </Button>
             </section>
 
-            <Surface
-              as="section"
-              aria-labelledby="presence-summary-title"
-              className="space-y-4"
-              padding="md"
-            >
+             <Card aria-labelledby="presence-summary-title" className="space-y-4 p-6">
               <div className="flex items-center justify-between gap-4">
                 <h2 className="text-lg font-bold" id="presence-summary-title">
                   Participant presence
                 </h2>
-                <span className="font-[var(--font-mono)] text-[11px] font-bold text-[var(--color-success)]">
+                <span className="font-mono text-[11px] font-bold text-foreground">
                   {participantCount} online
                 </span>
               </div>
-              <p className="text-xs text-[var(--color-text-tertiary)]">
+              <p className="text-xs text-muted-foreground">
                 Approximate and host-only
               </p>
               <ul className="space-y-2">
@@ -519,12 +524,12 @@ export function LiveControlRoomPage({
                     key={participant.id}
                   >
                     <span className="flex min-w-0 items-center gap-2">
-                      <span className="size-2 shrink-0 rounded-full bg-[var(--color-success)]" />
-                      <span className="truncate text-sm text-[var(--color-text-primary)]">
+                      <span className="size-2 shrink-0 rounded-full bg-primary" />
+                      <span className="truncate text-sm text-foreground">
                         {participant.name}
                       </span>
                     </span>
-                    <span className="font-[var(--font-mono)] text-[10px] text-[var(--color-text-tertiary)]">
+                    <span className="font-mono text-[10px] text-muted-foreground">
                       {participant.status === 'online'
                         ? 'Online'
                         : participant.status}
@@ -533,30 +538,26 @@ export function LiveControlRoomPage({
                 ))}
               </ul>
               <button
-                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 text-xs font-bold text-[var(--color-primary)] transition-colors hover:bg-[var(--color-surface-muted)]"
+                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-sm border border-border px-3 text-xs font-bold text-primary transition-colors hover:bg-muted"
                 onClick={() => setOpenPanel('presence')}
                 type="button"
               >
                 <Users aria-hidden="true" size={15} strokeWidth={1.8} />
                 View full presence
               </button>
-            </Surface>
+             </Card>
 
-            <Surface
-              as="section"
-              aria-labelledby="session-tools-title"
-              padding="md"
-            >
+             <Card aria-labelledby="session-tools-title" className="p-6">
               <h2 className="text-lg font-bold" id="session-tools-title">
                 Session tools
               </h2>
-              <p className="mt-2 text-xs leading-5 text-[var(--color-text-secondary)]">
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
                 Connection status is independent from poll lifecycle and
                 response retention.
               </p>
               <div className="mt-4 flex flex-col gap-2">
                 <a
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-4 text-sm font-semibold text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-muted)]"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-sm border border-border px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                   href={`/host/sessions/${encodeURIComponent(sessionId)}/results`}
                 >
                   <ExternalLink
@@ -567,7 +568,7 @@ export function LiveControlRoomPage({
                   View host results
                 </a>
                 <button
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-error)]/50 px-4 text-sm font-semibold text-[var(--color-error)] transition-colors hover:bg-[var(--color-surface-error)]"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-sm border border-destructive/50 px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
                   onClick={() => setShowEndDialog(true)}
                   type="button"
                 >
@@ -575,16 +576,16 @@ export function LiveControlRoomPage({
                   End session
                 </button>
               </div>
-            </Surface>
+             </Card>
           </aside>
         </div>
 
         <nav
           aria-label="Poll navigation"
-          className="mt-5 flex items-center justify-between gap-3 border-t border-[var(--color-border)] pt-4 lg:max-w-[calc(100%-22rem-1.5rem)]"
+          className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4 lg:max-w-[calc(100%-22rem-1.5rem)]"
         >
           <button
-            className="inline-flex min-h-10 items-center gap-1 rounded-[var(--radius-sm)] px-2 text-xs font-semibold text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-muted)] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex min-h-10 items-center gap-1 rounded-sm px-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
             disabled={!previousPoll}
             onClick={() => previousPoll && setActivePollId(previousPoll.id)}
             type="button"
@@ -592,12 +593,12 @@ export function LiveControlRoomPage({
             <ChevronLeft aria-hidden="true" size={17} strokeWidth={1.8} />
             Previous poll
           </button>
-          <span className="hidden text-center text-xs font-semibold text-[var(--color-text-secondary)] sm:block">
+          <span className="hidden text-center text-xs font-semibold text-muted-foreground sm:block">
             {String(activePoll.position).padStart(2, '0')} ·{' '}
             {activePoll.question}
           </span>
           <button
-            className="inline-flex min-h-10 items-center gap-1 rounded-[var(--radius-sm)] px-2 text-xs font-semibold text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary-soft)] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex min-h-10 items-center gap-1 rounded-sm px-2 text-xs font-semibold text-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
             disabled={!nextPoll}
             onClick={() => nextPoll && setActivePollId(nextPoll.id)}
             type="button"

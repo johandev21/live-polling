@@ -1,4 +1,11 @@
-import { Field, TextInput, Textarea } from '@/shared/ui';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 import type { PollDraft } from '../model/poll-builder';
 
@@ -20,16 +27,13 @@ export function OpenEndedPollFields({
   const responseLimit = draft.responseLimit ?? 500;
   return (
     <fieldset className="flex flex-col gap-5">
-      <legend className="text-sm font-semibold text-[var(--color-text-primary)]">
+      <legend className="text-sm font-semibold text-foreground">
         Open-ended response
       </legend>
-      <Field
-        error={responseLimitError}
-        hint="Choose a limit between 50 and 500 characters."
-        id="response-limit"
-        label="Response limit"
-      >
-        <TextInput
+      <Field>
+        <FieldLabel htmlFor="response-limit">Response limit</FieldLabel>
+        <Input
+          id="response-limit"
           inputMode="numeric"
           max={500}
           min={50}
@@ -41,14 +45,14 @@ export function OpenEndedPollFields({
           type="number"
           value={draft.responseLimit ?? ''}
         />
+        <FieldDescription>Choose a limit between 50 and 500 characters.</FieldDescription>
+        {responseLimitError ? <FieldError>{responseLimitError}</FieldError> : null}
       </Field>
-      <Field
-        hint="This local preview is not saved as a participant response."
-        id="response-preview"
-        label="Participant response preview"
-      >
+      <Field>
+        <FieldLabel htmlFor="response-preview">Participant response preview</FieldLabel>
         <div className="relative">
           <Textarea
+            id="response-preview"
             aria-describedby="response-preview-count"
             maxLength={Math.max(responseLimit, responsePreview.length)}
             onChange={(event) => onResponsePreviewChange(event.target.value)}
@@ -57,12 +61,13 @@ export function OpenEndedPollFields({
             value={responsePreview}
           />
           <span
-            className="pointer-events-none absolute bottom-3 right-3 font-[var(--font-mono)] text-[10px] text-[var(--color-text-tertiary)]"
+            className="pointer-events-none absolute bottom-3 right-3 font-mono text-[10px] text-muted-foreground"
             id="response-preview-count"
           >
             {responsePreview.length} / {responseLimit}
           </span>
         </div>
+        <FieldDescription>This local preview is not saved as a participant response.</FieldDescription>
       </Field>
     </fieldset>
   );

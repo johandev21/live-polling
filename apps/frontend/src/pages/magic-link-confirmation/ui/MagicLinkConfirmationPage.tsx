@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
-import { MailCheck, ShieldCheck } from 'lucide-react';
+import {
+  Check,
+  Mail,
+  MailCheck,
+  ShieldCheck,
+  TriangleAlert,
+} from 'lucide-react';
 
 import { useSendMagicLink } from '@/shared/hooks/use-host-auth';
 import { AuthShell } from '@/shared/ui/auth-shell';
-import { Button, Callout } from '@/shared/ui';
+import {
+  Alert as AlertBox,
+  AlertDescription as AlertText,
+} from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 export type MagicLinkConfirmationPageProps = Readonly<{
   email?: string;
@@ -52,7 +62,9 @@ export function MagicLinkConfirmationPage({
       setCooldown(60);
       setRequestedAgain(true);
     } catch {
-      setErrorMessage('Could not request a new link right now. Please try again later.');
+      setErrorMessage(
+        'Could not request a new link right now. Please try again later.',
+      );
     }
   }
 
@@ -65,53 +77,67 @@ export function MagicLinkConfirmationPage({
       heading="Your way into the room is on its way."
     >
       <div className="flex flex-col items-center gap-5 text-center">
-        <div className="flex size-16 items-center justify-center rounded-full bg-[var(--color-primary-soft)] text-[var(--color-primary)]">
+        <div className="flex size-16 items-center justify-center rounded-full bg-secondary text-primary">
           <MailCheck aria-hidden="true" size={30} strokeWidth={1.8} />
         </div>
         <div className="flex flex-col gap-3">
-          <h2 className="text-3xl font-bold tracking-[-0.035em] text-[var(--color-text-primary)]">
+          <h2 className="text-3xl font-bold tracking-[-0.035em] text-foreground">
             Check your inbox
           </h2>
-          <p className="text-sm text-[var(--color-text-secondary)]">
+          <p className="text-sm text-muted-foreground">
             We sent a sign-in link to
           </p>
-          <p className="break-all font-[var(--font-mono)] text-sm font-bold text-[var(--color-text-primary)]">
+          <p className="break-all font-mono text-sm font-bold text-foreground">
             {email}
           </p>
         </div>
-        <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+        <p className="text-sm leading-6 text-muted-foreground">
           The link is short-lived and can only be used once. Check your spam or
           junk folder if you do not see it soon.
         </p>
 
         {openEmailNotice ? (
-          <Callout icon="mail" role="status" tone="info">
-            Open your email app and look for the newest message from Pulse.
-          </Callout>
+          <AlertBox className="border-border bg-muted" role="status">
+            <Mail />
+            <AlertText>
+              Open your email app and look for the newest message from Pulse.
+            </AlertText>
+          </AlertBox>
         ) : null}
         {requestedAgain ? (
-          <Callout icon="check" role="status" tone="success">
-            A fresh link was requested for {email}.
-          </Callout>
+          <AlertBox
+            className="border-border bg-muted"
+            role="status"
+          >
+            <Check />
+            <AlertText>A fresh link was requested for {email}.</AlertText>
+          </AlertBox>
         ) : null}
         {errorMessage ? (
-          <Callout icon="alertCircle" role="alert" tone="error">
-            {errorMessage}
-          </Callout>
+          <AlertBox
+            className="border-destructive/25 bg-destructive/10"
+            role="alert"
+            variant="destructive"
+          >
+            <TriangleAlert />
+            <AlertText>{errorMessage}</AlertText>
+          </AlertBox>
         ) : null}
 
         <Button
           className="w-full"
           onClick={() => setOpenEmailNotice(true)}
           size="lg"
-          startIcon="mail"
           type="button"
         >
-          Open your email
+          <>
+            <Mail />
+            Open your email
+          </>
         </Button>
 
         <div className="flex flex-col items-center gap-2">
-          <p className="text-sm text-[var(--color-text-secondary)]">
+          <p className="text-sm text-muted-foreground">
             Did not receive it?
           </p>
           <Button
@@ -119,7 +145,7 @@ export function MagicLinkConfirmationPage({
             disabled={cooldown > 0 || sendMagicLink.isPending}
             onClick={requestNewLink}
             type="button"
-            variant="quiet"
+            variant="ghost"
           >
             {sendMagicLink.isPending
               ? 'Sending fresh link...'
@@ -129,7 +155,7 @@ export function MagicLinkConfirmationPage({
           </Button>
           <p
             aria-live="polite"
-            className="text-xs text-[var(--color-text-tertiary)]"
+            className="text-xs text-muted-foreground"
           >
             {cooldown > 0
               ? 'You can request another link when the cooldown ends.'
@@ -138,7 +164,7 @@ export function MagicLinkConfirmationPage({
         </div>
 
         <a
-          className="text-sm font-semibold text-[var(--color-primary)] hover:underline"
+          className="text-sm font-semibold text-primary hover:underline"
           href="/host/email"
         >
           Use a different email address

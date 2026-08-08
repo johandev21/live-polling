@@ -1,11 +1,22 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowRight, LockKeyhole } from 'lucide-react';
+import {
+  ArrowRight,
+  Check,
+  Info,
+  LoaderCircle,
+  LockKeyhole,
+  Mail,
+  TriangleAlert,
+} from 'lucide-react';
 
 import { useSendMagicLink } from '@/shared/hooks/use-host-auth';
 import { ApiError } from '@/shared/lib/api-client';
 import { ERROR_CODES } from '@/shared/lib/contracts';
 import { AuthShell } from '@/shared/ui/auth-shell';
-import { Button, Callout, Field, TextInput } from '@/shared/ui';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export type HostEmailEntryState =
   | 'idle'
@@ -59,14 +70,18 @@ export function HostEmailEntryPage({
       if (err instanceof ApiError) {
         if (err.code === ERROR_CODES.RATE_LIMITED) {
           setState('rate-limited');
-          setErrorMessage('Too many requests. Please wait a moment before trying again.');
+          setErrorMessage(
+            'Too many requests. Please wait a moment before trying again.',
+          );
         } else {
           setState('idle');
           setErrorMessage(err.message || 'Failed to send magic link.');
         }
       } else {
         setState('idle');
-        setErrorMessage('Failed to send magic link. Please check your network connection.');
+        setErrorMessage(
+          'Failed to send magic link. Please check your network connection.',
+        );
       }
     }
   }
@@ -81,36 +96,50 @@ export function HostEmailEntryPage({
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-3">
-          <p className="font-[var(--font-mono)] text-xs font-bold tracking-[0.14em] text-[var(--color-primary)]">
+          <p className="font-mono text-xs font-bold tracking-[0.14em] text-primary">
             PASSWORDLESS HOST ACCESS
           </p>
-          <h2 className="text-3xl font-bold tracking-[-0.035em] text-[var(--color-text-primary)]">
+          <h2 className="text-3xl font-bold tracking-[-0.035em] text-foreground">
             Sign in to Pulse
           </h2>
-          <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+          <p className="text-sm leading-6 text-muted-foreground">
             Enter your email and we will send a short-lived, single-use magic
             link.
           </p>
         </div>
 
         {state === 'rate-limited' ? (
-          <Callout icon="alertCircle" title="Too many requests" tone="warning">
-            Please wait a little before asking for another link. Your email is
-            still saved below.
-          </Callout>
+          <Alert
+            className="border-border bg-muted"
+            role="status"
+          >
+            <TriangleAlert />
+            <AlertTitle>Too many requests</AlertTitle>
+            <AlertDescription>
+              Please wait a little before asking for another link. Your email is
+              still saved below.
+            </AlertDescription>
+          </Alert>
         ) : null}
 
         {state === 'sent' ? (
           <div className="flex flex-col gap-4">
-            <Callout icon="check" title="Magic link sent" tone="success">
-              We sent a sign-in link to{' '}
-              <span className="font-[var(--font-mono)] font-semibold text-[var(--color-text-primary)]">
-                {email}
-              </span>
-              . It expires shortly and can only be used once.
-            </Callout>
+            <Alert
+              className="border-border bg-muted"
+              role="status"
+            >
+              <Check />
+              <AlertTitle>Magic link sent</AlertTitle>
+              <AlertDescription>
+                We sent a sign-in link to{' '}
+                <span className="font-mono font-semibold text-foreground">
+                  {email}
+                </span>
+                . It expires shortly and can only be used once.
+              </AlertDescription>
+            </Alert>
             <a
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--color-primary)] px-5 text-sm font-semibold text-[var(--color-text-on-primary)] transition-[filter,transform] hover:brightness-95 active:translate-y-px"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-[filter,transform] hover:brightness-95 active:translate-y-px"
               href={`/host/magic-link?email=${encodeURIComponent(email)}`}
             >
               <ArrowRight aria-hidden="true" size={17} strokeWidth={2} />
@@ -123,7 +152,7 @@ export function HostEmailEntryPage({
                 setErrorMessage(null);
               }}
               type="button"
-              variant="quiet"
+              variant="ghost"
             >
               Use a different email address
             </Button>
@@ -134,52 +163,91 @@ export function HostEmailEntryPage({
             noValidate
             onSubmit={handleSubmit}
           >
-            <Field
-              error={emailError}
-              hint="We will never use your email for participant access."
-              id="host-email"
-              label="Email address"
-              required
-            >
-              <TextInput
-                autoComplete="email"
-                invalid={Boolean(emailError)}
-                leadingIcon="mail"
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  if (state === 'invalid' || errorMessage) {
-                    setState('idle');
-                    setErrorMessage(null);
+            <div className="flex w-full flex-col gap-2">
+              <Label htmlFor="host-email">
+                Email address{' '}
+                <span aria-hidden="true" className="text-destructive">
+                  *
+                </span>
+              </Label>
+              <div className="relative">
+                <Mail
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  autoComplete="email"
+                  aria-describedby={
+                    emailError
+                      ? 'host-email-hint host-email-error'
+                      : 'host-email-hint'
                   }
-                }}
-                placeholder="you@example.com"
-                type="email"
-                value={email}
-              />
-            </Field>
+                  aria-invalid={Boolean(emailError)}
+                  className="h-12 pl-10"
+                  id="host-email"
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    if (state === 'invalid' || errorMessage) {
+                      setState('idle');
+                      setErrorMessage(null);
+                    }
+                  }}
+                  placeholder="you@example.com"
+                  type="email"
+                  value={email}
+                />
+              </div>
+              <p
+                className="text-xs leading-5 text-muted-foreground"
+                id="host-email-hint"
+              >
+                We will never use your email for participant access.
+              </p>
+              {emailError ? (
+                <p
+                  className="text-xs leading-5 text-destructive"
+                  id="host-email-error"
+                  role="alert"
+                >
+                  {emailError}
+                </p>
+              ) : null}
+            </div>
 
             <Button
               className="w-full"
               disabled={isSending || isRateLimited}
-              endIcon={isSending ? 'loaderCircle' : 'arrowRight'}
               size="lg"
               type="submit"
             >
-              {isSending ? 'Sending link...' : 'Send magic link'}
+              {isSending ? (
+                <>
+                  <LoaderCircle className="animate-spin" />
+                  Sending link...
+                </>
+              ) : (
+                <>
+                  <ArrowRight />
+                  Send magic link
+                </>
+              )}
             </Button>
 
-            <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+            <p className="text-xs leading-5 text-muted-foreground">
               By continuing, you agree to receive a sign-in email from Pulse.
             </p>
           </form>
         )}
 
-        <Callout icon="info" tone="info">
-          Check your spam or junk folder if the email does not arrive.
-        </Callout>
+        <Alert className="border-border bg-muted" role="note">
+          <Info />
+          <AlertDescription>
+            Check your spam or junk folder if the email does not arrive.
+          </AlertDescription>
+        </Alert>
 
         <a
-          className="text-center text-sm font-semibold text-[var(--color-primary)] hover:underline"
+          className="text-center text-sm font-semibold text-primary hover:underline"
           href="/join"
         >
           Joining a session? Use a Room Code instead.

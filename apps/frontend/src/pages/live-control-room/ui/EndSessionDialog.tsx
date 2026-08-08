@@ -7,7 +7,9 @@ import {
   X,
 } from 'lucide-react';
 
-import { Button, Surface, StatusBadge } from '@/shared/ui';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 import { LiveRoomDialog } from './LiveRoomDialog';
 
@@ -29,22 +31,22 @@ function Consequence({
   label,
 }: ConsequenceProps) {
   return (
-    <li className="flex items-start gap-3">
+    <div className="flex items-start gap-3">
       <ConsequenceIcon
         aria-hidden="true"
-        className="mt-0.5 shrink-0 text-[var(--color-text-secondary)]"
+        className="mt-0.5 shrink-0 text-muted-foreground"
         size={17}
         strokeWidth={1.8}
       />
       <span className="min-w-0">
-        <strong className="block text-sm text-[var(--color-text-primary)]">
+        <strong className="block text-sm text-foreground">
           {label}
         </strong>
-        <span className="mt-0.5 block text-xs leading-5 text-[var(--color-text-secondary)]">
+        <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
           {detail}
         </span>
       </span>
-    </li>
+    </div>
   );
 }
 
@@ -55,29 +57,31 @@ export function EndSessionDialog({
 }: EndSessionDialogProps) {
   return (
     <LiveRoomDialog
-      className="w-full max-w-2xl overflow-hidden rounded-t-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] shadow-[var(--shadow-card)] sm:rounded-[var(--radius-lg)]"
+      className="w-full max-w-2xl overflow-hidden rounded-t-lg border border-border bg-card text-foreground shadow-sm sm:rounded-lg"
       onClose={onClose}
       titleId="end-session-title"
     >
-      <header className="flex items-center justify-between gap-4 border-b border-[var(--color-border)] px-5 py-5 sm:px-7">
+      <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-5 sm:px-7">
         <div className="flex min-w-0 flex-wrap items-center gap-3">
-          <span className="truncate text-sm font-bold text-[var(--color-text-primary)]">
+          <span className="truncate text-sm font-bold text-foreground">
             {sessionName}
           </span>
-          <StatusBadge label="Live session" tone="success" />
+          <Badge variant="secondary">Live session</Badge>
         </div>
-        <button
+        <Button
           aria-label="Close end session confirmation"
-          className="rounded-[var(--radius-sm)] p-2 text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text-primary)]"
+          className="text-muted-foreground"
           onClick={onClose}
+          size="icon-sm"
+          variant="ghost"
           type="button"
         >
           <X aria-hidden="true" size={20} strokeWidth={1.8} />
-        </button>
+        </Button>
       </header>
 
       <div className="flex flex-col items-center gap-5 px-5 py-7 text-center sm:px-10 sm:py-9">
-        <span className="grid size-16 place-items-center rounded-full bg-[var(--color-surface-error)] text-[var(--color-error)]">
+        <span className="grid size-16 place-items-center rounded-full bg-destructive/10 text-destructive">
           <TriangleAlert aria-hidden="true" size={30} strokeWidth={1.7} />
         </span>
         <div>
@@ -87,18 +91,14 @@ export function EndSessionDialog({
           >
             End this session?
           </h2>
-          <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-[var(--color-text-secondary)]">
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
             Ending is permanent. Participants will no longer be able to submit
             responses, and the session will move to read-only history.
           </p>
         </div>
 
-        <Surface
-          as="ul"
-          className="w-full max-w-lg space-y-4 text-left"
-          padding="md"
-          tone="muted"
-        >
+        <Alert className="w-full max-w-lg space-y-4 text-left" variant="default">
+          <AlertDescription>
           <Consequence
             detail="No new responses can be accepted after ending."
             icon={LockKeyhole}
@@ -114,16 +114,16 @@ export function EndSessionDialog({
             icon={Users}
             label="Participants disconnect"
           />
-        </Surface>
+          </AlertDescription>
+        </Alert>
       </div>
 
-      <footer className="flex flex-col-reverse gap-3 bg-[var(--color-surface-muted)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
-        <Button onClick={onClose} variant="quiet">
+      <footer className="flex flex-col-reverse gap-3 bg-muted px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+        <Button onClick={onClose} variant="ghost">
           Keep session live
         </Button>
         <Button
           onClick={onConfirm}
-          startIcon="lockKeyhole"
           variant="destructive"
         >
           <span className="inline-flex items-center gap-2">

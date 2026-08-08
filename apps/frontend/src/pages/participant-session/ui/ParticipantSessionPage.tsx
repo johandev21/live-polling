@@ -1,7 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
 
-import { Brand, ConnectionStatus } from '@/shared/ui';
-
 import {
   responseDraftForPoll,
   type ParticipantResponse,
@@ -14,6 +12,10 @@ import {
   ParticipantEndedSessionState,
   ParticipantWaitingState,
 } from './ParticipantSessionState';
+import {
+  ParticipantBrand,
+  ParticipantConnectionStatus,
+} from './ParticipantSessionPrimitives';
 
 export type ParticipantSessionPageProps = Readonly<{
   changeNameHref?: string;
@@ -141,8 +143,8 @@ export function ParticipantSessionPage({
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-[var(--color-bg-canvas)] px-4 py-6 sm:px-6 sm:py-10">
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-[var(--color-text-secondary)]">
+      <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
           Loading session snapshot...
         </div>
       </main>
@@ -151,8 +153,8 @@ export function ParticipantSessionPage({
 
   if (!initialSnapshot) {
     return (
-      <main className="min-h-screen bg-[var(--color-bg-canvas)] px-4 py-6 sm:px-6 sm:py-10">
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-[var(--color-error)]">
+      <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-destructive">
           This session could not be loaded. Check the Invitation Link and try
           again.
         </div>
@@ -161,22 +163,22 @@ export function ParticipantSessionPage({
   }
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg-canvas)] px-4 py-6 sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
         <header className="flex flex-wrap items-center justify-between gap-4 px-1">
-          <Brand aria-label="Pulse home" href="/" size="md" />
+          <ParticipantBrand aria-label="Pulse home" href="/" />
           <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
-            <p className="max-w-48 truncate text-xs font-semibold text-[var(--color-text-secondary)] sm:max-w-none">
+            <p className="max-w-48 truncate text-xs font-semibold text-muted-foreground sm:max-w-none">
               {snapshot.sessionName}
             </p>
-            <ConnectionStatus state={snapshot.connectionState} />
+            <ParticipantConnectionStatus state={snapshot.connectionState} />
           </div>
         </header>
 
         {errorMessage || responseError ? (
           <p
             aria-live="polite"
-            className="text-sm font-semibold text-[var(--color-error)]"
+            className="text-sm font-semibold text-destructive"
           >
             {errorMessage || responseError}
           </p>
@@ -234,7 +236,7 @@ export function ParticipantSessionPage({
           />
         )}
 
-        <p className="px-1 text-center text-xs leading-5 text-[var(--color-text-tertiary)]">
+        <p className="px-1 text-center text-xs leading-5 text-muted-foreground">
           Your display name is session-local. Participant results show
           aggregates only, never names or individual open-ended responses.
         </p>

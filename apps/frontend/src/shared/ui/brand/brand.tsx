@@ -33,12 +33,12 @@ const sizeClasses = {
 
 const toneClasses = {
   default: {
-    mark: 'bg-[var(--color-primary)]',
-    wordmark: 'text-[var(--color-text-primary)]',
+    mark: 'bg-primary',
+    wordmark: 'text-foreground',
   },
   inverse: {
-    mark: 'bg-[var(--color-text-on-primary)]',
-    wordmark: 'text-[var(--color-text-on-primary)]',
+    mark: 'bg-primary-foreground',
+    wordmark: 'text-primary-foreground',
   },
 } satisfies Record<BrandTone, Record<string, string>>;
 
@@ -52,7 +52,7 @@ export function Brand({
   const classes = sizeClasses[size];
   const colors = toneClasses[tone];
   const brandClassName = cx(
-    'inline-flex w-fit items-center rounded-[var(--radius-sm)] font-semibold',
+    'inline-flex w-fit items-center rounded-sm font-semibold',
     classes.gap,
     className,
   );

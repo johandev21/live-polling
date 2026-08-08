@@ -1,8 +1,19 @@
 import { useState } from 'react';
-import { ArrowLeft, Check } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Check, Info } from 'lucide-react';
 import type { SubmitEvent } from 'react';
 
-import { Brand, Button, Callout, Field, Surface, Textarea } from '@/shared/ui';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@/components/ui/field';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import { Brand } from '@/shared/ui/brand';
 
 import {
   type PollDraft,
@@ -35,13 +46,13 @@ const typeDescriptions: Record<PollType, string> = {
 
 function Header({ onCancel }: { onCancel?: () => void }) {
   return (
-    <header className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+    <header className="border-b border-border bg-background">
       <nav
         aria-label="Poll builder navigation"
         className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 py-4 sm:px-6 lg:px-16"
       >
         <a
-          className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)]"
+          className="inline-flex items-center gap-2 rounded-sm text-sm font-semibold text-muted-foreground hover:text-foreground"
           href="/session-editor"
           onClick={onCancel}
         >
@@ -62,15 +73,15 @@ function PreviewOption({
   type: 'multiple-choice' | 'single-choice';
 }) {
   return (
-    <div className="flex min-h-13 items-center gap-3 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-bg-canvas)] px-4 py-3">
+    <div className="flex min-h-13 items-center gap-3 rounded-sm border border-border bg-background px-4 py-3">
       <span
         aria-hidden="true"
-        className={[
-          'flex size-5 shrink-0 items-center justify-center border border-[var(--color-border)] bg-[var(--color-surface)]',
+        className={cn(
+          'flex size-5 shrink-0 items-center justify-center border border-border bg-background',
           type === 'multiple-choice' ? 'rounded-[4px]' : 'rounded-full',
-        ].join(' ')}
+        )}
       />
-      <span className="min-w-0 break-words text-sm text-[var(--color-text-primary)]">
+      <span className="min-w-0 break-words text-sm text-foreground">
         {option || 'Untitled option'}
       </span>
     </div>
@@ -87,36 +98,33 @@ function ParticipantPreview({
   responsePreview: string;
 }) {
   return (
-    <Surface
-      as="aside"
+    <Card
       aria-labelledby="participant-preview-heading"
       className="flex h-fit flex-col gap-5 p-6 sm:p-7 lg:sticky lg:top-6"
-      elevation="card"
-      padding="none"
     >
-      <p className="font-[var(--font-mono)] text-xs font-bold tracking-[0.14em] text-[var(--color-primary)]">
+      <p className="text-xs font-bold tracking-[0.14em] text-foreground">
         PARTICIPANT PREVIEW
       </p>
       <h2
-        className="break-words text-2xl font-bold leading-tight text-[var(--color-text-primary)]"
+        className="break-words text-2xl font-bold leading-tight text-foreground"
         id="participant-preview-heading"
       >
         {draft.text.trim() || 'Your poll text'}
       </h2>
-      <p className="text-sm text-[var(--color-text-secondary)]">
+      <p className="text-sm text-muted-foreground">
         {typeDescriptions[draft.type]}
       </p>
       {draft.type === 'open-ended' ? (
         <>
           <div className="relative">
-            <div className="min-h-36 whitespace-pre-wrap break-words rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-bg-canvas)] px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+            <div className="min-h-36 whitespace-pre-wrap break-words rounded-sm border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
               {responsePreview || 'Share a thought...'}
             </div>
-            <span className="absolute bottom-3 right-3 font-[var(--font-mono)] text-[10px] text-[var(--color-text-tertiary)]">
+            <span className="absolute bottom-3 right-3 font-mono text-[10px] text-muted-foreground">
               {responsePreview.length} / {draft.responseLimit ?? 500}
             </span>
           </div>
-          <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+          <p className="text-xs leading-5 text-muted-foreground">
             Responses are anonymous to participants and visible to the host.
           </p>
         </>
@@ -137,19 +145,19 @@ function ParticipantPreview({
                 </div>
               ))
             ) : (
-              <p className="rounded-[var(--radius-sm)] border border-dashed border-[var(--color-border)] p-4 text-sm text-[var(--color-text-tertiary)]">
+              <p className="rounded-sm border border-dashed border-border p-4 text-sm text-muted-foreground">
                 Add options to preview the participant choices.
               </p>
             )}
           </div>
-          <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+          <p className="text-xs leading-5 text-muted-foreground">
             {draft.type === 'multiple-choice'
               ? 'Participants may select more than one option. Results may total more than 100%.'
               : 'Participants see this poll after the host opens it.'}
           </p>
         </>
       )}
-    </Surface>
+    </Card>
   );
 }
 
@@ -320,15 +328,15 @@ export function PollBuilderPage({
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-canvas)]">
+    <div className="min-h-screen bg-background">
       <Header onCancel={onCancel} />
       <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
         <section className="flex flex-col gap-5">
           <div>
-            <p className="font-[var(--font-mono)] text-xs font-bold tracking-[0.16em] text-[var(--color-primary)]">
+            <p className="text-xs font-bold tracking-[0.16em] text-foreground">
               NEW POLL - {typeLabels[draft.type]}
             </p>
-            <h1 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-[var(--color-text-primary)] sm:text-4xl">
+            <h1 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-foreground sm:text-4xl">
               Build a poll
             </h1>
           </div>
@@ -336,39 +344,35 @@ export function PollBuilderPage({
         </section>
 
         {errorMessage ? (
-          <Callout icon="alertCircle" title="Error saving poll" tone="error">
-            {errorMessage}
-          </Callout>
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertTitle>Error saving poll</AlertTitle>
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
         ) : null}
 
         <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,720px)_minmax(320px,520px)]">
-          <Surface
-            as="form"
-            className="flex flex-col gap-7 p-6 sm:p-7"
-            elevation="card"
-            id="poll-builder-form"
-            onSubmit={handleSave}
-            padding="none"
-          >
-            <Field
-              error={pollTextError}
-              hint={
-                draft.type === 'open-ended'
-                  ? `${draft.text.length} / 500 characters`
-                  : 'Ask one clear prompt.'
-              }
-              id="poll-text"
-              label="Poll text"
-              required
-            >
-              <Textarea
-                maxLength={500}
-                onChange={(event) => updateDraftText(event.target.value)}
-                placeholder="What would you like to ask?"
-                rows={4}
-                value={draft.text}
-              />
-            </Field>
+          <Card className="p-6 sm:p-7">
+            <form className="flex flex-col gap-7" id="poll-builder-form" onSubmit={handleSave}>
+              <Field>
+                <FieldLabel htmlFor="poll-text">
+                  Poll text <span aria-hidden="true" className="text-destructive">*</span>
+                </FieldLabel>
+                <Textarea
+                  id="poll-text"
+                  maxLength={500}
+                  onChange={(event) => updateDraftText(event.target.value)}
+                  placeholder="What would you like to ask?"
+                  rows={4}
+                  value={draft.text}
+                />
+                <FieldDescription>
+                  {draft.type === 'open-ended'
+                    ? `${draft.text.length} / 500 characters`
+                    : 'Ask one clear prompt.'}
+                </FieldDescription>
+                {pollTextError ? <FieldError>{pollTextError}</FieldError> : null}
+              </Field>
 
             {draft.type === 'open-ended' ? (
               <OpenEndedPollFields
@@ -399,8 +403,8 @@ export function PollBuilderPage({
               />
             )}
 
-            <div className="flex flex-col-reverse gap-3 border-t border-[var(--color-border)] pt-6 sm:flex-row sm:items-center sm:justify-between">
-              <Button onClick={onCancel} type="button" variant="quiet">
+            <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <Button onClick={onCancel} type="button" variant="ghost">
                 Cancel
               </Button>
               <Button disabled={isSubmitting} type="submit">
@@ -411,17 +415,18 @@ export function PollBuilderPage({
             {actionMessage ? (
               <p
                 aria-live="polite"
-                className={[
+                className={cn(
                   'text-sm font-semibold',
                   hasSubmitted && hasErrors
-                    ? 'text-[var(--color-error)]'
-                    : 'text-[var(--color-success)]',
-                ].join(' ')}
+                    ? 'text-destructive'
+                    : 'text-muted-foreground',
+                )}
               >
                 {actionMessage}
               </p>
             ) : null}
-          </Surface>
+            </form>
+          </Card>
 
           <ParticipantPreview
             draft={draft}
@@ -431,15 +436,21 @@ export function PollBuilderPage({
         </div>
 
         {draft.type === 'multiple-choice' ? (
-          <Callout icon="info" tone="info">
+          <Alert role="note">
+            <Info />
+            <AlertDescription>
             Maximum selections is kept with this draft and will be enforced when
             the poll is open.
-          </Callout>
+            </AlertDescription>
+          </Alert>
         ) : draft.type === 'open-ended' ? (
-          <Callout icon="info" tone="info">
+          <Alert role="note">
+            <Info />
+            <AlertDescription>
             Open-ended responses are visible to the host and kept within the
             response limit you set.
-          </Callout>
+            </AlertDescription>
+          </Alert>
         ) : null}
       </main>
     </div>

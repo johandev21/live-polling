@@ -1,4 +1,5 @@
-import { Surface, ResultBar } from '@/shared/ui';
+import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 
 import type { HostResultPoll } from '../model/host-results';
 
@@ -12,26 +13,23 @@ function calculatePercentage(count: number, total: number): number {
 
 export function ChoiceResults({ poll }: ChoiceResultsProps) {
   return (
-    <Surface
-      as="section"
+    <Card
       aria-labelledby="choice-results-title"
-      className="space-y-5"
-      elevation="card"
-      padding="lg"
+      className="space-y-5 p-8 sm:p-10"
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-bold" id="choice-results-title">
           Response breakdown
         </h2>
-        <span className="inline-flex items-center gap-2 font-[var(--font-mono)] text-[10px] font-bold text-[var(--color-success)]">
+        <span className="inline-flex items-center gap-2 font-mono text-[10px] font-bold text-foreground">
           <span
             aria-hidden="true"
-            className="size-1.5 rounded-full bg-[var(--color-success)]"
+            className="size-1.5 rounded-full bg-primary"
           />
           Updating live
         </span>
       </div>
-      <p className="text-sm text-[var(--color-text-tertiary)]">
+      <p className="text-sm text-muted-foreground">
         {poll.type === 'multiple-choice'
           ? 'Multiple-choice poll · Percentage of effective responses'
           : 'Single-choice poll · Percentage of effective responses'}
@@ -40,41 +38,37 @@ export function ChoiceResults({ poll }: ChoiceResultsProps) {
       <ul className="space-y-3">
         {poll.options.map((option) => (
           <li key={option.id}>
-            <Surface padding="md">
-              <ResultBar
-                ariaLabel={`${option.label}: ${calculatePercentage(option.count, poll.totalResponses)} percent of responses`}
-                count={option.count}
-                label={option.label}
-                percentage={calculatePercentage(
-                  option.count,
-                  poll.totalResponses,
-                )}
-              />
-            </Surface>
+             <Card className="p-6">
+               <div aria-label={`${option.label}: ${calculatePercentage(option.count, poll.totalResponses)} percent of responses`} className="flex flex-col gap-2" role="group">
+                 <div className="flex items-baseline justify-between gap-4 text-sm"><span className="font-semibold">{option.label}</span><span className="font-mono text-xs font-semibold text-primary">{calculatePercentage(option.count, poll.totalResponses)}%</span></div>
+                 <Progress className="h-2" value={calculatePercentage(option.count, poll.totalResponses)} />
+                 <span className="text-xs text-muted-foreground">{option.count} responses</span>
+               </div>
+             </Card>
           </li>
         ))}
       </ul>
 
-      <div className="flex items-center justify-between gap-4 rounded-[var(--radius-md)] bg-[var(--color-primary-soft)] px-4 py-4">
-        <span className="text-sm font-semibold text-[var(--color-text-secondary)]">
+      <div className="flex items-center justify-between gap-4 rounded-md bg-secondary px-4 py-4">
+        <span className="text-sm font-semibold text-muted-foreground">
           Total response count
         </span>
-        <span className="font-[var(--font-mono)] text-2xl font-bold text-[var(--color-primary)]">
+        <span className="font-mono text-2xl font-bold text-primary">
           {poll.totalResponses}
         </span>
       </div>
 
       {poll.type === 'multiple-choice' ? (
-        <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+        <p className="text-xs leading-5 text-muted-foreground">
           Percentages may add up to more than 100% because participants could
           select multiple options.
         </p>
       ) : (
-        <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+        <p className="text-xs leading-5 text-muted-foreground">
           Results reflect one effective response per participant. Replaced
           responses are counted only in their latest state.
         </p>
       )}
-    </Surface>
+    </Card>
   );
 }

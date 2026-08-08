@@ -1,7 +1,21 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowRight, RefreshCw, ShieldCheck, Zap } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowRight,
+  Check,
+  LoaderCircle,
+  RefreshCw,
+  ShieldCheck,
+  WifiOff,
+  Zap,
+} from 'lucide-react';
 
-import { Brand, Button, Callout, Field, Surface, TextInput } from '@/shared/ui';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Brand } from '@/shared/ui';
 
 import {
   normalizeRoomCode,
@@ -55,7 +69,8 @@ export function JoinByRoomCodePage({
   const [status, setStatus] = useState<RoomCodeStatus>('idle');
 
   const activeStatus = statusOverride ?? status;
-  const codeError = activeStatus === 'invalid' ? statusCopy.invalid.body : undefined;
+  const codeError =
+    activeStatus === 'invalid' ? statusCopy.invalid.body : undefined;
 
   function handleRoomCodeChange(value: string) {
     setRoomCode(normalizeRoomCode(value));
@@ -84,144 +99,186 @@ export function JoinByRoomCodePage({
     : '/join/invitation';
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg-canvas)] px-4 py-8 sm:px-6 lg:grid lg:place-items-center lg:px-8">
-      <Surface
-        as="section"
-        className="mx-auto grid w-full max-w-4xl overflow-hidden p-0 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,1fr)]"
-        elevation="card"
-        padding="none"
-      >
-        <div className="flex flex-col gap-6 p-6 sm:p-9">
-          <Brand aria-label="Pulse home" href="/" size="lg" />
-          <div className="flex flex-col gap-3">
-            <p className="font-[var(--font-mono)] text-xs font-bold tracking-[0.15em] text-[var(--color-primary)]">
-              PARTICIPANT ACCESS
-            </p>
-            <h1 className="text-3xl font-bold tracking-[-0.035em] text-[var(--color-text-primary)]">
-              Join a session
-            </h1>
-            <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
-              Enter the Room Code shared by your host. Room Codes are not
-              case-sensitive.
-            </p>
-          </div>
-
-          {errorMessage ? (
-            <Callout icon="alertCircle" title="Unable to join" tone="error">
-              {errorMessage}
-            </Callout>
-          ) : null}
-
-          <form
-            className="flex flex-col gap-5"
-            noValidate
-            onSubmit={handleSubmit}
-          >
-            <Field
-              error={codeError}
-              hint="We will normalize the code to uppercase for readability."
-              id="room-code"
-              label="Room Code"
-              required
-            >
-              <TextInput
-                autoCapitalize="characters"
-                autoComplete="off"
-                className="font-[var(--font-mono)] text-lg font-bold tracking-[0.16em]"
-                inputMode="text"
-                invalid={Boolean(codeError)}
-                maxLength={6}
-                onChange={(event) => handleRoomCodeChange(event.target.value)}
-                placeholder="e.g. 7K4P9D"
-                spellCheck={false}
-                value={roomCode}
-              />
-            </Field>
-
-            <Button
-              className="w-full"
-              disabled={isSubmitting}
-              endIcon={isSubmitting ? 'loaderCircle' : 'arrowRight'}
-              size="lg"
-              type="submit"
-            >
-              {isSubmitting ? 'Verifying code...' : 'Join session'}
-            </Button>
-          </form>
-
-          {activeStatus === 'ready' ? (
-            <Callout icon="check" title="Session found" tone="success">
-              You are ready to choose a session-local display name before
-              joining.
-              <a
-                className="mt-3 inline-flex items-center gap-2 font-semibold text-[var(--color-primary)] hover:underline"
-                href={`/join/name?roomCode=${encodeURIComponent(roomCode)}`}
-              >
-                Continue to display name
-                <ArrowRight aria-hidden="true" size={15} />
-              </a>
-            </Callout>
-          ) : activeStatus !== 'idle' ? (
-            <Callout
-              icon={activeStatus === 'unavailable' ? 'wifiOff' : 'alertCircle'}
-              title={statusCopy[activeStatus].title}
-              tone={statusCopy[activeStatus].tone}
-            >
-              {statusCopy[activeStatus].body}
-            </Callout>
-          ) : null}
-
-          <a
-            className="text-center text-sm font-semibold text-[var(--color-primary)] hover:underline"
-            href={invitationPath}
-          >
-            Have an Invitation Link? Open it directly instead.
-          </a>
-        </div>
-
-        <aside className="flex flex-col justify-between gap-10 bg-[var(--color-primary)] p-7 text-[var(--color-text-on-primary)] sm:p-9">
-          <div className="flex flex-col gap-6">
+    <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:grid lg:place-items-center lg:px-8">
+      <section className="mx-auto w-full max-w-4xl">
+        <Card className="grid w-full overflow-hidden p-0 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,1fr)]">
+          <div className="flex flex-col gap-6 p-6 sm:p-9">
+            <Brand aria-label="Pulse home" href="/" size="lg" />
             <div className="flex flex-col gap-3">
-              <h2 className="text-2xl font-bold tracking-[-0.03em]">
-                No account needed.
-              </h2>
-              <p className="text-sm leading-6 text-[var(--color-text-on-primary-muted)]">
-                Participants join with a session-local identity. Your display
-                name is visible to the host, not to other participants.
+              <p className="font-mono text-xs font-bold tracking-[0.15em] text-primary">
+                PARTICIPANT ACCESS
+              </p>
+              <h1 className="text-3xl font-bold tracking-[-0.035em] text-foreground">
+                Join a session
+              </h1>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Enter the Room Code shared by your host. Room Codes are not
+                case-sensitive.
               </p>
             </div>
-            <ul className="flex flex-col gap-4">
-              <li className="flex items-center gap-3 text-sm font-semibold">
-                <Zap
-                  aria-hidden="true"
-                  className="text-[var(--color-text-on-primary-soft)]"
-                  size={17}
+
+            {errorMessage ? (
+              <Alert variant="destructive">
+                <AlertCircle />
+                <AlertTitle>Unable to join</AlertTitle>
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            <form
+              className="flex flex-col gap-5"
+              noValidate
+              onSubmit={handleSubmit}
+            >
+              <div className="flex w-full flex-col gap-2">
+                <Label htmlFor="room-code">
+                  Room Code{' '}
+                  <span aria-hidden="true" className="text-destructive">
+                    *
+                  </span>
+                </Label>
+                <Input
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  aria-describedby={
+                    codeError
+                      ? 'room-code-hint room-code-error'
+                      : 'room-code-hint'
+                  }
+                  aria-invalid={Boolean(codeError)}
+                  className="h-12 font-mono text-lg font-bold tracking-[0.16em]"
+                  id="room-code"
+                  inputMode="text"
+                  maxLength={6}
+                  onChange={(event) => handleRoomCodeChange(event.target.value)}
+                  placeholder="e.g. 7K4P9D"
+                  spellCheck={false}
+                  value={roomCode}
                 />
-                Join in seconds
-              </li>
-              <li className="flex items-center gap-3 text-sm font-semibold">
-                <ShieldCheck
-                  aria-hidden="true"
-                  className="text-[var(--color-text-on-primary-soft)]"
-                  size={17}
-                />
-                Private by default
-              </li>
-              <li className="flex items-center gap-3 text-sm font-semibold">
-                <RefreshCw
-                  aria-hidden="true"
-                  className="text-[var(--color-text-on-primary-soft)]"
-                  size={17}
-                />
-                Change responses while open
-              </li>
-            </ul>
+                <p
+                  className="text-xs leading-5 text-muted-foreground"
+                  id="room-code-hint"
+                >
+                  We will normalize the code to uppercase for readability.
+                </p>
+                {codeError ? (
+                  <p
+                    className="text-xs leading-5 text-destructive"
+                    id="room-code-error"
+                    role="alert"
+                  >
+                    {codeError}
+                  </p>
+                ) : null}
+              </div>
+
+              <Button
+                className="w-full"
+                disabled={isSubmitting}
+                size="lg"
+                type="submit"
+              >
+                {isSubmitting ? (
+                  <>
+                    <LoaderCircle className="animate-spin" />
+                    Verifying code...
+                  </>
+                ) : (
+                  <>
+                    <ArrowRight />
+                    Join session
+                  </>
+                )}
+              </Button>
+            </form>
+
+            {activeStatus === 'ready' ? (
+              <Alert
+                className="border-border bg-muted"
+                role="status"
+              >
+                <Check />
+                <AlertTitle>Session found</AlertTitle>
+                <AlertDescription>
+                  You are ready to choose a session-local display name before
+                  joining.
+                  <a
+                    className="mt-3 inline-flex items-center gap-2 font-semibold text-primary hover:underline"
+                    href={`/join/name?roomCode=${encodeURIComponent(roomCode)}`}
+                  >
+                    Continue to display name
+                    <ArrowRight aria-hidden="true" size={15} />
+                  </a>
+                </AlertDescription>
+              </Alert>
+            ) : activeStatus !== 'idle' ? (
+              <Alert
+                variant={
+                  statusCopy[activeStatus].tone === 'error'
+                    ? 'destructive'
+                    : undefined
+                }
+              >
+                {activeStatus === 'unavailable' ? <WifiOff /> : <AlertCircle />}
+                <AlertTitle>{statusCopy[activeStatus].title}</AlertTitle>
+                <AlertDescription>
+                  {statusCopy[activeStatus].body}
+                </AlertDescription>
+              </Alert>
+            ) : null}
+
+            <a
+              className="text-center text-sm font-semibold text-primary hover:underline"
+              href={invitationPath}
+            >
+              Have an Invitation Link? Open it directly instead.
+            </a>
           </div>
-          <p className="text-xs leading-5 text-[var(--color-text-on-primary-soft)]">
-            You can use a different identity in another browser or device.
-          </p>
-        </aside>
-      </Surface>
+
+          <aside className="flex flex-col justify-between gap-10 bg-primary p-7 text-primary-foreground sm:p-9">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-3">
+                <h2 className="text-2xl font-bold tracking-[-0.03em]">
+                  No account needed.
+                </h2>
+                <p className="text-sm leading-6 text-primary-foreground/80">
+                  Participants join with a session-local identity. Your display
+                  name is visible to the host, not to other participants.
+                </p>
+              </div>
+              <ul className="flex flex-col gap-4">
+                <li className="flex items-center gap-3 text-sm font-semibold">
+                  <Zap
+                    aria-hidden="true"
+                    className="text-primary-foreground/80"
+                    size={17}
+                  />
+                  Join in seconds
+                </li>
+                <li className="flex items-center gap-3 text-sm font-semibold">
+                  <ShieldCheck
+                    aria-hidden="true"
+                    className="text-primary-foreground/80"
+                    size={17}
+                  />
+                  Private by default
+                </li>
+                <li className="flex items-center gap-3 text-sm font-semibold">
+                  <RefreshCw
+                    aria-hidden="true"
+                    className="text-primary-foreground/80"
+                    size={17}
+                  />
+                  Change responses while open
+                </li>
+              </ul>
+            </div>
+            <p className="text-xs leading-5 text-primary-foreground/80">
+              You can use a different identity in another browser or device.
+            </p>
+          </aside>
+        </Card>
+      </section>
     </main>
   );
 }

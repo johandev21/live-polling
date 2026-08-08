@@ -1,15 +1,21 @@
 import { RefreshCw } from 'lucide-react';
 
-import { Button, Callout, ResultBar, StatusBadge, Surface } from '@/shared/ui';
-import type { ConnectionState } from '@/shared/ui';
+import { Button } from '@/components/ui/button';
 
 import type {
   ParticipantPoll,
   ParticipantResponse,
   ParticipantResponseState as ResponseState,
   ParticipantResultVisibility,
+  ConnectionState,
 } from '../model/participant-session';
 import { participantResponseLabel } from '../model/participant-session';
+import {
+  ParticipantCallout,
+  ParticipantCard,
+  ParticipantResultBar,
+  ParticipantStatusBadge,
+} from './ParticipantSessionPrimitives';
 
 type ParticipantResponseStateProps = Readonly<{
   changeNameHref?: string;
@@ -29,10 +35,10 @@ export function ResultsVisibilityNote({
   }
 
   return (
-    <Callout icon="info" title="Results are hidden" tone="neutral">
+    <ParticipantCallout icon="info" title="Results are hidden" tone="neutral">
       Results will appear when the host reveals them. Participants never see
       names or individual open-ended responses.
-    </Callout>
+    </ParticipantCallout>
   );
 }
 
@@ -41,58 +47,58 @@ export function ParticipantResults({
 }: Readonly<{ poll: ParticipantPoll }>) {
   if (poll.type === 'open-ended') {
     return (
-      <Surface as="section" className="flex flex-col gap-5" padding="md">
+      <ParticipantCard className="flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="font-[var(--font-mono)] text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[var(--color-primary)]">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-primary">
               Aggregate view
             </p>
-            <h2 className="mt-2 text-xl font-bold text-[var(--color-text-primary)]">
+            <h2 className="mt-2 text-xl font-bold text-foreground">
               Results are available
             </h2>
           </div>
-          <StatusBadge label="Results revealed" tone="success" />
+          <ParticipantStatusBadge label="Results revealed" tone="success" />
         </div>
-        <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+        <p className="text-sm leading-6 text-muted-foreground">
           The host can review open-ended response text. Participant results keep
           individual responses private.
         </p>
-        <div className="flex items-center justify-between gap-4 rounded-[var(--radius-md)] bg-[var(--color-primary-soft)] p-4">
-          <span className="text-sm font-semibold text-[var(--color-text-secondary)]">
+        <div className="flex items-center justify-between gap-4 rounded-md bg-secondary p-4">
+          <span className="text-sm font-semibold text-muted-foreground">
             Total responses
           </span>
-          <strong className="font-[var(--font-mono)] text-2xl text-[var(--color-primary)]">
+          <strong className="font-mono text-2xl text-primary">
             {poll.totalResponses}
           </strong>
         </div>
-        <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+        <p className="text-xs leading-5 text-muted-foreground">
           No participant names or individual open-ended response text is shown
           here.
         </p>
-      </Surface>
+      </ParticipantCard>
     );
   }
 
   return (
-    <Surface as="section" className="flex flex-col gap-5" padding="md">
+    <ParticipantCard className="flex flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-[var(--font-mono)] text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[var(--color-primary)]">
+          <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-primary">
             Aggregate view
           </p>
-          <h2 className="mt-2 text-xl font-bold text-[var(--color-text-primary)]">
+          <h2 className="mt-2 text-xl font-bold text-foreground">
             Results revealed
           </h2>
         </div>
-        <StatusBadge label="Visible to participants" tone="success" />
+        <ParticipantStatusBadge label="Visible to participants" tone="success" />
       </div>
-      <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+      <p className="text-sm leading-6 text-muted-foreground">
         Results from {poll.totalResponses} effective responses.
       </p>
       <ul className="flex flex-col gap-4">
         {poll.results.map((result) => (
           <li key={result.id}>
-            <ResultBar
+            <ParticipantResultBar
               ariaLabel={`${result.label}: ${result.percentage}% and ${result.count} responses`}
               count={result.count}
               label={result.label}
@@ -101,25 +107,25 @@ export function ParticipantResults({
           </li>
         ))}
       </ul>
-      <div className="flex items-center justify-between gap-4 rounded-[var(--radius-md)] bg-[var(--color-primary-soft)] p-4">
-        <span className="text-sm font-semibold text-[var(--color-text-secondary)]">
+      <div className="flex items-center justify-between gap-4 rounded-md bg-secondary p-4">
+        <span className="text-sm font-semibold text-muted-foreground">
           Total responses
         </span>
-        <strong className="font-[var(--font-mono)] text-2xl text-[var(--color-primary)]">
+        <strong className="font-mono text-2xl text-primary">
           {poll.totalResponses}
         </strong>
       </div>
       {poll.type === 'multiple-choice' ? (
-        <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+        <p className="text-xs leading-5 text-muted-foreground">
           Multiple-choice percentages can add up to more than 100% because
           participants may select more than one option.
         </p>
       ) : null}
-      <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+      <p className="text-xs leading-5 text-muted-foreground">
         Only aggregate results are shown. Participant names and individual
         responses are never displayed.
       </p>
-    </Surface>
+    </ParticipantCard>
   );
 }
 
@@ -137,68 +143,67 @@ export function ParticipantAcceptedResponse({
 
   return (
     <div className="flex flex-col gap-4">
-      <Surface
-        as="section"
+      <ParticipantCard
         className="flex flex-col items-center gap-5 text-center"
         padding="lg"
       >
-        <StatusBadge icon="check" label="Response accepted" tone="success" />
+        <ParticipantStatusBadge icon="check" label="Response accepted" tone="success" />
         <div className="flex flex-col gap-3">
-          <h1 className="text-3xl font-bold tracking-[-0.035em] text-[var(--color-text-primary)]">
+          <h1 className="text-3xl font-bold tracking-[-0.035em] text-foreground">
             Your response is in.
           </h1>
-          <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+          <p className="text-sm leading-6 text-muted-foreground">
             The server confirmed your response to this poll.
           </p>
         </div>
 
-        <Surface className="w-full bg-[var(--color-primary-soft)]" padding="md">
+        <div className="w-full rounded-lg border border-transparent bg-secondary p-6">
           <div className="flex flex-col items-start gap-2 text-left">
-            <p className="text-xs text-[var(--color-text-secondary)]">
+            <p className="text-xs text-muted-foreground">
               Current response
             </p>
-            <p className="break-words text-lg font-bold text-[var(--color-primary)]">
+            <p className="break-words text-lg font-bold text-primary">
               {participantResponseLabel(poll, response)}
             </p>
           </div>
-        </Surface>
+        </div>
 
         <Button
           className="w-full"
           onClick={onChangeResponse}
           size="lg"
-          startIcon="refreshCw"
           type="button"
         >
+          <RefreshCw aria-hidden="true" />
           Change response
         </Button>
-        <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+        <p className="text-xs leading-5 text-muted-foreground">
           You can change your response while the poll remains open.
         </p>
 
         {liveUpdatesRecovering ? (
-          <Callout
+          <ParticipantCallout
             icon="refreshCw"
             title="Your response is still accepted"
             tone="warning"
           >
             Live updates are reconnecting, but your response is safely saved.
             You do not need to submit again.
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-warning)]">
-              <div className="h-full w-2/5 rounded-full bg-[var(--color-warning)]" />
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-full w-2/5 rounded-full bg-foreground" />
             </div>
-          </Callout>
+          </ParticipantCallout>
         ) : null}
 
-        <p className="text-xs font-semibold text-[var(--color-text-tertiary)]">
+        <p className="text-xs font-semibold text-muted-foreground">
           Joining as {participantName} ·{' '}
           {changeNameHref ? (
-            <a className="text-[var(--color-primary)] hover:underline" href={changeNameHref}>
+            <a className="text-primary hover:underline" href={changeNameHref}>
               Change display name
             </a>
           ) : null}
         </p>
-      </Surface>
+      </ParticipantCard>
 
       {resultVisibility === 'revealed' ? (
         <ParticipantResults poll={poll} />
@@ -214,27 +219,27 @@ export function ResponseSubmissionStatus({
 }: Readonly<{ responseState: ResponseState }>) {
   if (responseState === 'pending') {
     return (
-      <Callout
+      <ParticipantCallout
         icon="loaderCircle"
         title="Waiting for confirmation"
         tone="neutral"
       >
         Your response is being sent. It is not accepted until the server
         confirms it.
-      </Callout>
+      </ParticipantCallout>
     );
   }
 
   if (responseState === 'rejected') {
     return (
-      <Callout
+      <ParticipantCallout
         icon="alertCircle"
         title="Your response was not accepted"
         tone="error"
       >
         The session did not accept that response. Check the selection and retry
         while the poll is open.
-      </Callout>
+      </ParticipantCallout>
     );
   }
 
@@ -243,17 +248,17 @@ export function ResponseSubmissionStatus({
 
 export function ReconnectingResponseNotice() {
   return (
-    <Callout
+    <ParticipantCallout
       icon="refreshCw"
       title="Live updates are reconnecting"
       tone="warning"
     >
       Keep this page open while we refresh the session. An accepted response
       remains accepted.
-      <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-[var(--color-warning)]">
+      <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
         <RefreshCw aria-hidden="true" size={14} />
         Restoring the session view automatically
       </div>
-    </Callout>
+    </ParticipantCallout>
   );
 }

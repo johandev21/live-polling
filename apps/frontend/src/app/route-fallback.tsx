@@ -1,33 +1,42 @@
 import { useLocation, useNavigate } from '@tanstack/react-router';
-import { Brand, Button, CenteredCardLayout } from '@/shared/ui';
+import { ArrowRight } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Brand } from '@/shared/ui/brand';
 
 export function DefaultRouteFallback() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   return (
-    <CenteredCardLayout maxWidth="sm">
-      <div className="flex flex-col gap-6">
-        <Brand size="md" />
-        <div className="flex flex-col gap-3">
-          <p className="font-[var(--font-mono)] text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]">
-            Pulse foundation
-          </p>
-          <h1 className="text-3xl font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
-            This page is ready for its slice.
-          </h1>
-          <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
-            No page has been registered for{' '}
-            <code className="rounded bg-[var(--color-surface-muted)] px-1.5 py-0.5 font-[var(--font-mono)] text-xs text-[var(--color-text-primary)]">
-              {pathname}
-            </code>{' '}
-            yet.
-          </p>
-        </div>
-        <Button endIcon="arrowRight" onClick={() => navigate({ to: '/' })}>
-          Return to Pulse home
-        </Button>
+    <main className="grid min-h-screen w-full place-items-center bg-background px-4 py-8 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardContent className="flex flex-col gap-6 pt-6">
+            <Brand size="md" />
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+                Pulse foundation
+              </p>
+              <h1 className="text-3xl font-bold tracking-[-0.03em] text-foreground">
+                This page is ready for its slice.
+              </h1>
+              <p className="text-sm leading-6 text-muted-foreground">
+                No page has been registered for{' '}
+                <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-foreground">
+                  {pathname}
+                </code>{' '}
+                yet.
+              </p>
+            </div>
+            <Button onClick={() => navigate({ to: '/' })}>
+              Return to Pulse home
+              <ArrowRight />
+            </Button>
+          </CardContent>
+        </Card>
       </div>
-    </CenteredCardLayout>
+    </main>
   );
 }

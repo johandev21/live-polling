@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Link2Off, ShieldCheck } from 'lucide-react';
+import {
+  Check,
+  Link2Off,
+  LoaderCircle,
+  RefreshCw,
+  ShieldCheck,
+  TriangleAlert,
+} from 'lucide-react';
 
 import { useSendMagicLink } from '@/shared/hooks/use-host-auth';
 import { AuthShell } from '@/shared/ui/auth-shell';
-import { Button, Callout } from '@/shared/ui';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 export type InvalidMagicLinkKind = 'expired' | 'invalid';
 
@@ -61,7 +69,9 @@ export function InvalidMagicLinkPage({
       setCooldown(60);
       setRequested(true);
     } catch {
-      setErrorMessage('Could not request a new link right now. Please try again.');
+      setErrorMessage(
+        'Could not request a new link right now. Please try again.',
+      );
     }
   }
 
@@ -83,34 +93,34 @@ export function InvalidMagicLinkPage({
       heading="A fresh link is all you need."
     >
       <div className="flex flex-col items-center gap-5 text-center">
-        <div className="flex size-16 items-center justify-center rounded-full bg-[var(--color-surface-error)] text-[var(--color-error)]">
+        <div className="flex size-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
           <Link2Off aria-hidden="true" size={30} strokeWidth={1.8} />
         </div>
         <div className="flex flex-col gap-3">
-          <h2 className="text-3xl font-bold tracking-[-0.035em] text-[var(--color-text-primary)]">
+          <h2 className="text-3xl font-bold tracking-[-0.035em] text-foreground">
             {title}
           </h2>
-          <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+          <p className="text-sm leading-6 text-muted-foreground">
             {description}
           </p>
         </div>
 
         {requested ? (
-          <Callout
-            icon="check"
-            role="status"
-            title="Fresh link requested"
-            tone="success"
-          >
-            {email
-              ? `We sent a new short-lived link to ${email}.`
-              : 'Check your inbox for a new short-lived link.'}
-          </Callout>
+          <Alert className="border-border bg-muted" role="status">
+            <Check />
+            <AlertTitle>Fresh link requested</AlertTitle>
+            <AlertDescription>
+              {email
+                ? `We sent a new short-lived link to ${email}.`
+                : 'Check your inbox for a new short-lived link.'}
+            </AlertDescription>
+          </Alert>
         ) : null}
         {errorMessage ? (
-          <Callout icon="alertCircle" role="alert" tone="error">
-            {errorMessage}
-          </Callout>
+          <Alert variant="destructive" role="alert">
+            <TriangleAlert />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
         ) : null}
 
         <Button
@@ -118,18 +128,25 @@ export function InvalidMagicLinkPage({
           disabled={cooldown > 0 || sendMagicLink.isPending}
           onClick={requestNewLink}
           size="lg"
-          startIcon="refreshCw"
           type="button"
         >
-          {sendMagicLink.isPending
-            ? 'Requesting new link...'
-            : cooldown > 0
-              ? `Request a new link in ${formatCooldown(cooldown)}`
-              : 'Request a new link'}
+          {sendMagicLink.isPending ? (
+            <>
+              <LoaderCircle className="animate-spin" />
+              Requesting new link...
+            </>
+          ) : cooldown > 0 ? (
+            `Request a new link in ${formatCooldown(cooldown)}`
+          ) : (
+            <>
+              <RefreshCw />
+              Request a new link
+            </>
+          )}
         </Button>
         <p
           aria-live="polite"
-          className="text-xs leading-5 text-[var(--color-text-tertiary)]"
+          className="text-xs leading-5 text-muted-foreground"
         >
           {cooldown > 0
             ? 'A short cooldown prevents duplicate emails.'
@@ -139,7 +156,7 @@ export function InvalidMagicLinkPage({
         </p>
 
         <a
-          className="text-sm font-semibold text-[var(--color-primary)] hover:underline"
+          className="text-sm font-semibold text-primary hover:underline"
           href="/host/email"
         >
           Return to email entry

@@ -1,9 +1,7 @@
 import { Clock3, LockKeyhole } from 'lucide-react';
 
-import { Callout, ConnectionStatus, StatusBadge, Surface } from '@/shared/ui';
-import type { ConnectionState } from '@/shared/ui';
-
 import type {
+  ConnectionState,
   ParticipantPoll,
   ParticipantResponse,
   ParticipantResponseState,
@@ -14,6 +12,12 @@ import {
   ParticipantResults,
   ResultsVisibilityNote,
 } from './ParticipantResponseState';
+import {
+  ParticipantCallout,
+  ParticipantCard,
+  ParticipantConnectionStatus,
+  ParticipantStatusBadge,
+} from './ParticipantSessionPrimitives';
 
 type ParticipantWaitingStateProps = Readonly<{
   connectionState: ConnectionState;
@@ -31,51 +35,49 @@ export function ParticipantWaitingState({
   sessionName,
 }: ParticipantWaitingStateProps) {
   return (
-    <Surface
-      as="section"
+    <ParticipantCard
       className="flex flex-col items-center gap-5 text-center"
-      elevation="card"
       padding="lg"
     >
-      <p className="font-[var(--font-mono)] text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[var(--color-primary)]">
+      <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-primary">
         {sessionName}
       </p>
-      <div className="flex size-18 items-center justify-center rounded-full bg-[var(--color-primary-soft)] text-[var(--color-primary)]">
+      <div className="flex size-18 items-center justify-center rounded-full bg-secondary text-primary">
         <Clock3 aria-hidden="true" size={34} strokeWidth={1.8} />
       </div>
       <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold tracking-[-0.035em] text-[var(--color-text-primary)]">
+        <h1 className="text-3xl font-bold tracking-[-0.035em] text-foreground">
           You are in. Hang tight.
         </h1>
-        <p className="max-w-lg text-sm leading-6 text-[var(--color-text-secondary)]">
+        <p className="max-w-lg text-sm leading-6 text-muted-foreground">
           The host has not opened a poll yet. When the next poll is ready, it
           will appear here.
         </p>
       </div>
-      <ConnectionStatus
+      <ParticipantConnectionStatus
         label={
           connectionState === 'connected' ? 'Connected and waiting' : undefined
         }
         state={connectionState}
       />
-      <p className="font-[var(--font-mono)] text-xs text-[var(--color-text-tertiary)]">
+      <p className="font-mono text-xs text-muted-foreground">
         About {participantCount} participants are connected
       </p>
       {responseState === 'accepted' && response !== null ? (
-        <Callout
+        <ParticipantCallout
           icon="check"
           title="Your previous response remains accepted"
           tone="success"
         >
           The session is waiting for its next active poll. Your accepted
           response remains saved.
-        </Callout>
+        </ParticipantCallout>
       ) : null}
-      <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+      <p className="text-xs leading-5 text-muted-foreground">
         There is nothing to answer right now. Keep this page open for the next
         poll.
       </p>
-    </Surface>
+    </ParticipantCard>
   );
 }
 
@@ -94,71 +96,67 @@ export function ParticipantClosedPollState({
 }: ClosedPollStateProps) {
   return (
     <div className="flex flex-col gap-4">
-      <Surface
-        as="section"
+      <ParticipantCard
         className="flex flex-col items-center gap-5 text-center"
         padding="lg"
       >
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <StatusBadge label="Poll closed" tone="neutral" />
-          <span className="font-[var(--font-mono)] text-[0.68rem] text-[var(--color-text-tertiary)]">
+          <ParticipantStatusBadge label="Poll closed" tone="neutral" />
+          <span className="font-mono text-xs text-muted-foreground">
             No new responses
           </span>
         </div>
         <div className="flex flex-col gap-3">
-          <h1 className="text-3xl font-bold tracking-[-0.035em] text-[var(--color-text-primary)]">
+          <h1 className="text-3xl font-bold tracking-[-0.035em] text-foreground">
             This poll is closed.
           </h1>
-          <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+          <p className="text-sm leading-6 text-muted-foreground">
             The host is no longer accepting responses.
           </p>
         </div>
 
         {responseState === 'accepted' ? (
-          <Surface
-            className="w-full bg-[var(--color-primary-soft)]"
-            padding="md"
-          >
+          <div className="w-full rounded-lg border border-transparent bg-secondary p-6">
             <div className="flex flex-col items-start gap-2 text-left">
-              <p className="text-sm font-bold text-[var(--color-success)]">
+              <p className="text-sm font-bold text-foreground">
                 Your response was accepted before closing.
               </p>
-              <p className="break-words text-base font-bold text-[var(--color-text-primary)]">
+              <p className="break-words text-base font-bold text-foreground">
                 {participantResponseLabel(poll, response)}
               </p>
             </div>
-          </Surface>
+          </div>
         ) : responseState === 'pending' ? (
-          <Callout
+          <ParticipantCallout
             icon="loaderCircle"
             title="Response confirmation is still pending"
             tone="warning"
           >
             The poll is closed while the server finishes confirming the request.
             No accepted response is shown until the server confirms it.
-          </Callout>
+          </ParticipantCallout>
         ) : responseState === 'rejected' ? (
-          <Callout
+          <ParticipantCallout
             icon="alertCircle"
             title="Your response was not accepted"
             tone="error"
           >
             The poll closed before that response was accepted. No response was
             recorded for this poll.
-          </Callout>
+          </ParticipantCallout>
         ) : (
-          <Callout icon="info" title="No response was accepted" tone="neutral">
+          <ParticipantCallout icon="info" title="No response was accepted" tone="neutral">
             This poll closed without an accepted response for you.
-          </Callout>
+          </ParticipantCallout>
         )}
-      </Surface>
+      </ParticipantCard>
 
       {resultVisibility === 'revealed' ? (
         <ParticipantResults poll={poll} />
       ) : (
         <ResultsVisibilityNote resultVisibility={resultVisibility} />
       )}
-      <p className="text-center text-xs text-[var(--color-text-tertiary)]">
+      <p className="text-center text-xs text-muted-foreground">
         Waiting for the next active poll.
       </p>
     </div>
@@ -174,30 +172,29 @@ export function ParticipantEndedSessionState({
 }>) {
   return (
     <div className="flex flex-col gap-4">
-      <Surface
-        as="section"
+      <ParticipantCard
         className="flex flex-col items-center gap-5 text-center"
         padding="lg"
       >
-        <StatusBadge label="Ended session" tone="neutral" />
-        <div className="flex size-16 items-center justify-center rounded-full bg-[var(--color-surface-muted)] text-[var(--color-text-secondary)]">
+        <ParticipantStatusBadge label="Ended session" tone="neutral" />
+        <div className="flex size-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
           <LockKeyhole aria-hidden="true" size={28} strokeWidth={1.8} />
         </div>
         <div className="flex flex-col gap-3">
-          <h1 className="text-3xl font-bold tracking-[-0.035em] text-[var(--color-text-primary)]">
+          <h1 className="text-3xl font-bold tracking-[-0.035em] text-foreground">
             This session has ended.
           </h1>
-          <p className="text-sm leading-6 text-[var(--color-text-secondary)]">
+          <p className="text-sm leading-6 text-muted-foreground">
             No more responses can be submitted.
           </p>
         </div>
-        <p className="text-sm font-semibold text-[var(--color-text-secondary)]">
+        <p className="text-sm font-semibold text-muted-foreground">
           Final results are available only for polls the host revealed.
         </p>
-        <p className="text-xs leading-5 text-[var(--color-text-tertiary)]">
+        <p className="text-xs leading-5 text-muted-foreground">
           Individual responses and participant names are never shown.
         </p>
-      </Surface>
+      </ParticipantCard>
 
       {resultVisibility === 'revealed' ? (
         <ParticipantResults poll={poll} />
