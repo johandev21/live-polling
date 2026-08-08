@@ -39,6 +39,8 @@ export function InvalidMagicLinkPage({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const sendMagicLink = useSendMagicLink();
+  const { description, title } = getKindCopy(initialKind);
+  const cooldownHint = getCooldownHint(cooldown, email);
 
   useEffect(() => {
     if (cooldown <= 0) {
@@ -75,15 +77,6 @@ export function InvalidMagicLinkPage({
     }
   }
 
-  const title =
-    initialKind === 'expired'
-      ? 'This link has expired'
-      : 'This link is not valid';
-  const description =
-    initialKind === 'expired'
-      ? 'The magic link expired or has already been used.'
-      : 'This magic link cannot be used. It may be incomplete or already used.';
-
   return (
     <AuthShell
       footer="No password needed · secure by default"
@@ -105,54 +98,22 @@ export function InvalidMagicLinkPage({
           </p>
         </div>
 
-        {requested ? (
-          <Alert className="border-border bg-muted" role="status">
-            <Check />
-            <AlertTitle>Fresh link requested</AlertTitle>
-            <AlertDescription>
-              {email
-                ? `We sent a new short-lived link to ${email}.`
-                : 'Check your inbox for a new short-lived link.'}
-            </AlertDescription>
-          </Alert>
-        ) : null}
-        {errorMessage ? (
-          <Alert variant="destructive" role="alert">
-            <TriangleAlert />
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        ) : null}
+        <StatusCallout
+          email={email}
+          errorMessage={errorMessage}
+          requested={requested}
+        />
 
-        <Button
-          className="w-full"
-          disabled={cooldown > 0 || sendMagicLink.isPending}
-          onClick={requestNewLink}
-          size="lg"
-          type="button"
-        >
-          {sendMagicLink.isPending ? (
-            <>
-              <LoaderCircle className="animate-spin" />
-              Requesting new link...
-            </>
-          ) : cooldown > 0 ? (
-            `Request a new link in ${formatCooldown(cooldown)}`
-          ) : (
-            <>
-              <RefreshCw />
-              Request a new link
-            </>
-          )}
-        </Button>
+        <RequestLinkButton
+          cooldown={cooldown}
+          isPending={sendMagicLink.isPending}
+          onRequest={requestNewLink}
+        />
         <p
           aria-live="polite"
           className="text-xs leading-5 text-muted-foreground"
         >
-          {cooldown > 0
-            ? 'A short cooldown prevents duplicate emails.'
-            : email
-              ? 'We will send a fresh link to the email address you used.'
-              : 'Return to email entry if you need to use a different address.'}
+          {cooldownHint}
         </p>
 
         <a
@@ -164,4 +125,93 @@ export function InvalidMagicLinkPage({
       </div>
     </AuthShell>
   );
+}
+
+type StatusCalloutProps = Readonly<{
+  email?: string;
+  errorMessage: string | null;
+  requested: boolean;
+}>;
+
+function StatusCallout({ email, errorMessage, requested }: StatusCalloutProps) {
+  return (
+    <>
+      {requested ? (
+        <Alert className="border-border bg-muted" role="status">
+          <Check />
+          <AlertTitle>Fresh link requested</AlertTitle>
+          <AlertDescription>
+            {email
+              ? `We sent a new short-lived link to ${email}.`
+              : 'Check your inbox for a new short-lived link.'}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {errorMessage ? (
+        <Alert variant="destructive" role="alert">
+          <TriangleAlert />
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      ) : null}
+    </>
+  );
+}
+
+type RequestLinkButtonProps = Readonly<{
+  cooldown: number;
+  isPending: boolean;
+  onRequest: () => void;
+}>;
+
+function RequestLinkButton({
+  cooldown,
+  isPending,
+  onRequest,
+}: RequestLinkButtonProps) {
+  return (
+    <Button
+      className="w-full"
+      disabled={cooldown > 0 || isPending}
+      onClick={onRequest}
+      size="lg"
+      type="button"
+    >
+      {isPending ? (
+        <>
+          <LoaderCircle className="animate-spin" />
+          Requesting new link...
+        </>
+      ) : cooldown > 0 ? (
+        `Request a new link in ${formatCooldown(cooldown)}`
+      ) : (
+        <>
+          <RefreshCw />
+          Request a new link
+        </>
+      )}
+    </Button>
+  );
+}
+
+function getKindCopy(kind: InvalidMagicLinkKind) {
+  return kind === 'expired'
+    ? {
+        title: 'This link has expired',
+        description: 'The magic link expired or has already been used.',
+      }
+    : {
+        title: 'This link is not valid',
+        description:
+          'This magic link cannot be used. It may be incomplete or already used.',
+      };
+}
+
+function getCooldownHint(cooldown: number, email?: string) {
+  if (cooldown > 0) {
+    return 'A short cooldown prevents duplicate emails.';
+  }
+  if (email) {
+    return 'We will send a fresh link to the email address you used.';
+  }
+  return 'Return to email entry if you need to use a different address.';
 }

@@ -27,17 +27,6 @@ export type ParticipantSessionPageProps = Readonly<{
   onResponseSubmit?: (draft: ResponseDraft) => Promise<void> | void;
 }>;
 
-function editableResponseFromStored(
-  response: ParticipantResponse,
-  poll: ParticipantSessionSnapshot['poll'],
-): ResponseDraft {
-  if (response === null) {
-    return responseDraftForPoll(poll);
-  }
-
-  return typeof response === 'string' ? response : [...response];
-}
-
 export function ParticipantSessionPage({
   changeNameHref,
   errorMessage,
@@ -47,24 +36,7 @@ export function ParticipantSessionPage({
   isSubmitting = false,
   onResponseSubmit,
 }: ParticipantSessionPageProps) {
-  const snapshot = initialSnapshot ?? {
-    connectionState: 'stale' as const,
-    participantCount: 0,
-    poll: {
-      id: '',
-      options: [],
-      prompt: '',
-      results: [],
-      totalResponses: 0,
-      type: 'single-choice' as const,
-    },
-    pollLifecycle: 'none' as const,
-    response: null,
-    responseState: 'none' as const,
-    resultVisibility: 'hidden' as const,
-    sessionLifecycle: 'live' as const,
-    sessionName: 'Session unavailable',
-  };
+  const snapshot = initialSnapshot ?? unavailableSnapshot;
   const [draftResponse, setDraftResponse] = useState<ResponseDraft>(() =>
     editableResponseFromStored(snapshot.response, snapshot.poll),
   );
@@ -79,47 +51,18 @@ export function ParticipantSessionPage({
     // Reset the draft when the active poll changes.
   }, [snapshot.poll.id]);
 
+  function handleChangeDraft(nextResponse: ResponseDraft) {
+    setDraftResponse(nextResponse);
+    setResponseError(undefined);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const { poll } = snapshot;
 
-    if (snapshot.pollLifecycle !== 'open') {
-      setResponseError('This poll is no longer accepting responses.');
+    const error = validateDraft(snapshot, draftResponse);
+    if (error) {
+      setResponseError(error);
       return;
-    }
-
-    if (snapshot.connectionState === 'stale') {
-      setResponseError('Refresh the session before sending a new response.');
-      return;
-    }
-
-    if (poll.type === 'single-choice') {
-      if (typeof draftResponse !== 'string' || !draftResponse) {
-        setResponseError('Select one option before submitting.');
-        return;
-      }
-    } else if (poll.type === 'multiple-choice') {
-      if (!Array.isArray(draftResponse) || draftResponse.length === 0) {
-        setResponseError('Select at least one option before submitting.');
-        return;
-      }
-
-      if (poll.maxSelections && draftResponse.length > poll.maxSelections) {
-        setResponseError(`Choose no more than ${poll.maxSelections} options.`);
-        return;
-      }
-    } else {
-      if (typeof draftResponse !== 'string' || !draftResponse.trim()) {
-        setResponseError('Enter a response before submitting.');
-        return;
-      }
-
-      if (draftResponse.length > (poll.responseLimit ?? 500)) {
-        setResponseError(
-          `Responses are limited to ${poll.responseLimit ?? 500} characters.`,
-        );
-        return;
-      }
     }
 
     setResponseError(undefined);
@@ -139,110 +82,274 @@ export function ParticipantSessionPage({
   }
 
   function handleChangeResponse() {
-    setDraftResponse(editableResponseFromStored(snapshot.response, snapshot.poll));
+    setDraftResponse(
+      editableResponseFromStored(snapshot.response, snapshot.poll),
+    );
     setResponseError(undefined);
   }
 
   if (isLoading) {
-    return (
-      <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
-          Loading session snapshot...
-        </div>
-      </main>
-    );
+    return <SessionLoadingState />;
   }
 
   if (!initialSnapshot) {
-    return (
-      <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-destructive">
-          This session could not be loaded. Check the Invitation Link and try
-          again.
-        </div>
-      </main>
-    );
+    return <SessionUnavailableState />;
   }
 
   return (
     <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
-        <header className="flex flex-wrap items-center justify-between gap-4 px-1">
-          <ParticipantBrand aria-label="Pulse home" href="/" />
-          <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
-            <p className="max-w-48 truncate text-xs font-semibold text-muted-foreground sm:max-w-none">
-              {snapshot.sessionName}
-            </p>
-            <ParticipantConnectionStatus state={snapshot.connectionState} />
-          </div>
-        </header>
+        <SessionHeader
+          connectionState={snapshot.connectionState}
+          sessionName={snapshot.sessionName}
+        />
 
-        {errorMessage || responseError ? (
-          <p
-            aria-live="polite"
-            className="text-sm font-semibold text-destructive"
-          >
-            {errorMessage || responseError}
-          </p>
-        ) : null}
+        <SessionError error={errorMessage || responseError} />
 
-        {snapshot.sessionLifecycle === 'ended' ? (
-          <ParticipantEndedSessionState
-            poll={snapshot.poll}
-            resultVisibility={snapshot.resultVisibility}
-          />
-        ) : snapshot.pollLifecycle === 'none' ? (
-          <ParticipantWaitingState
-            connectionState={snapshot.connectionState}
-            participantCount={snapshot.participantCount}
-            response={snapshot.response}
-            responseState={snapshot.responseState}
-            sessionName={snapshot.sessionName}
-          />
-        ) : snapshot.pollLifecycle === 'closed' ? (
-          <ParticipantClosedPollState
-            poll={snapshot.poll}
-            response={snapshot.response}
-            responseState={snapshot.responseState}
-            resultVisibility={snapshot.resultVisibility}
-          />
-        ) : snapshot.responseState === 'accepted' ? (
-          <ParticipantAcceptedResponse
-            changeNameHref={changeNameHref}
-            connectionState={snapshot.connectionState}
-            onChangeResponse={handleChangeResponse}
-            participantName={initialParticipantName ?? ''}
-            poll={snapshot.poll}
-            response={snapshot.response}
-            resultVisibility={snapshot.resultVisibility}
-          />
-        ) : (
-          <ParticipantPoll
-            changeNameHref={changeNameHref}
-            connectionState={snapshot.connectionState}
-            draftResponse={draftResponse}
-            onChangeDraft={(nextResponse) => {
-              setDraftResponse(nextResponse);
-              setResponseError(undefined);
-            }}
-            onSubmit={handleSubmit}
-            participantName={initialParticipantName ?? ''}
-            poll={snapshot.poll}
-            response={snapshot.response}
-            responseError={responseError}
-            responseState={
-              isSubmitting ? 'pending' : snapshot.responseState
-            }
-            resultVisibility={snapshot.resultVisibility}
-            sessionName={snapshot.sessionName}
-          />
-        )}
+        <SessionStateView
+          changeNameHref={changeNameHref}
+          draftResponse={draftResponse}
+          initialParticipantName={initialParticipantName}
+          isSubmitting={isSubmitting}
+          onChangeDraft={handleChangeDraft}
+          onChangeResponse={handleChangeResponse}
+          onSubmit={handleSubmit}
+          responseError={responseError}
+          snapshot={snapshot}
+        />
 
-        <p className="px-1 text-center text-xs leading-5 text-muted-foreground">
-          Your display name is session-local. Participant results show
-          aggregates only, never names or individual open-ended responses.
-        </p>
+        <SessionPrivacyNote />
       </div>
     </main>
+  );
+}
+
+const unavailableSnapshot: ParticipantSessionSnapshot = {
+  connectionState: 'stale',
+  participantCount: 0,
+  poll: {
+    id: '',
+    options: [],
+    prompt: '',
+    results: [],
+    totalResponses: 0,
+    type: 'single-choice',
+  },
+  pollLifecycle: 'none',
+  response: null,
+  responseState: 'none',
+  resultVisibility: 'hidden',
+  sessionLifecycle: 'live',
+  sessionName: 'Session unavailable',
+};
+
+function editableResponseFromStored(
+  response: ParticipantResponse,
+  poll: ParticipantSessionSnapshot['poll'],
+): ResponseDraft {
+  if (response === null) {
+    return responseDraftForPoll(poll);
+  }
+
+  return typeof response === 'string' ? response : [...response];
+}
+
+function validateDraft(
+  snapshot: ParticipantSessionSnapshot,
+  draftResponse: ResponseDraft,
+): string | undefined {
+  const { poll } = snapshot;
+
+  if (snapshot.pollLifecycle !== 'open') {
+    return 'This poll is no longer accepting responses.';
+  }
+
+  if (snapshot.connectionState === 'stale') {
+    return 'Refresh the session before sending a new response.';
+  }
+
+  if (poll.type === 'single-choice') {
+    if (typeof draftResponse !== 'string' || !draftResponse) {
+      return 'Select one option before submitting.';
+    }
+  } else if (poll.type === 'multiple-choice') {
+    if (!Array.isArray(draftResponse) || draftResponse.length === 0) {
+      return 'Select at least one option before submitting.';
+    }
+
+    if (poll.maxSelections && draftResponse.length > poll.maxSelections) {
+      return `Choose no more than ${poll.maxSelections} options.`;
+    }
+  } else {
+    if (typeof draftResponse !== 'string' || !draftResponse.trim()) {
+      return 'Enter a response before submitting.';
+    }
+
+    if (draftResponse.length > (poll.responseLimit ?? 500)) {
+      return `Responses are limited to ${poll.responseLimit ?? 500} characters.`;
+    }
+  }
+
+  return undefined;
+}
+
+function SessionLoadingState() {
+  return (
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
+        Loading session snapshot...
+      </div>
+    </main>
+  );
+}
+
+function SessionUnavailableState() {
+  return (
+    <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-destructive">
+        This session could not be loaded. Check the Invitation Link and try
+        again.
+      </div>
+    </main>
+  );
+}
+
+function SessionHeader({
+  connectionState,
+  sessionName,
+}: Readonly<{
+  connectionState: ParticipantSessionSnapshot['connectionState'];
+  sessionName: string;
+}>) {
+  return (
+    <header className="flex flex-wrap items-center justify-between gap-4 px-1">
+      <ParticipantBrand aria-label="Pulse home" href="/" />
+      <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
+        <p className="max-w-48 truncate text-xs font-semibold text-muted-foreground sm:max-w-none">
+          {sessionName}
+        </p>
+        <ParticipantConnectionStatus state={connectionState} />
+      </div>
+    </header>
+  );
+}
+
+function SessionError({ error }: Readonly<{ error?: string | null }>) {
+  if (!error) {
+    return null;
+  }
+
+  return (
+    <p aria-live="polite" className="text-sm font-semibold text-destructive">
+      {error}
+    </p>
+  );
+}
+
+type SessionStateViewProps = Readonly<{
+  changeNameHref?: string;
+  draftResponse: ResponseDraft;
+  initialParticipantName?: string;
+  isSubmitting: boolean;
+  onChangeDraft: (response: ResponseDraft) => void;
+  onChangeResponse: () => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  responseError?: string;
+  snapshot: ParticipantSessionSnapshot;
+}>;
+
+function SessionStateView({
+  changeNameHref,
+  draftResponse,
+  initialParticipantName,
+  isSubmitting,
+  onChangeDraft,
+  onChangeResponse,
+  onSubmit,
+  responseError,
+  snapshot,
+}: SessionStateViewProps) {
+  const {
+    connectionState,
+    participantCount,
+    poll,
+    pollLifecycle,
+    response,
+    responseState,
+    resultVisibility,
+    sessionLifecycle,
+    sessionName,
+  } = snapshot;
+
+  if (sessionLifecycle === 'ended') {
+    return (
+      <ParticipantEndedSessionState
+        poll={poll}
+        resultVisibility={resultVisibility}
+      />
+    );
+  }
+
+  if (pollLifecycle === 'none') {
+    return (
+      <ParticipantWaitingState
+        connectionState={connectionState}
+        participantCount={participantCount}
+        response={response}
+        responseState={responseState}
+        sessionName={sessionName}
+      />
+    );
+  }
+
+  if (pollLifecycle === 'closed') {
+    return (
+      <ParticipantClosedPollState
+        poll={poll}
+        response={response}
+        responseState={responseState}
+        resultVisibility={resultVisibility}
+      />
+    );
+  }
+
+  if (responseState === 'accepted') {
+    return (
+      <ParticipantAcceptedResponse
+        changeNameHref={changeNameHref}
+        connectionState={connectionState}
+        onChangeResponse={onChangeResponse}
+        participantName={initialParticipantName ?? ''}
+        poll={poll}
+        response={response}
+        resultVisibility={resultVisibility}
+      />
+    );
+  }
+
+  return (
+    <ParticipantPoll
+      changeNameHref={changeNameHref}
+      connectionState={connectionState}
+      draftResponse={draftResponse}
+      onChangeDraft={onChangeDraft}
+      onSubmit={onSubmit}
+      participantName={initialParticipantName ?? ''}
+      poll={poll}
+      response={response}
+      responseError={responseError}
+      responseState={isSubmitting ? 'pending' : responseState}
+      resultVisibility={resultVisibility}
+      sessionName={sessionName}
+    />
+  );
+}
+
+function SessionPrivacyNote() {
+  return (
+    <p className="px-1 text-center text-xs leading-5 text-muted-foreground">
+      Your display name is session-local. Participant results show
+      aggregates only, never names or individual open-ended responses.
+    </p>
   );
 }

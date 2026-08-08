@@ -68,6 +68,10 @@ export function MagicLinkConfirmationPage({
     }
   }
 
+  function handleOpenEmail() {
+    setOpenEmailNotice(true);
+  }
+
   return (
     <AuthShell
       footer="Short-lived · single-use · secure"
@@ -96,72 +100,28 @@ export function MagicLinkConfirmationPage({
           junk folder if you do not see it soon.
         </p>
 
-        {openEmailNotice ? (
-          <AlertBox className="border-border bg-muted" role="status">
-            <Mail />
-            <AlertText>
-              Open your email app and look for the newest message from Pulse.
-            </AlertText>
-          </AlertBox>
-        ) : null}
-        {requestedAgain ? (
-          <AlertBox
-            className="border-border bg-muted"
-            role="status"
-          >
-            <Check />
-            <AlertText>A fresh link was requested for {email}.</AlertText>
-          </AlertBox>
-        ) : null}
-        {errorMessage ? (
-          <AlertBox
-            className="border-destructive/25 bg-destructive/10"
-            role="alert"
-            variant="destructive"
-          >
-            <TriangleAlert />
-            <AlertText>{errorMessage}</AlertText>
-          </AlertBox>
-        ) : null}
+        <StatusCallout
+          email={email}
+          errorMessage={errorMessage}
+          openEmailNotice={openEmailNotice}
+          requestedAgain={requestedAgain}
+        />
 
         <Button
           className="w-full"
-          onClick={() => setOpenEmailNotice(true)}
+          onClick={handleOpenEmail}
           size="lg"
           type="button"
         >
-          <>
-            <Mail />
-            Open your email
-          </>
+          <Mail />
+          Open your email
         </Button>
 
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-sm text-muted-foreground">
-            Did not receive it?
-          </p>
-          <Button
-            className="px-2"
-            disabled={cooldown > 0 || sendMagicLink.isPending}
-            onClick={requestNewLink}
-            type="button"
-            variant="ghost"
-          >
-            {sendMagicLink.isPending
-              ? 'Sending fresh link...'
-              : cooldown > 0
-                ? `Request a new link in ${formatCooldown(cooldown)}`
-                : 'Request a new link'}
-          </Button>
-          <p
-            aria-live="polite"
-            className="text-xs text-muted-foreground"
-          >
-            {cooldown > 0
-              ? 'You can request another link when the cooldown ends.'
-              : 'The new link will also be short-lived and single-use.'}
-          </p>
-        </div>
+        <RequestNewLinkActions
+          cooldown={cooldown}
+          isPending={sendMagicLink.isPending}
+          onRequest={requestNewLink}
+        />
 
         <a
           className="text-sm font-semibold text-primary hover:underline"
@@ -172,4 +132,93 @@ export function MagicLinkConfirmationPage({
       </div>
     </AuthShell>
   );
+}
+
+type StatusCalloutProps = Readonly<{
+  email: string;
+  errorMessage: string | null;
+  openEmailNotice: boolean;
+  requestedAgain: boolean;
+}>;
+
+function StatusCallout({
+  email,
+  errorMessage,
+  openEmailNotice,
+  requestedAgain,
+}: StatusCalloutProps) {
+  return (
+    <>
+      {openEmailNotice ? (
+        <AlertBox className="border-border bg-muted" role="status">
+          <Mail />
+          <AlertText>
+            Open your email app and look for the newest message from Pulse.
+          </AlertText>
+        </AlertBox>
+      ) : null}
+      {requestedAgain ? (
+        <AlertBox className="border-border bg-muted" role="status">
+          <Check />
+          <AlertText>A fresh link was requested for {email}.</AlertText>
+        </AlertBox>
+      ) : null}
+      {errorMessage ? (
+        <AlertBox
+          className="border-destructive/25 bg-destructive/10"
+          role="alert"
+          variant="destructive"
+        >
+          <TriangleAlert />
+          <AlertText>{errorMessage}</AlertText>
+        </AlertBox>
+      ) : null}
+    </>
+  );
+}
+
+type RequestNewLinkActionsProps = Readonly<{
+  cooldown: number;
+  isPending: boolean;
+  onRequest: () => void;
+}>;
+
+function RequestNewLinkActions({
+  cooldown,
+  isPending,
+  onRequest,
+}: RequestNewLinkActionsProps) {
+  const buttonLabel = getRequestButtonLabel(cooldown, isPending);
+  const hint =
+    cooldown > 0
+      ? 'You can request another link when the cooldown ends.'
+      : 'The new link will also be short-lived and single-use.';
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <p className="text-sm text-muted-foreground">Did not receive it?</p>
+      <Button
+        className="px-2"
+        disabled={cooldown > 0 || isPending}
+        onClick={onRequest}
+        type="button"
+        variant="ghost"
+      >
+        {buttonLabel}
+      </Button>
+      <p aria-live="polite" className="text-xs text-muted-foreground">
+        {hint}
+      </p>
+    </div>
+  );
+}
+
+function getRequestButtonLabel(cooldown: number, isPending: boolean) {
+  if (isPending) {
+    return 'Sending fresh link...';
+  }
+  if (cooldown > 0) {
+    return `Request a new link in ${formatCooldown(cooldown)}`;
+  }
+  return 'Request a new link';
 }
