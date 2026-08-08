@@ -59,13 +59,13 @@ export function Field({
             </BaseField.Description>
           ) : null}
           {error ? (
-            <BaseField.Error
+            <p
               className="text-xs leading-5 text-[var(--color-error)]"
               id={`${id}-error`}
               role="alert"
             >
               {error}
-            </BaseField.Error>
+            </p>
           ) : null}
         </div>
       ) : null}

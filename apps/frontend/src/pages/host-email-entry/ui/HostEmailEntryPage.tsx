@@ -1,6 +1,9 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { ArrowRight, LockKeyhole } from 'lucide-react';
 
+import { useSendMagicLink } from '@/shared/hooks/use-host-auth';
+import { ApiError } from '@/shared/lib/api-client';
+import { ERROR_CODES } from '@/shared/lib/contracts';
 import { AuthShell } from '@/shared/ui/auth-shell';
 import { Button, Callout, Field, TextInput } from '@/shared/ui';
 
@@ -24,30 +27,48 @@ export function HostEmailEntryPage({
 }: HostEmailEntryPageProps = {}) {
   const [email, setEmail] = useState(initialEmail);
   const [state, setState] = useState<HostEmailEntryState>(initialState);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (state !== 'sending') {
-      return;
-    }
+  const sendMagicLink = useSendMagicLink();
 
-    const timeoutId = globalThis.setTimeout(() => setState('sent'), 850);
-    return () => globalThis.clearTimeout(timeoutId);
-  }, [state]);
-
-  const emailError =
-    state === 'invalid' ? 'Enter a valid email address.' : undefined;
-  const isSending = state === 'sending';
+  const isSending = sendMagicLink.isPending || state === 'sending';
   const isRateLimited = state === 'rate-limited';
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const emailError =
+    state === 'invalid'
+      ? 'Enter a valid email address.'
+      : errorMessage || undefined;
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!emailPattern.test(email.trim())) {
+    const trimmedEmail = email.trim();
+    if (!emailPattern.test(trimmedEmail)) {
       setState('invalid');
+      setErrorMessage('Enter a valid email address.');
       return;
     }
 
+    setErrorMessage(null);
     setState('sending');
+
+    try {
+      await sendMagicLink.mutateAsync({ email: trimmedEmail });
+      setState('sent');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.code === ERROR_CODES.RATE_LIMITED) {
+          setState('rate-limited');
+          setErrorMessage('Too many requests. Please wait a moment before trying again.');
+        } else {
+          setState('idle');
+          setErrorMessage(err.message || 'Failed to send magic link.');
+        }
+      } else {
+        setState('idle');
+        setErrorMessage('Failed to send magic link. Please check your network connection.');
+      }
+    }
   }
 
   return (
@@ -97,7 +118,10 @@ export function HostEmailEntryPage({
             </a>
             <Button
               className="w-full"
-              onClick={() => setState('idle')}
+              onClick={() => {
+                setState('idle');
+                setErrorMessage(null);
+              }}
               type="button"
               variant="quiet"
             >
@@ -123,8 +147,9 @@ export function HostEmailEntryPage({
                 leadingIcon="mail"
                 onChange={(event) => {
                   setEmail(event.target.value);
-                  if (state === 'invalid') {
+                  if (state === 'invalid' || errorMessage) {
                     setState('idle');
+                    setErrorMessage(null);
                   }
                 }}
                 placeholder="you@example.com"

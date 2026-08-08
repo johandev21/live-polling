@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link2Off, ShieldCheck } from 'lucide-react';
 
+import { useSendMagicLink } from '@/shared/hooks/use-host-auth';
 import { AuthShell } from '@/shared/ui/auth-shell';
 import { Button, Callout } from '@/shared/ui';
 
@@ -27,6 +28,9 @@ export function InvalidMagicLinkPage({
 }: InvalidMagicLinkPageProps = {}) {
   const [cooldown, setCooldown] = useState(initialCooldownSeconds);
   const [requested, setRequested] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const sendMagicLink = useSendMagicLink();
 
   useEffect(() => {
     if (cooldown <= 0) {
@@ -40,13 +44,25 @@ export function InvalidMagicLinkPage({
     return () => globalThis.clearInterval(intervalId);
   }, [cooldown]);
 
-  function requestNewLink() {
-    if (cooldown > 0) {
+  async function requestNewLink() {
+    if (cooldown > 0 || sendMagicLink.isPending) {
       return;
     }
 
-    setCooldown(60);
-    setRequested(true);
+    if (!email) {
+      // If no email present in search, redirect to email entry
+      window.location.href = '/host/email';
+      return;
+    }
+
+    setErrorMessage(null);
+    try {
+      await sendMagicLink.mutateAsync({ email });
+      setCooldown(60);
+      setRequested(true);
+    } catch {
+      setErrorMessage('Could not request a new link right now. Please try again.');
+    }
   }
 
   const title =
@@ -91,18 +107,25 @@ export function InvalidMagicLinkPage({
               : 'Check your inbox for a new short-lived link.'}
           </Callout>
         ) : null}
+        {errorMessage ? (
+          <Callout icon="alertCircle" role="alert" tone="error">
+            {errorMessage}
+          </Callout>
+        ) : null}
 
         <Button
           className="w-full"
-          disabled={cooldown > 0}
+          disabled={cooldown > 0 || sendMagicLink.isPending}
           onClick={requestNewLink}
           size="lg"
           startIcon="refreshCw"
           type="button"
         >
-          {cooldown > 0
-            ? `Request a new link in ${formatCooldown(cooldown)}`
-            : 'Request a new link'}
+          {sendMagicLink.isPending
+            ? 'Requesting new link...'
+            : cooldown > 0
+              ? `Request a new link in ${formatCooldown(cooldown)}`
+              : 'Request a new link'}
         </Button>
         <p
           aria-live="polite"

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MailCheck, ShieldCheck } from 'lucide-react';
 
+import { useSendMagicLink } from '@/shared/hooks/use-host-auth';
 import { AuthShell } from '@/shared/ui/auth-shell';
 import { Button, Callout } from '@/shared/ui';
 
@@ -24,6 +25,9 @@ export function MagicLinkConfirmationPage({
   const [cooldown, setCooldown] = useState(initialCooldownSeconds);
   const [openEmailNotice, setOpenEmailNotice] = useState(false);
   const [requestedAgain, setRequestedAgain] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const sendMagicLink = useSendMagicLink();
 
   useEffect(() => {
     if (cooldown <= 0) {
@@ -37,13 +41,19 @@ export function MagicLinkConfirmationPage({
     return () => globalThis.clearInterval(intervalId);
   }, [cooldown]);
 
-  function requestNewLink() {
-    if (cooldown > 0) {
+  async function requestNewLink() {
+    if (cooldown > 0 || sendMagicLink.isPending) {
       return;
     }
 
-    setCooldown(60);
-    setRequestedAgain(true);
+    setErrorMessage(null);
+    try {
+      await sendMagicLink.mutateAsync({ email });
+      setCooldown(60);
+      setRequestedAgain(true);
+    } catch {
+      setErrorMessage('Could not request a new link right now. Please try again later.');
+    }
   }
 
   return (
@@ -84,6 +94,11 @@ export function MagicLinkConfirmationPage({
             A fresh link was requested for {email}.
           </Callout>
         ) : null}
+        {errorMessage ? (
+          <Callout icon="alertCircle" role="alert" tone="error">
+            {errorMessage}
+          </Callout>
+        ) : null}
 
         <Button
           className="w-full"
@@ -101,14 +116,16 @@ export function MagicLinkConfirmationPage({
           </p>
           <Button
             className="px-2"
-            disabled={cooldown > 0}
+            disabled={cooldown > 0 || sendMagicLink.isPending}
             onClick={requestNewLink}
             type="button"
             variant="quiet"
           >
-            {cooldown > 0
-              ? `Request a new link in ${formatCooldown(cooldown)}`
-              : 'Request a new link'}
+            {sendMagicLink.isPending
+              ? 'Sending fresh link...'
+              : cooldown > 0
+                ? `Request a new link in ${formatCooldown(cooldown)}`
+                : 'Request a new link'}
           </Button>
           <p
             aria-live="polite"
