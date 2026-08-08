@@ -6,15 +6,21 @@ import { Brand, Button, Callout, Field, Surface, TextInput } from '@/shared/ui';
 export type ParticipantNameEntryState = 'idle' | 'joined' | 'joining';
 
 export type ParticipantNameEntryPageProps = Readonly<{
+  errorMessage?: string | null;
   initialName?: string;
   initialState?: ParticipantNameEntryState;
+  isSubmitting?: boolean;
+  onJoinSubmit?: (name: string) => Promise<void> | void;
   roomCode?: string;
   sessionName?: string;
 }>;
 
 export function ParticipantNameEntryPage({
+  errorMessage,
   initialName = '',
   initialState = 'idle',
+  isSubmitting = false,
+  onJoinSubmit,
   roomCode = '7K4P9D',
   sessionName = 'Team offsite · June 2025',
 }: ParticipantNameEntryPageProps = {}) {
@@ -27,11 +33,13 @@ export function ParticipantNameEntryPage({
       return;
     }
 
-    const timeoutId = globalThis.setTimeout(() => setState('joined'), 750);
-    return () => globalThis.clearTimeout(timeoutId);
-  }, [state]);
+    if (!onJoinSubmit) {
+      const timeoutId = globalThis.setTimeout(() => setState('joined'), 750);
+      return () => globalThis.clearTimeout(timeoutId);
+    }
+  }, [state, onJoinSubmit]);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedName = name.trim();
 
@@ -48,6 +56,16 @@ export function ParticipantNameEntryPage({
     setName(trimmedName);
     setError(undefined);
     setState('joining');
+
+    if (onJoinSubmit) {
+      try {
+        await onJoinSubmit(trimmedName);
+        setState('joined');
+      } catch (err) {
+        setState('idle');
+        setError(err instanceof Error ? err.message : 'Failed to join session.');
+      }
+    }
   }
 
   return (
@@ -71,6 +89,12 @@ export function ParticipantNameEntryPage({
               Enter a display name to join the session. No account is required.
             </p>
           </div>
+
+          {errorMessage ? (
+            <Callout icon="alertCircle" title="Error joining session" tone="error">
+              {errorMessage}
+            </Callout>
+          ) : null}
 
           {state === 'joined' ? (
             <div className="flex flex-col gap-4">
@@ -117,6 +141,7 @@ export function ParticipantNameEntryPage({
               >
                 <TextInput
                   autoComplete="nickname"
+                  id="participant-name"
                   invalid={Boolean(error)}
                   maxLength={40}
                   onChange={(event) => {
@@ -130,12 +155,12 @@ export function ParticipantNameEntryPage({
 
               <Button
                 className="w-full"
-                disabled={state === 'joining'}
-                endIcon={state === 'joining' ? 'loaderCircle' : 'arrowRight'}
+                disabled={state === 'joining' || isSubmitting}
+                endIcon={state === 'joining' || isSubmitting ? 'loaderCircle' : 'arrowRight'}
                 size="lg"
                 type="submit"
               >
-                {state === 'joining' ? 'Joining session...' : 'Join session'}
+                {state === 'joining' || isSubmitting ? 'Joining session...' : 'Join session'}
               </Button>
 
               <p className="text-center text-xs leading-5 text-[var(--color-text-tertiary)]">

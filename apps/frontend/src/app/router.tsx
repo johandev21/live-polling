@@ -1,4 +1,5 @@
 /* oxlint-disable react/only-export-components */
+import { useState } from 'react';
 import {
   createRootRoute,
   createRoute,
@@ -41,6 +42,8 @@ import {
   useDeleteSession,
   useHostSessions,
 } from '@/shared/hooks/use-host-sessions';
+import { useJoinSession } from '@/shared/hooks/use-participant-auth';
+import { getParticipantToken } from '@/shared/lib/participant-storage';
 import type { PollSnapshot, SessionSnapshot } from '@/shared/lib/contracts';
 import { DefaultRouteFallback } from './route-fallback';
 
@@ -413,8 +416,42 @@ const endedSessionHistoryRoute = createRoute({
 });
 
 function JoinRouteComponent() {
+  const navigate = useNavigate();
   const { roomCode } = useSearch({ from: joinRoute.id });
-  return <JoinByRoomCodePage initialRoomCode={roomCode} />;
+  const joinSession = useJoinSession();
+  const [statusOverride, setStatusOverride] = useState<'draft' | 'ended' | 'invalid' | 'ready' | undefined>();
+
+  return (
+    <JoinByRoomCodePage
+      errorMessage={joinSession.error?.message || null}
+      initialRoomCode={roomCode}
+      isSubmitting={joinSession.isPending}
+      onJoinSubmit={async (code) => {
+        const existingToken = getParticipantToken(code);
+        try {
+          await joinSession.mutateAsync({
+            roomCode: code,
+            token: existingToken || undefined,
+          });
+          setStatusOverride('ready');
+          void navigate({ to: `/join/name?roomCode=${encodeURIComponent(code)}` });
+        } catch (err: any) {
+          if (err?.code === 'SESSION_DRAFT') {
+            setStatusOverride('draft');
+          } else if (err?.code === 'SESSION_ENDED') {
+            setStatusOverride('ended');
+          } else if (err?.code === 'SESSION_NOT_FOUND') {
+            setStatusOverride('invalid');
+          } else {
+            // Need name or token missing
+            setStatusOverride('ready');
+            void navigate({ to: `/join/name?roomCode=${encodeURIComponent(code)}` });
+          }
+        }
+      }}
+      statusOverride={statusOverride}
+    />
+  );
 }
 
 const joinRoute = createRoute({
@@ -425,8 +462,41 @@ const joinRoute = createRoute({
 });
 
 function InvitationJoinRouteComponent() {
+  const navigate = useNavigate();
   const { roomCode } = useSearch({ from: invitationJoinRoute.id });
-  return <JoinByRoomCodePage initialRoomCode={roomCode} />;
+  const joinSession = useJoinSession();
+  const [statusOverride, setStatusOverride] = useState<'draft' | 'ended' | 'invalid' | 'ready' | undefined>();
+
+  return (
+    <JoinByRoomCodePage
+      errorMessage={joinSession.error?.message || null}
+      initialRoomCode={roomCode}
+      isSubmitting={joinSession.isPending}
+      onJoinSubmit={async (code) => {
+        const existingToken = getParticipantToken(code);
+        try {
+          await joinSession.mutateAsync({
+            roomCode: code,
+            token: existingToken || undefined,
+          });
+          setStatusOverride('ready');
+          void navigate({ to: `/join/name?roomCode=${encodeURIComponent(code)}` });
+        } catch (err: any) {
+          if (err?.code === 'SESSION_DRAFT') {
+            setStatusOverride('draft');
+          } else if (err?.code === 'SESSION_ENDED') {
+            setStatusOverride('ended');
+          } else if (err?.code === 'SESSION_NOT_FOUND') {
+            setStatusOverride('invalid');
+          } else {
+            setStatusOverride('ready');
+            void navigate({ to: `/join/name?roomCode=${encodeURIComponent(code)}` });
+          }
+        }
+      }}
+      statusOverride={statusOverride}
+    />
+  );
 }
 
 const invitationJoinRoute = createRoute({
@@ -437,8 +507,27 @@ const invitationJoinRoute = createRoute({
 });
 
 function ParticipantNameRouteComponent() {
+  const navigate = useNavigate();
   const { roomCode } = useSearch({ from: participantNameRoute.id });
-  return <ParticipantNameEntryPage roomCode={roomCode} />;
+  const joinSession = useJoinSession();
+
+  return (
+    <ParticipantNameEntryPage
+      errorMessage={joinSession.error?.message || null}
+      isSubmitting={joinSession.isPending}
+      onJoinSubmit={async (name) => {
+        const code = roomCode || '7K4P9D';
+        const existingToken = getParticipantToken(code);
+        const res = await joinSession.mutateAsync({
+          name,
+          roomCode: code,
+          token: existingToken || undefined,
+        });
+        void navigate({ to: `/session/${encodeURIComponent(res.session.id)}` });
+      }}
+      roomCode={roomCode}
+    />
+  );
 }
 
 const participantNameRoute = createRoute({
@@ -449,8 +538,41 @@ const participantNameRoute = createRoute({
 });
 
 function JoinByCodeRouteComponent() {
+  const navigate = useNavigate();
   const { roomCode } = useParams({ from: joinByCodeRoute.id });
-  return <JoinByRoomCodePage initialRoomCode={roomCode} />;
+  const joinSession = useJoinSession();
+  const [statusOverride, setStatusOverride] = useState<'draft' | 'ended' | 'invalid' | 'ready' | undefined>();
+
+  return (
+    <JoinByRoomCodePage
+      errorMessage={joinSession.error?.message || null}
+      initialRoomCode={roomCode}
+      isSubmitting={joinSession.isPending}
+      onJoinSubmit={async (code) => {
+        const existingToken = getParticipantToken(code);
+        try {
+          await joinSession.mutateAsync({
+            roomCode: code,
+            token: existingToken || undefined,
+          });
+          setStatusOverride('ready');
+          void navigate({ to: `/join/name?roomCode=${encodeURIComponent(code)}` });
+        } catch (err: any) {
+          if (err?.code === 'SESSION_DRAFT') {
+            setStatusOverride('draft');
+          } else if (err?.code === 'SESSION_ENDED') {
+            setStatusOverride('ended');
+          } else if (err?.code === 'SESSION_NOT_FOUND') {
+            setStatusOverride('invalid');
+          } else {
+            setStatusOverride('ready');
+            void navigate({ to: `/join/name?roomCode=${encodeURIComponent(code)}` });
+          }
+        }
+      }}
+      statusOverride={statusOverride}
+    />
+  );
 }
 
 const joinByCodeRoute = createRoute({

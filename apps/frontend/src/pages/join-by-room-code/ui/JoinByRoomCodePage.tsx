@@ -10,8 +10,12 @@ import {
 } from '../model/join-by-room-code';
 
 export type JoinByRoomCodePageProps = Readonly<{
+  errorMessage?: string | null;
   initialRoomCode?: string;
   initialStatus?: RoomCodeStatus;
+  isSubmitting?: boolean;
+  onJoinSubmit?: (roomCode: string) => Promise<void> | void;
+  statusOverride?: RoomCodeStatus;
 }>;
 
 const statusCopy = {
@@ -41,8 +45,12 @@ const statusCopy = {
 >;
 
 export function JoinByRoomCodePage({
+  errorMessage,
   initialRoomCode = '',
   initialStatus,
+  isSubmitting = false,
+  onJoinSubmit,
+  statusOverride,
 }: JoinByRoomCodePageProps = {}) {
   const [roomCode, setRoomCode] = useState(() =>
     normalizeRoomCode(initialRoomCode),
@@ -54,16 +62,32 @@ export function JoinByRoomCodePage({
         : 'idle'),
   );
 
-  const codeError = status === 'invalid' ? statusCopy.invalid.body : undefined;
+  const activeStatus = statusOverride ?? status;
+  const codeError = activeStatus === 'invalid' ? statusCopy.invalid.body : undefined;
 
   function handleRoomCodeChange(value: string) {
     setRoomCode(normalizeRoomCode(value));
     setStatus('idle');
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus(getRoomCodeStatus(roomCode));
+    const normalized = normalizeRoomCode(roomCode);
+    if (!normalized || normalized.length < 6) {
+      setStatus('invalid');
+      return;
+    }
+
+    if (onJoinSubmit) {
+      try {
+        await onJoinSubmit(normalized);
+      } catch {
+        setStatus(getRoomCodeStatus(normalized));
+        return;
+      }
+    } else {
+      setStatus(getRoomCodeStatus(normalized));
+    }
   }
 
   const invitationPath = roomCode
@@ -93,6 +117,12 @@ export function JoinByRoomCodePage({
             </p>
           </div>
 
+          {errorMessage ? (
+            <Callout icon="alertCircle" title="Unable to join" tone="error">
+              {errorMessage}
+            </Callout>
+          ) : null}
+
           <form
             className="flex flex-col gap-5"
             noValidate
@@ -121,15 +151,16 @@ export function JoinByRoomCodePage({
 
             <Button
               className="w-full"
-              endIcon="arrowRight"
+              disabled={isSubmitting}
+              endIcon={isSubmitting ? 'loaderCircle' : 'arrowRight'}
               size="lg"
               type="submit"
             >
-              Join session
+              {isSubmitting ? 'Verifying code...' : 'Join session'}
             </Button>
           </form>
 
-          {status === 'ready' ? (
+          {activeStatus === 'ready' ? (
             <Callout icon="check" title="Session found" tone="success">
               You are ready to choose a session-local display name before
               joining.
@@ -141,13 +172,13 @@ export function JoinByRoomCodePage({
                 <ArrowRight aria-hidden="true" size={15} />
               </a>
             </Callout>
-          ) : status !== 'idle' ? (
+          ) : activeStatus !== 'idle' ? (
             <Callout
-              icon={status === 'unavailable' ? 'wifiOff' : 'alertCircle'}
-              title={statusCopy[status].title}
-              tone={statusCopy[status].tone}
+              icon={activeStatus === 'unavailable' ? 'wifiOff' : 'alertCircle'}
+              title={statusCopy[activeStatus].title}
+              tone={statusCopy[activeStatus].tone}
             >
-              {statusCopy[status].body}
+              {statusCopy[activeStatus].body}
             </Callout>
           ) : null}
 
