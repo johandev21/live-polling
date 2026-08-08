@@ -28,6 +28,7 @@ import { HostSessionGuard, VerifiedHostGuard } from './auth.guards';
           trustedOrigins: configuredOrigins(),
           advanced: {
             ipAddress: {
+              ipAddressHeaders: ['x-forwarded-for', 'x-real-ip'],
               trustedProxies: ['127.0.0.1', '::1'],
             },
           },
