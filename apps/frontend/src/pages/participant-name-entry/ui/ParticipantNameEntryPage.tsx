@@ -91,7 +91,7 @@ export function ParticipantNameEntryPage({
           <div className="flex flex-col gap-6 p-6 sm:p-9">
             <Brand aria-label="Pulse home" href="/" size="lg" />
             <div className="flex flex-col gap-3">
-              <p className="font-mono text-xs font-bold uppercase tracking-[0.15em] text-primary">
+              <p className="font-mono text-xs font-bold tracking-[0.15em] text-primary uppercase">
                 {sessionName ?? 'Join a session'}
               </p>
               <h1 className="text-3xl font-bold tracking-[-0.035em] text-foreground">

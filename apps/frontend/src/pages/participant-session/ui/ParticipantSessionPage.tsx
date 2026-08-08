@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import {
   responseDraftForPoll,
@@ -69,12 +69,14 @@ export function ParticipantSessionPage({
     editableResponseFromStored(snapshot.response, snapshot.poll),
   );
   const [responseError, setResponseError] = useState<string>();
+  const snapshotRef = useRef(snapshot);
+  snapshotRef.current = snapshot;
 
   useEffect(() => {
-    setDraftResponse(editableResponseFromStored(snapshot.response, snapshot.poll));
+    const { response, poll } = snapshotRef.current;
+    setDraftResponse(editableResponseFromStored(response, poll));
     setResponseError(undefined);
-    // Reset the draft when the active poll changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Reset the draft when the active poll changes.
   }, [snapshot.poll.id]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

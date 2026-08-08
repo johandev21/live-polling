@@ -30,7 +30,7 @@ export function OpenEndedResults({ poll }: OpenEndedResultsProps) {
         Open-ended poll · Host-visible response text
       </p>
 
-      <div className="flex items-center justify-between gap-4 rounded-md bg-secondary px-4 py-4">
+      <div className="flex items-center justify-between gap-4 rounded-md bg-secondary p-4">
         <span className="text-sm font-semibold text-muted-foreground">
           Total response count
         </span>
@@ -58,7 +58,7 @@ export function OpenEndedResults({ poll }: OpenEndedResultsProps) {
                 <p className="font-mono text-[10px] font-bold text-muted-foreground">
                   {response.submittedAt}
                 </p>
-                <blockquote className="mt-1 break-words text-sm leading-5 text-foreground">
+                <blockquote className="mt-1 text-sm leading-5 wrap-break-word text-foreground">
                   “{response.text}”
                 </blockquote>
               </div>

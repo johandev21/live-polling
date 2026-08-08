@@ -13,7 +13,7 @@ export function EmptyResults({ poll }: EmptyResultsProps) {
   return (
     <Card
       aria-labelledby="empty-results-title"
-      className="flex min-h-[28rem] flex-col items-center justify-center p-8 text-center sm:p-10"
+      className="flex min-h-112 flex-col items-center justify-center p-8 text-center sm:p-10"
     >
       <p className="font-mono text-[10px] font-bold tracking-[0.14em] text-primary">
         HOST RESULTS · {hostPollTypeLabel(poll.type).toUpperCase()} POLL

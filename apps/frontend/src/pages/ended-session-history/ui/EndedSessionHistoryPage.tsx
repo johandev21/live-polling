@@ -51,7 +51,7 @@ function OpenEndedPollHistory({ poll }: { poll: EndedHistoryPoll }) {
               <p className="font-mono text-[10px] text-muted-foreground">
                 {response.submittedAt}
               </p>
-              <blockquote className="mt-1 break-words text-sm leading-5 text-muted-foreground">
+              <blockquote className="mt-1 text-sm leading-5 wrap-break-word text-muted-foreground">
                 “{response.text}”
               </blockquote>
             </div>
@@ -66,7 +66,7 @@ function PollHistoryCard({ poll }: { poll: EndedHistoryPoll }) {
   return (
     <Card className="flex flex-col gap-3 p-4">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <h3 className="min-w-0 break-words text-base font-bold text-foreground">
+        <h3 className="min-w-0 text-base font-bold wrap-break-word text-foreground">
           {String(poll.number).padStart(2, '0')} · {poll.prompt}
         </h3>
         <span className="shrink-0 font-mono text-[10px] text-muted-foreground sm:text-right">
@@ -163,8 +163,8 @@ export function EndedSessionHistoryPage({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-card">
-        <nav className="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-16">
-           <a aria-label="Pulse home" className="inline-flex items-center gap-2.5" href="/"><span aria-hidden="true" className="size-7 rounded-full bg-primary" /><span className="text-xl font-bold leading-none tracking-tight">pulse</span></a>
+        <nav className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-between gap-4 p-4 sm:px-6 lg:px-16">
+           <a aria-label="Pulse home" className="inline-flex items-center gap-2.5" href="/"><span aria-hidden="true" className="size-7 rounded-full bg-primary" /><span className="text-xl leading-none font-bold tracking-tight">pulse</span></a>
            <a
              className="text-muted-foreground"
             href="/host/dashboard"
@@ -175,11 +175,11 @@ export function EndedSessionHistoryPage({
         </nav>
       </header>
 
-      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-7 px-4 py-7 sm:px-6 sm:py-10 lg:px-16">
+      <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-col gap-7 px-4 py-7 sm:px-6 sm:py-10 lg:px-16">
         <header className="flex flex-col gap-4 border-b border-border pb-6 lg:gap-3">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-              <h1 className="min-w-0 break-words text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
+              <h1 className="min-w-0 text-3xl font-bold tracking-[-0.04em] wrap-break-word sm:text-4xl">
                 {history.sessionName}
               </h1>
                <Badge variant="secondary"><span aria-hidden="true" className="size-1.5 rounded-full bg-current" />Ended session</Badge>

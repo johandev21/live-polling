@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 
 function Brand() {
-  return <a aria-label="Pulse home" className="inline-flex items-center gap-2.5" href="/"><span aria-hidden="true" className="size-7 rounded-full bg-primary" /><span className="text-xl font-bold leading-none tracking-tight">pulse</span></a>;
+  return <a aria-label="Pulse home" className="inline-flex items-center gap-2.5" href="/"><span aria-hidden="true" className="size-7 rounded-full bg-primary" /><span className="text-xl leading-none font-bold tracking-tight">pulse</span></a>;
 }
 
 import {
@@ -60,8 +60,8 @@ function PollNavigation({
                 aria-current={isCurrent ? 'page' : undefined}
                 className={
                   isCurrent
-                    ? 'w-full rounded-sm bg-secondary px-3 py-3 text-left text-primary ring-1 ring-primary'
-                    : 'w-full rounded-sm px-3 py-3 text-left text-muted-foreground transition-colors hover:bg-muted'
+                    ? 'w-full rounded-sm bg-secondary p-3 text-left text-primary ring-1 ring-primary'
+                    : 'w-full rounded-sm p-3 text-left text-muted-foreground transition-colors hover:bg-muted'
                 }
                 onClick={() => onSelect(item.id)}
                 type="button"
@@ -70,7 +70,7 @@ function PollNavigation({
                   {String(item.number).padStart(2, '0')} ·{' '}
                   {hostPollTypeLabel(item.type)}
                 </span>
-                <span className="mt-1 block text-xs font-semibold leading-4">
+                <span className="mt-1 block text-xs leading-4 font-semibold">
                   {item.question}
                 </span>
                 <span className="mt-1 block text-[10px] text-muted-foreground">
@@ -154,7 +154,7 @@ export function HostResultsPage({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-card">
-        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-12">
+        <div className="mx-auto flex w-full max-w-360 items-center justify-between gap-4 p-4 sm:px-6 lg:px-12">
            <Brand />
           <div className="flex items-center gap-3 sm:gap-5">
             <a
@@ -172,7 +172,7 @@ export function HostResultsPage({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1440px] px-4 py-7 sm:px-6 lg:px-12 lg:py-9">
+      <main className="mx-auto w-full max-w-360 px-4 py-7 sm:px-6 lg:px-12 lg:py-9">
         <header className="border-b border-border pb-7">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">

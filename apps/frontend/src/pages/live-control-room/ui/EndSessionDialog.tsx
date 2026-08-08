@@ -61,7 +61,7 @@ export function EndSessionDialog({
       onClose={onClose}
       titleId="end-session-title"
     >
-      <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-5 sm:px-7">
+      <header className="flex items-center justify-between gap-4 border-b border-border p-5 sm:px-7">
         <div className="flex min-w-0 flex-wrap items-center gap-3">
           <span className="truncate text-sm font-bold text-foreground">
             {sessionName}
@@ -118,7 +118,7 @@ export function EndSessionDialog({
         </Alert>
       </div>
 
-      <footer className="flex flex-col-reverse gap-3 bg-muted px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+      <footer className="flex flex-col-reverse gap-3 bg-muted p-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
         <Button onClick={onClose} variant="ghost">
           Keep session live
         </Button>

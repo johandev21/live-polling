@@ -113,7 +113,7 @@ function Header({ session }: { session: SessionEditorSession }) {
     <header className="border-b border-border bg-background">
       <nav
         aria-label="Session editor navigation"
-        className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 py-4 sm:px-6 lg:px-16"
+        className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-between p-4 sm:px-6 lg:px-16"
       >
         <a
           className="inline-flex items-center gap-2 rounded-sm text-sm font-semibold text-muted-foreground hover:text-foreground"
@@ -288,7 +288,7 @@ export function SessionEditorPage({
     return (
       <div className="min-h-screen bg-background">
         <Header session={initialSession ?? undefinedSession} />
-        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
+        <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
           Loading session details...
         </main>
       </div>
@@ -299,7 +299,7 @@ export function SessionEditorPage({
     return (
       <div className="min-h-screen bg-background">
         <Header session={undefinedSession} />
-        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
+        <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
           This session could not be loaded. Return to the dashboard and try
           again.
         </main>
@@ -417,11 +417,11 @@ export function SessionEditorPage({
   return (
     <div className="min-h-screen bg-background">
       <Header session={session} />
-      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
+      <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
         <section className="flex flex-col gap-4">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-              <h1 className="break-words text-3xl font-bold tracking-[-0.03em] text-foreground">
+              <h1 className="text-3xl font-bold tracking-[-0.03em] wrap-break-word text-foreground">
                 {session.name}
               </h1>
               <Badge
@@ -512,7 +512,7 @@ export function SessionEditorPage({
         {isEmpty ? (
           <section className="grid gap-6 lg:grid-cols-[minmax(0,900px)_320px]">
             <Card
-              className="flex min-h-[420px] flex-col items-center justify-center gap-5 px-6 py-12 text-center"
+              className="flex min-h-105 flex-col items-center justify-center gap-5 px-6 py-12 text-center"
             >
               <span className="flex size-18 items-center justify-center rounded-full bg-muted text-foreground">
                 <Layers aria-hidden="true" size={30} />
@@ -577,7 +577,7 @@ export function SessionEditorPage({
                         ) : null}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="break-words text-base font-bold text-foreground">
+                        <h3 className="text-base font-bold wrap-break-word text-foreground">
                           {poll.text}
                         </h3>
                         <div className="mt-2">

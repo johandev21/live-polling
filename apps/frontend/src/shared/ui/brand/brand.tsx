@@ -64,7 +64,7 @@ export function Brand({
       />
       <span
         className={cx(
-          'font-bold leading-none tracking-[-0.02em]',
+          'leading-none font-bold tracking-[-0.02em]',
           classes.wordmark,
           colors.wordmark,
         )}

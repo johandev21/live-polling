@@ -39,7 +39,7 @@ function Header() {
     <header className="border-b border-border bg-background">
       <nav
         aria-label="Locked poll navigation"
-        className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 py-4 sm:px-6 lg:px-16"
+        className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-between p-4 sm:px-6 lg:px-16"
       >
         <a
           className="inline-flex items-center gap-2 rounded-sm text-sm font-semibold text-muted-foreground hover:text-foreground"
@@ -69,7 +69,7 @@ function LockedOption({
       >
         {index + 1}
       </span>
-      <span className="min-w-0 flex-1 break-words text-sm text-foreground">
+      <span className="min-w-0 flex-1 text-sm wrap-break-word text-foreground">
         {option.label}
       </span>
       <LockKeyhole
@@ -95,7 +95,7 @@ export function EditLockedPollPage({
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
+        <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
           Loading poll details...
         </main>
       </div>
@@ -106,7 +106,7 @@ export function EditLockedPollPage({
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
+        <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
           This poll could not be loaded. Return to the session editor and try
           again.
         </main>
@@ -140,11 +140,11 @@ export function EditLockedPollPage({
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
+      <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
         <section className="flex flex-col gap-4">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-              <h1 className="break-words text-3xl font-bold tracking-[-0.03em] text-foreground sm:text-4xl">
+              <h1 className="text-3xl font-bold tracking-[-0.03em] wrap-break-word text-foreground sm:text-4xl">
                 {poll.text}
               </h1>
               <Badge variant="secondary" role="status">
@@ -216,7 +216,7 @@ export function EditLockedPollPage({
               >
                 Poll text
               </h2>
-              <p className="mt-2 rounded-sm border border-border bg-background p-4 text-base font-semibold leading-6 text-foreground">
+              <p className="mt-2 rounded-sm border border-border bg-background p-4 text-base leading-6 font-semibold text-foreground">
                 {poll.text}
               </p>
             </div>
@@ -305,7 +305,7 @@ export function EditLockedPollPage({
                   {poll.results.map((result) => (
                     <div aria-label={`${result.label}: ${result.percentage}%`} className="flex w-full flex-col gap-2" key={result.id} role="group">
                       <div className="flex items-baseline justify-between gap-4 text-sm">
-                        <span className="min-w-0 break-words font-semibold">{result.label}</span>
+                        <span className="min-w-0 font-semibold wrap-break-word">{result.label}</span>
                         <span className="shrink-0 text-xs font-semibold text-primary">{result.percentage}%</span>
                       </div>
                       <Progress aria-label={`${result.label}: ${result.percentage}%`} value={Math.min(100, Math.max(0, result.percentage))} />

@@ -50,7 +50,7 @@ export function ShareSessionPanel({
       onClose={onClose}
       titleId="share-session-title"
     >
-      <header className="flex items-start justify-between gap-4 border-b px-5 py-5 sm:px-7">
+      <header className="flex items-start justify-between gap-4 border-b p-5 sm:px-7">
         <div>
           <p className="font-mono text-[10px] font-bold tracking-[0.16em] text-primary">
             LIVE SESSION
@@ -80,7 +80,7 @@ export function ShareSessionPanel({
             <p className="font-mono text-[11px] font-bold tracking-[0.14em] text-muted-foreground">
               ROOM CODE
             </p>
-            <p className="mt-2 break-all font-mono text-5xl font-bold tracking-[0.08em] text-primary sm:text-6xl">
+            <p className="mt-2 font-mono text-5xl font-bold tracking-[0.08em] break-all text-primary sm:text-6xl">
               {roomCode}
             </p>
             <p className="mt-3 text-sm leading-5 text-muted-foreground">

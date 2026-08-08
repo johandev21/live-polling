@@ -46,7 +46,7 @@ type ParticipantPollProps = Readonly<{
 const optionBaseClassName = [
   'flex min-h-16 cursor-pointer items-center gap-3 rounded-sm border px-4 py-3',
   'transition-[background-color,border-color,transform] hover:-translate-y-px',
-  'has-[:disabled]:cursor-not-allowed has-[:disabled]:hover:translate-y-0',
+  'has-disabled:cursor-not-allowed has-disabled:hover:translate-y-0',
 ].join(' ');
 
 const optionIdleClassName =
@@ -101,7 +101,7 @@ function ChoiceOptions({
                   onChangeDraft(checked ? [...selectedValues, option.id] : selectedValues.filter((value) => value !== option.id));
                 }}
               />
-              <span className="min-w-0 break-words text-base font-semibold">{option.label}</span>
+              <span className="min-w-0 text-base font-semibold wrap-break-word">{option.label}</span>
             </Label>
           );
         })
@@ -113,7 +113,7 @@ function ChoiceOptions({
             return (
               <Label className={cn(optionBaseClassName, selected ? optionSelectedClassName : optionIdleClassName)} htmlFor={inputId} key={option.id}>
                 <RadioGroupItem id={inputId} value={option.id} />
-                <span className="min-w-0 break-words text-base font-semibold">{option.label}</span>
+                <span className="min-w-0 text-base font-semibold wrap-break-word">{option.label}</span>
               </Label>
             );
           })}
@@ -188,14 +188,14 @@ export function ParticipantPoll({
     <div className="flex flex-col gap-4">
       <ParticipantCard className="flex flex-col gap-5" padding="lg">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-primary">
+          <p className="font-mono text-xs font-bold tracking-[0.14em] text-primary uppercase">
             {sessionName}
           </p>
           <ParticipantStatusBadge label="Open poll" tone="success" />
         </div>
 
         <div className="flex flex-col gap-3">
-          <h1 className="text-3xl font-bold leading-tight tracking-[-0.035em] text-foreground">
+          <h1 className="text-3xl leading-tight font-bold tracking-[-0.035em] text-foreground">
             {poll.prompt}
           </h1>
           <p className="text-sm text-muted-foreground">

@@ -87,7 +87,7 @@ export function MagicLinkConfirmationPage({
           <p className="text-sm text-muted-foreground">
             We sent a sign-in link to
           </p>
-          <p className="break-all font-mono text-sm font-bold text-foreground">
+          <p className="font-mono text-sm font-bold break-all text-foreground">
             {email}
           </p>
         </div>

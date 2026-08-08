@@ -39,7 +39,7 @@ export function ParticipantWaitingState({
       className="flex flex-col items-center gap-5 text-center"
       padding="lg"
     >
-      <p className="font-mono text-xs font-bold uppercase tracking-[0.14em] text-primary">
+      <p className="font-mono text-xs font-bold tracking-[0.14em] text-primary uppercase">
         {sessionName}
       </p>
       <div className="flex size-18 items-center justify-center rounded-full bg-secondary text-primary">
@@ -121,7 +121,7 @@ export function ParticipantClosedPollState({
               <p className="text-sm font-bold text-foreground">
                 Your response was accepted before closing.
               </p>
-              <p className="break-words text-base font-bold text-foreground">
+              <p className="text-base font-bold wrap-break-word text-foreground">
                 {participantResponseLabel(poll, response)}
               </p>
             </div>

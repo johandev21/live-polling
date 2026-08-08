@@ -61,7 +61,7 @@ function Header() {
     <header className="border-b border-border bg-background">
       <nav
         aria-label="Host navigation"
-        className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 py-4 sm:px-6 lg:px-16"
+        className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-between p-4 sm:px-6 lg:px-16"
       >
         <Brand aria-label="Pulse home" href="/" size="md" />
         <div className="flex items-center gap-4 text-sm text-muted-foreground sm:gap-5">
@@ -137,7 +137,7 @@ export function HostDashboardPage({
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-12 lg:px-16">
+      <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-col gap-8 px-4 py-8 sm:px-6 sm:py-12 lg:px-16">
         <section className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
             <p className="text-xs font-bold tracking-[0.16em] text-foreground">
@@ -216,7 +216,7 @@ export function HostDashboardPage({
                           />
                           <SessionStatus lifecycle={session.lifecycle} />
                         </div>
-                        <h3 className="mt-3 break-words text-lg font-bold text-foreground">
+                        <h3 className="mt-3 text-lg font-bold wrap-break-word text-foreground">
                           {session.name}
                         </h3>
                         <p className="mt-1 font-mono text-xs text-muted-foreground">
@@ -267,7 +267,7 @@ export function HostDashboardPage({
                   >
                     {filterOrder.map((filter) => (
                       <TabsTrigger
-                        className="min-h-9 rounded-[4px] px-4 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted data-[selected]:bg-secondary data-[selected]:text-foreground"
+                        className="min-h-9 rounded-[4px] px-4 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted data-selected:bg-secondary data-selected:text-foreground"
                         id={`session-filter-${filter}`}
                         key={filter}
                         value={filter}
@@ -325,7 +325,7 @@ export function HostDashboardPage({
                               {session.updatedLabel}
                             </span>
                           </div>
-                          <h3 className="mt-3 break-words text-lg font-bold text-foreground">
+                          <h3 className="mt-3 text-lg font-bold wrap-break-word text-foreground">
                             {session.name}
                           </h3>
                           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">

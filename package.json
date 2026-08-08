@@ -7,6 +7,9 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
+    "lint:tailwind": "turbo run lint:tailwind",
+    "lint:tailwind:fix": "turbo run lint:tailwind:fix",
+    "tailwind:upgrade": "pnpm --filter frontend tailwind:upgrade",
     "format": "turbo run format",
     "format:check": "turbo run format:check",
     "test": "turbo run test"

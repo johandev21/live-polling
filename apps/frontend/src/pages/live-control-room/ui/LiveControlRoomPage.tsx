@@ -27,7 +27,7 @@ type ConnectionState =
   | 'synchronized';
 
 function Brand({ href = '/', ...props }: { 'aria-label'?: string; href?: string; size?: string }) {
-  const content = <><span aria-hidden="true" className="size-7 shrink-0 rounded-full bg-primary" /><span className="text-xl font-bold leading-none tracking-tight">pulse</span></>;
+  const content = <><span aria-hidden="true" className="size-7 shrink-0 rounded-full bg-primary" /><span className="text-xl leading-none font-bold tracking-tight">pulse</span></>;
   return href ? <a {...props} className="inline-flex items-center gap-2.5" href={href}>{content}</a> : <span {...props} className="inline-flex items-center gap-2.5">{content}</span>;
 }
 
@@ -41,7 +41,7 @@ function ConnectionStatus({ state }: { state: ConnectionState }) {
 }
 
 function ResultBar({ ariaLabel, count, label, percentage }: { ariaLabel: string; count: number; label: string; percentage: number }) {
-  return <div aria-label={ariaLabel} className="flex w-full flex-col gap-2" role="group"><div className="flex items-baseline justify-between gap-4 text-sm"><span className="min-w-0 break-words font-semibold">{label}</span><span className="shrink-0 font-mono text-xs font-semibold text-primary">{percentage}%</span></div><Progress aria-label={ariaLabel} className="h-2" value={Math.min(100, Math.max(0, percentage))} /><span className="text-xs text-muted-foreground">{count} responses</span></div>;
+  return <div aria-label={ariaLabel} className="flex w-full flex-col gap-2" role="group"><div className="flex items-baseline justify-between gap-4 text-sm"><span className="min-w-0 font-semibold wrap-break-word">{label}</span><span className="shrink-0 font-mono text-xs font-semibold text-primary">{percentage}%</span></div><Progress aria-label={ariaLabel} className="h-2" value={Math.min(100, Math.max(0, percentage))} /><span className="text-xs text-muted-foreground">{count} responses</span></div>;
 }
 
 import {
@@ -300,7 +300,7 @@ export function LiveControlRoomPage({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-card">
-        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-12">
+        <div className="mx-auto flex w-full max-w-360 items-center justify-between gap-4 p-4 sm:px-6 lg:px-12">
           <Brand aria-label="Pulse home" size="md" />
           <div className="flex items-center gap-2 sm:gap-4">
             <ConnectionStatus state={connectionState} />
@@ -314,7 +314,7 @@ export function LiveControlRoomPage({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1440px] px-4 py-7 sm:px-6 lg:px-12 lg:py-9">
+      <main className="mx-auto w-full max-w-360 px-4 py-7 sm:px-6 lg:px-12 lg:py-9">
         <header className="flex flex-col gap-6 border-b border-border pb-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
@@ -335,7 +335,7 @@ export function LiveControlRoomPage({
               strokeWidth={1.8}
             />
             <div>
-              <p className="font-mono text-xl font-bold leading-none">
+              <p className="font-mono text-xl leading-none font-bold">
                 {participantCount}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -364,7 +364,7 @@ export function LiveControlRoomPage({
                     OF {String(polls.length).padStart(2, '0')}
                   </p>
                   <h2
-                    className="mt-3 max-w-3xl text-3xl font-bold leading-tight tracking-[-0.04em] sm:text-4xl"
+                    className="mt-3 max-w-3xl text-3xl leading-tight font-bold tracking-[-0.04em] sm:text-4xl"
                     id="active-poll-title"
                   >
                     {activePoll.question}
@@ -450,8 +450,8 @@ export function LiveControlRoomPage({
                       aria-pressed={isActive}
                       className={
                         isActive
-                          ? 'min-w-0 rounded-sm bg-secondary px-3 py-3 text-left text-primary ring-1 ring-primary'
-                          : 'min-w-0 rounded-sm bg-background px-3 py-3 text-left text-muted-foreground transition-colors hover:bg-muted'
+                          ? 'min-w-0 rounded-sm bg-secondary p-3 text-left text-primary ring-1 ring-primary'
+                          : 'min-w-0 rounded-sm bg-background p-3 text-left text-muted-foreground transition-colors hover:bg-muted'
                       }
                       key={poll.id}
                       onClick={() => setActivePollId(poll.id)}
@@ -460,7 +460,7 @@ export function LiveControlRoomPage({
                       <span className="font-mono text-[10px] font-bold">
                         {String(poll.position).padStart(2, '0')}
                       </span>
-                      <span className="mt-1 block line-clamp-2 text-xs font-semibold leading-4">
+                      <span className="mt-1 line-clamp-2 block text-xs leading-4 font-semibold">
                         {poll.question}
                       </span>
                       <span className="mt-2 block text-[10px] text-muted-foreground">
@@ -479,7 +479,7 @@ export function LiveControlRoomPage({
                 SHARE THIS SESSION
               </p>
               <div className="mt-3 flex items-start justify-between gap-3">
-                <p className="break-all font-mono text-4xl font-bold tracking-[0.1em] sm:text-5xl">
+                <p className="font-mono text-4xl font-bold tracking-widest break-all sm:text-5xl">
                   {roomCode}
                 </p>
                 <Share2

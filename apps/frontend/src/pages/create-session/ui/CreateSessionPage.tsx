@@ -29,7 +29,7 @@ function Header({ onCancel }: { onCancel?: () => void }) {
     <header className="border-b border-border bg-background">
       <nav
         aria-label="Create session navigation"
-        className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 py-4 sm:px-6 lg:px-16"
+        className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-between p-4 sm:px-6 lg:px-16"
       >
         <a
           className="inline-flex items-center gap-2 rounded-sm text-sm font-semibold text-muted-foreground hover:text-foreground"
@@ -116,7 +116,7 @@ export function CreateSessionPage({
   return (
     <div className="min-h-screen bg-background">
       <Header onCancel={handleCancel} />
-      <main className="mx-auto grid w-full max-w-screen-xl gap-10 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,600px)_minmax(320px,440px)] lg:items-start lg:gap-16 lg:px-10">
+      <main className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,600px)_minmax(320px,440px)] lg:items-start lg:gap-16 lg:px-10">
         <section className="flex flex-col gap-7">
           <div>
             <p className="text-xs font-bold tracking-[0.16em] text-foreground">
@@ -202,7 +202,7 @@ export function CreateSessionPage({
           </div>
           <div>
             <h2
-              className="break-words text-2xl font-bold text-foreground"
+              className="text-2xl font-bold wrap-break-word text-foreground"
               id="session-preview-heading"
             >
               {displayName}

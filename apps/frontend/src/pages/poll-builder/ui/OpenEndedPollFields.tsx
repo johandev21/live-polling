@@ -61,7 +61,7 @@ export function OpenEndedPollFields({
             value={responsePreview}
           />
           <span
-            className="pointer-events-none absolute bottom-3 right-3 font-mono text-[10px] text-muted-foreground"
+            className="pointer-events-none absolute right-3 bottom-3 font-mono text-[10px] text-muted-foreground"
             id="response-preview-count"
           >
             {responsePreview.length} / {responseLimit}

@@ -49,7 +49,7 @@ function Header({ onCancel }: { onCancel?: () => void }) {
     <header className="border-b border-border bg-background">
       <nav
         aria-label="Poll builder navigation"
-        className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 py-4 sm:px-6 lg:px-16"
+        className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-between p-4 sm:px-6 lg:px-16"
       >
         <a
           className="inline-flex items-center gap-2 rounded-sm text-sm font-semibold text-muted-foreground hover:text-foreground"
@@ -81,7 +81,7 @@ function PreviewOption({
           type === 'multiple-choice' ? 'rounded-[4px]' : 'rounded-full',
         )}
       />
-      <span className="min-w-0 break-words text-sm text-foreground">
+      <span className="min-w-0 text-sm wrap-break-word text-foreground">
         {option || 'Untitled option'}
       </span>
     </div>
@@ -106,7 +106,7 @@ function ParticipantPreview({
         PARTICIPANT PREVIEW
       </p>
       <h2
-        className="break-words text-2xl font-bold leading-tight text-foreground"
+        className="text-2xl leading-tight font-bold wrap-break-word text-foreground"
         id="participant-preview-heading"
       >
         {draft.text.trim() || 'Your poll text'}
@@ -117,10 +117,10 @@ function ParticipantPreview({
       {draft.type === 'open-ended' ? (
         <>
           <div className="relative">
-            <div className="min-h-36 whitespace-pre-wrap break-words rounded-sm border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
+            <div className="min-h-36 rounded-sm border border-border bg-background px-4 py-3 text-sm wrap-break-word whitespace-pre-wrap text-muted-foreground">
               {responsePreview || 'Share a thought...'}
             </div>
-            <span className="absolute bottom-3 right-3 font-mono text-[10px] text-muted-foreground">
+            <span className="absolute right-3 bottom-3 font-mono text-[10px] text-muted-foreground">
               {responsePreview.length} / {draft.responseLimit ?? 500}
             </span>
           </div>
@@ -330,7 +330,7 @@ export function PollBuilderPage({
   return (
     <div className="min-h-screen bg-background">
       <Header onCancel={onCancel} />
-      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
+      <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
         <section className="flex flex-col gap-5">
           <div>
             <p className="text-xs font-bold tracking-[0.16em] text-foreground">

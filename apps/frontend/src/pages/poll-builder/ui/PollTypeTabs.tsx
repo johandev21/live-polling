@@ -36,7 +36,7 @@ export function PollTypeTabs({ onChange, value }: PollTypeTabsProps) {
         {pollTypeOptions.map(({ icon: TypeIcon, label, type }) => (
           <TabsTrigger
             aria-controls="poll-builder-form"
-            className="inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-[4px] px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted data-[selected]:bg-secondary data-[selected]:text-foreground sm:flex-none sm:px-4"
+            className="inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-[4px] px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted sm:flex-none sm:px-4 data-selected:bg-secondary data-selected:text-foreground"
             id={`poll-type-option-${type}`}
             key={type}
             value={type}

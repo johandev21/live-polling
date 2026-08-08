@@ -34,7 +34,7 @@ export function ParticipantPresencePanel({
       onClose={onClose}
       titleId="participant-presence-title"
     >
-      <header className="flex items-start justify-between gap-4 border-b border-border px-5 py-5 sm:px-7">
+      <header className="flex items-start justify-between gap-4 border-b border-border p-5 sm:px-7">
         <div>
           <p className="font-mono text-[10px] font-bold tracking-[0.16em] text-primary">
             LIVE SESSION · HOST VIEW
@@ -77,7 +77,7 @@ export function ParticipantPresencePanel({
         </span>
       </Card>
 
-      <ScrollArea className="max-h-[min(55vh,28rem)] px-5 py-5 sm:px-7">
+      <ScrollArea className="max-h-[min(55vh,28rem)] p-5 sm:px-7">
         <h3 className="text-sm font-bold text-foreground">
           Connected participants
         </h3>
@@ -107,7 +107,7 @@ export function ParticipantPresencePanel({
         </ul>
       </ScrollArea>
 
-      <footer className="bg-muted px-5 py-5 sm:px-7">
+      <footer className="bg-muted p-5 sm:px-7">
         <p className="text-sm font-bold text-foreground">
           Host-only information
         </p>

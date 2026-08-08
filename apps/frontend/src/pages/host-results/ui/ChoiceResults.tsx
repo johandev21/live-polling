@@ -49,7 +49,7 @@ export function ChoiceResults({ poll }: ChoiceResultsProps) {
         ))}
       </ul>
 
-      <div className="flex items-center justify-between gap-4 rounded-md bg-secondary px-4 py-4">
+      <div className="flex items-center justify-between gap-4 rounded-md bg-secondary p-4">
         <span className="text-sm font-semibold text-muted-foreground">
           Total response count
         </span>

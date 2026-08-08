@@ -103,7 +103,7 @@ export function ParticipantStatusBadge({
   return (
     <Badge
       className={cn(
-        'h-auto rounded-full px-2.5 py-1.5 text-xs font-bold leading-none',
+        'h-auto rounded-full px-2.5 py-1.5 text-xs leading-none font-bold',
         statusClasses[tone],
       )}
       role="status"
@@ -138,7 +138,7 @@ export function ParticipantBrand({
   return (
     <a aria-label={props['aria-label']} className="inline-flex w-fit items-center gap-2.5 rounded-sm font-semibold" href={href}>
       <span aria-hidden="true" className="size-7 shrink-0 rounded-full bg-primary" />
-      <span className="text-xl font-bold leading-none tracking-[-0.02em] text-foreground">pulse</span>
+      <span className="text-xl leading-none font-bold tracking-[-0.02em] text-foreground">pulse</span>
     </a>
   );
 }
@@ -153,7 +153,7 @@ export function ParticipantResultBar({
   return (
     <div aria-label={ariaLabel} className="flex w-full flex-col gap-2" role="group">
       <div className="flex items-baseline justify-between gap-4 text-sm">
-        <span className="min-w-0 break-words font-semibold text-foreground">{label}</span>
+        <span className="min-w-0 font-semibold wrap-break-word text-foreground">{label}</span>
         <span className="shrink-0 font-mono text-xs font-semibold text-primary">{percentage}%</span>
       </div>
       <Progress aria-label={ariaLabel} className="gap-0" value={visualPercentage} />

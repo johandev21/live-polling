@@ -36,7 +36,7 @@ export function AuthShell({
             {eyebrow}
           </p>
           <h1
-            className="text-4xl font-bold leading-[1.08] tracking-[-0.04em] text-primary-foreground sm:text-5xl lg:text-[2.75rem]"
+            className="text-4xl leading-[1.08] font-bold tracking-[-0.04em] text-primary-foreground sm:text-5xl lg:text-[2.75rem]"
             id={headingId}
           >
             {heading}
@@ -55,7 +55,7 @@ export function AuthShell({
       </aside>
       <section
         aria-label="Page content"
-        className="flex min-h-[32rem] items-center justify-center bg-card px-5 py-12 sm:px-8 lg:min-h-screen lg:px-12"
+        className="flex min-h-128 items-center justify-center bg-card px-5 py-12 sm:px-8 lg:min-h-screen lg:px-12"
       >
         <div className="w-full max-w-md">{children}</div>
       </section>

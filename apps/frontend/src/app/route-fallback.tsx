@@ -16,7 +16,7 @@ export function DefaultRouteFallback() {
           <CardContent className="flex flex-col gap-6 pt-6">
             <Brand size="md" />
             <div className="flex flex-col gap-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+              <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">
                 Pulse foundation
               </p>
               <h1 className="text-3xl font-bold tracking-[-0.03em] text-foreground">

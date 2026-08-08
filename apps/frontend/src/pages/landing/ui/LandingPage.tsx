@@ -56,7 +56,7 @@ const workflowSteps: readonly WorkflowStep[] = [
 export function LandingPage() {
   return (
     <main className="min-h-screen overflow-x-clip bg-background">
-      <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-12">
+      <header className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 p-5 sm:px-8 lg:px-12">
         <Brand aria-label="Pulse home" href="/" size="lg" />
 
         <nav
@@ -103,7 +103,7 @@ export function LandingPage() {
 
       <section
         aria-labelledby="landing-heading"
-        className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-20 pt-12 sm:px-8 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:gap-16 lg:px-12 lg:pb-24 lg:pt-20"
+        className="mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pt-12 pb-20 sm:px-8 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:gap-16 lg:px-12 lg:pt-20 lg:pb-24"
         id="hosts"
       >
         <div className="flex flex-col items-center gap-5 text-center lg:items-start lg:text-left">
@@ -111,7 +111,7 @@ export function LandingPage() {
             LIVE POLLING, WITHOUT THE FRICTION
           </p>
           <h1
-            className="max-w-xl text-[clamp(2.5rem,5vw,3.5rem)] font-bold leading-[1.05] tracking-[-0.04em] text-foreground"
+            className="max-w-xl text-[clamp(2.5rem,5vw,3.5rem)] leading-[1.05] font-bold tracking-[-0.04em] text-foreground"
             id="landing-heading"
           >
             Make every voice part of the moment.
@@ -157,7 +157,7 @@ export function LandingPage() {
                     aria-hidden="true"
                     className="size-2 shrink-0 rounded-full bg-primary"
                   />
-                  <p className="min-w-0 break-words text-sm font-semibold text-foreground">
+                  <p className="min-w-0 text-sm font-semibold wrap-break-word text-foreground">
                     Team offsite · Pulse session
                   </p>
                 </div>
@@ -165,7 +165,7 @@ export function LandingPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <h2 className="text-2xl font-bold leading-tight tracking-[-0.025em] text-foreground sm:text-[1.65rem]">
+                <h2 className="text-2xl leading-tight font-bold tracking-tight text-foreground sm:text-[1.65rem]">
                   What should we make more time for?
                 </h2>
                 <p className="font-mono text-[0.68rem] text-muted-foreground">
@@ -183,7 +183,7 @@ export function LandingPage() {
                         role="group"
                       >
                         <div className="flex items-baseline justify-between gap-4 text-sm">
-                          <span className="min-w-0 break-words font-semibold text-foreground">
+                          <span className="min-w-0 font-semibold wrap-break-word text-foreground">
                             {result.label}
                           </span>
                           <span className="shrink-0 font-mono text-xs font-semibold text-primary">
