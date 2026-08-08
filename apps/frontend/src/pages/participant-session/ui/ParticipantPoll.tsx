@@ -21,6 +21,7 @@ import {
 export type ResponseDraft = string | string[];
 
 type ParticipantPollProps = Readonly<{
+  changeNameHref?: string;
   connectionState: ConnectionState;
   draftResponse: ResponseDraft;
   onChangeDraft: (response: ResponseDraft) => void;
@@ -171,6 +172,7 @@ function OpenEndedResponse({
 }
 
 export function ParticipantPoll({
+  changeNameHref,
   connectionState,
   draftResponse,
   onChangeDraft,
@@ -264,12 +266,11 @@ export function ParticipantPoll({
 
         <p className="text-center text-xs font-semibold text-[var(--color-text-tertiary)]">
           Joining as {participantName} ·{' '}
-          <a
-            className="text-[var(--color-primary)] hover:underline"
-            href="/participant/name"
-          >
-            Change display name
-          </a>
+          {changeNameHref ? (
+            <a className="text-[var(--color-primary)] hover:underline" href={changeNameHref}>
+              Change display name
+            </a>
+          ) : null}
         </p>
       </Surface>
 

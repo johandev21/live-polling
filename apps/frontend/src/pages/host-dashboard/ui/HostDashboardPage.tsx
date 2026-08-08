@@ -5,7 +5,6 @@ import { Tabs } from '@base-ui/react/tabs';
 import { Brand, Button, StatusBadge, Surface } from '@/shared/ui';
 
 import {
-  fixtureSessions,
   type DashboardSession,
   type SessionFilter,
   type SessionLifecycle,
@@ -93,7 +92,7 @@ export function HostDashboardPage({
   onCreateSession,
   onDeleteSession,
   onOpenSession,
-  sessions = fixtureSessions,
+  sessions = [],
 }: HostDashboardPageProps) {
   const [activeFilter, setActiveFilter] = useState<SessionFilter>('all');
   const [actionMessage, setActionMessage] = useState<string | null>(null);

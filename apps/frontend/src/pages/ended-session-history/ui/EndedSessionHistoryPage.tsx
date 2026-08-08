@@ -3,13 +3,13 @@ import { ArrowLeft, Clock3, LockKeyhole } from 'lucide-react';
 import { Brand, ResultBar, StatusBadge, Surface } from '@/shared/ui';
 
 import {
-  endedSessionHistoryFixture,
   type EndedHistoryPoll,
   type EndedSessionHistoryData,
 } from '../model/ended-session-history';
 
 export type EndedSessionHistoryPageProps = Readonly<{
   history?: EndedSessionHistoryData;
+  isLoading?: boolean;
 }>;
 
 const pollTypeLabels = {
@@ -133,7 +133,7 @@ function SessionTotals({ history }: { history: EndedSessionHistoryData }) {
         </div>
         <div className="flex items-center justify-between gap-4">
           <dt className="font-[var(--font-mono)] text-2xl font-bold text-[var(--color-text-on-primary)]">
-            14 Jun
+            {history.endedAt}
           </dt>
           <dd className="text-sm text-[var(--color-text-on-primary-muted)]">
             ended
@@ -145,8 +145,33 @@ function SessionTotals({ history }: { history: EndedSessionHistoryData }) {
 }
 
 export function EndedSessionHistoryPage({
-  history = endedSessionHistoryFixture,
+  history,
+  isLoading = false,
 }: EndedSessionHistoryPageProps = {}) {
+  if (isLoading) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[var(--color-bg-canvas)] px-4">
+        <Surface elevation="card" padding="lg">
+          <p className="text-sm font-semibold text-[var(--color-text-secondary)]">
+            Loading session history...
+          </p>
+        </Surface>
+      </main>
+    );
+  }
+
+  if (!history) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[var(--color-bg-canvas)] px-4">
+        <Surface elevation="card" padding="lg">
+          <p className="text-sm text-[var(--color-text-secondary)]">
+            History is unavailable for this session.
+          </p>
+        </Surface>
+      </main>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-canvas)] text-[var(--color-text-primary)]">
       <header className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">

@@ -78,6 +78,6 @@ class SocketAdapterShutdown implements OnApplicationShutdown {
     },
     SocketAdapterShutdown,
   ],
-  exports: [RealtimeService],
+  exports: [RealtimeService, PresenceService],
 })
 export class RealtimeModule {}

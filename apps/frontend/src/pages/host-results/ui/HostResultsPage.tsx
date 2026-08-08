@@ -10,7 +10,6 @@ import { Brand, StatusBadge, Surface } from '@/shared/ui';
 
 import {
   hostPollTypeLabel,
-  hostResultsFixture,
   type HostResultPoll,
 } from '../model/host-results';
 import { ChoiceResults } from './ChoiceResults';
@@ -19,7 +18,14 @@ import { OpenEndedResults } from './OpenEndedResults';
 import { PollStateCard } from './PollStateCard';
 
 export type HostResultsPageProps = {
+  errorMessage?: string | null;
   initialPollId?: string;
+  isLoading?: boolean;
+  onToggleLifecycle?: (pollId: string) => Promise<void> | void;
+  onToggleVisibility?: (pollId: string) => Promise<void> | void;
+  polls: readonly HostResultPoll[];
+  sessionId: string;
+  sessionName: string;
 };
 
 function PollNavigation({
@@ -74,12 +80,29 @@ function PollNavigation({
   );
 }
 
-export function HostResultsPage({ initialPollId }: HostResultsPageProps = {}) {
-  const [polls, setPolls] =
-    useState<readonly HostResultPoll[]>(hostResultsFixture);
-  const [selectedPollId, setSelectedPollId] = useState(
-    initialPollId ?? hostResultsFixture[0]?.id ?? '',
-  );
+export function HostResultsPage({
+  errorMessage,
+  initialPollId,
+  isLoading = false,
+  onToggleLifecycle,
+  onToggleVisibility,
+  polls,
+  sessionId,
+  sessionName,
+}: HostResultsPageProps) {
+  const [selectedPollId, setSelectedPollId] = useState(initialPollId ?? '');
+
+  if (isLoading) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-[var(--color-bg-canvas)] px-4">
+        <Surface elevation="card" padding="lg">
+          <p className="text-sm font-semibold text-[var(--color-text-secondary)]">
+            Loading results...
+          </p>
+        </Surface>
+      </main>
+    );
+  }
 
   const selectedPoll =
     polls.find((poll) => poll.id === selectedPollId) ?? polls[0];
@@ -96,14 +119,23 @@ export function HostResultsPage({ initialPollId }: HostResultsPageProps = {}) {
     );
   }
 
-  function updateSelectedPoll(
-    patch: Partial<Pick<HostResultPoll, 'lifecycle' | 'visibility'>>,
-  ) {
-    setPolls((currentPolls) =>
-      currentPolls.map((poll) =>
-        poll.id === selectedPoll.id ? { ...poll, ...patch } : poll,
-      ),
-    );
+  async function handleToggleLifecycle() {
+    if (!onToggleLifecycle) return;
+    try {
+      await onToggleLifecycle(selectedPoll.id);
+    } catch (err) {
+      // Errors surface through the shared error banner below
+      void err;
+    }
+  }
+
+  async function handleToggleVisibility() {
+    if (!onToggleVisibility) return;
+    try {
+      await onToggleVisibility(selectedPoll.id);
+    } catch (err) {
+      void err;
+    }
   }
 
   const previousPoll = polls.find(
@@ -122,7 +154,7 @@ export function HostResultsPage({ initialPollId }: HostResultsPageProps = {}) {
           <div className="flex items-center gap-3 sm:gap-5">
             <a
               className="hidden text-xs font-semibold text-[var(--color-text-secondary)] underline-offset-4 hover:text-[var(--color-primary)] hover:underline sm:inline"
-              href="/host/sessions/team-offsite/live"
+              href={`/host/sessions/${encodeURIComponent(sessionId)}/live`}
             >
               Back to control room
             </a>
@@ -141,7 +173,7 @@ export function HostResultsPage({ initialPollId }: HostResultsPageProps = {}) {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
-                  Team offsite · June 2025
+                  {sessionName}
                 </h1>
                 <StatusBadge label="Live session" tone="success" />
               </div>
@@ -157,6 +189,15 @@ export function HostResultsPage({ initialPollId }: HostResultsPageProps = {}) {
           </div>
         </header>
 
+        {errorMessage ? (
+          <p
+            aria-live="polite"
+            className="mt-4 text-sm font-semibold text-[var(--color-error)]"
+          >
+            {errorMessage}
+          </p>
+        ) : null}
+
         <div className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
           <div className="min-w-0">
             {isEmpty ? (
@@ -170,20 +211,8 @@ export function HostResultsPage({ initialPollId }: HostResultsPageProps = {}) {
 
           <aside className="space-y-4">
             <PollStateCard
-              onToggleLifecycle={() =>
-                updateSelectedPoll({
-                  lifecycle:
-                    selectedPoll.lifecycle === 'open' ? 'closed' : 'open',
-                })
-              }
-              onToggleVisibility={() =>
-                updateSelectedPoll({
-                  visibility:
-                    selectedPoll.visibility === 'hidden'
-                      ? 'revealed'
-                      : 'hidden',
-                })
-              }
+              onToggleLifecycle={handleToggleLifecycle}
+              onToggleVisibility={handleToggleVisibility}
               poll={selectedPoll}
             />
 

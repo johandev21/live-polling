@@ -7,7 +7,6 @@ import {
   ExternalLink,
   Pause,
   Play,
-  RefreshCw,
   Share2,
   Square,
   Users,
@@ -25,10 +24,10 @@ import {
 } from '@/shared/ui';
 
 import {
-  liveControlRoomFixture,
   pollTypeLabel,
   type LivePoll,
   type LivePollType,
+  type ParticipantPresence,
   type PollLifecycle,
   type ResultVisibility,
 } from '../model/live-control-room';
@@ -37,7 +36,9 @@ import { ParticipantPresencePanel } from './ParticipantPresencePanel';
 import { ShareSessionPanel } from './ShareSessionPanel';
 
 export type LiveControlRoomPageProps = {
+  connectionState: ConnectionState;
   errorMessage?: string | null;
+  invitationLink: string;
   isLoading?: boolean;
   onClosePollSubmit?: (pollId: string) => Promise<void> | void;
   onEndSessionSubmit?: () => Promise<void> | void;
@@ -45,15 +46,16 @@ export type LiveControlRoomPageProps = {
   onOpenPollSubmit?: (pollId: string) => Promise<void> | void;
   onRevealResultsSubmit?: (pollId: string) => Promise<void> | void;
   onSessionEnded?: () => void;
+  participantCount: number;
+  participants: readonly ParticipantPresence[];
+  polls: readonly LivePoll[];
+  roomCode: string;
+  sessionId: string;
+  sessionName: string;
+  sessionStatus: 'ended' | 'live';
 };
 
 type OpenPanel = 'presence' | 'share' | null;
-
-const connectionStates: readonly ConnectionState[] = [
-  'synchronized',
-  'reconnecting',
-  'stale',
-];
 
 const pollTypeShortLabels = {
   'multiple-choice': 'Multiple-choice',
@@ -129,7 +131,13 @@ function PollResults({ poll }: { poll: LivePoll }) {
   );
 }
 
-function EndedSessionState({ sessionName }: { sessionName: string }) {
+function EndedSessionState({
+  endedHistoryHref,
+  sessionName,
+}: {
+  endedHistoryHref: string;
+  sessionName: string;
+}) {
   return (
     <main className="min-h-screen bg-[var(--color-bg-canvas)] px-4 py-8 sm:px-6 lg:px-12">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-3xl items-center justify-center">
@@ -144,7 +152,7 @@ function EndedSessionState({ sessionName }: { sessionName: string }) {
           </p>
           <a
             className="mt-7 inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--color-primary)] px-5 text-sm font-semibold text-[var(--color-text-on-primary)] transition-[filter,transform] hover:brightness-95 active:translate-y-px"
-            href="/host/sessions/team-offsite/history"
+            href={endedHistoryHref}
           >
             <ExternalLink aria-hidden="true" size={17} strokeWidth={1.8} />
             View ended history
@@ -156,7 +164,9 @@ function EndedSessionState({ sessionName }: { sessionName: string }) {
 }
 
 export function LiveControlRoomPage({
+  connectionState,
   errorMessage,
+  invitationLink,
   isLoading = false,
   onClosePollSubmit,
   onEndSessionSubmit,
@@ -164,22 +174,21 @@ export function LiveControlRoomPage({
   onOpenPollSubmit,
   onRevealResultsSubmit,
   onSessionEnded,
-}: LiveControlRoomPageProps = {}) {
-  const [activePollId, setActivePollId] = useState(
-    liveControlRoomFixture.polls[0]?.id ?? '',
-  );
-  const [connectionState, setConnectionState] = useState<ConnectionState>(
-    liveControlRoomFixture.connectionState,
-  );
+  participantCount,
+  participants,
+  polls,
+  roomCode,
+  sessionId,
+  sessionName,
+  sessionStatus,
+}: LiveControlRoomPageProps) {
+  const [activePollId, setActivePollId] = useState('');
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
-  const [polls, setPolls] = useState<readonly LivePoll[]>(
-    liveControlRoomFixture.polls,
-  );
-  const [sessionEnded, setSessionEnded] = useState(false);
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const activePoll = polls.find((poll) => poll.id === activePollId) ?? polls[0];
+  const activePoll =
+    polls.find((poll) => poll.id === activePollId) ?? polls[0];
 
   if (isLoading) {
     return (
@@ -205,9 +214,12 @@ export function LiveControlRoomPage({
     );
   }
 
-  if (sessionEnded) {
+  if (sessionStatus === 'ended') {
     return (
-      <EndedSessionState sessionName={liveControlRoomFixture.sessionName} />
+      <EndedSessionState
+        endedHistoryHref={`/host/sessions/${encodeURIComponent(sessionId)}/history`}
+        sessionName={sessionName}
+      />
     );
   }
 
@@ -215,27 +227,15 @@ export function LiveControlRoomPage({
     setActionError(null);
     const nextLifecycle = activePoll.lifecycle === 'open' ? 'closed' : 'open';
 
-    if (nextLifecycle === 'open' && onOpenPollSubmit) {
-      try {
+    try {
+      if (nextLifecycle === 'open' && onOpenPollSubmit) {
         await onOpenPollSubmit(activePoll.id);
-      } catch (err) {
-        setActionError(err instanceof Error ? err.message : 'Failed to open poll.');
-        return;
-      }
-    } else if (nextLifecycle === 'closed' && onClosePollSubmit) {
-      try {
+      } else if (nextLifecycle === 'closed' && onClosePollSubmit) {
         await onClosePollSubmit(activePoll.id);
-      } catch (err) {
-        setActionError(err instanceof Error ? err.message : 'Failed to close poll.');
-        return;
       }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Action failed.');
     }
-
-    setPolls((currentPolls) =>
-      currentPolls.map((poll) =>
-        poll.id === activePoll.id ? { ...poll, lifecycle: nextLifecycle } : poll,
-      ),
-    );
   }
 
   async function handleToggleVisibility() {
@@ -243,54 +243,32 @@ export function LiveControlRoomPage({
     const nextVisibility =
       activePoll.resultVisibility === 'hidden' ? 'revealed' : 'hidden';
 
-    if (nextVisibility === 'revealed' && onRevealResultsSubmit) {
-      try {
+    try {
+      if (nextVisibility === 'revealed' && onRevealResultsSubmit) {
         await onRevealResultsSubmit(activePoll.id);
-      } catch (err) {
-        setActionError(err instanceof Error ? err.message : 'Failed to reveal results.');
-        return;
-      }
-    } else if (nextVisibility === 'hidden' && onHideResultsSubmit) {
-      try {
+      } else if (nextVisibility === 'hidden' && onHideResultsSubmit) {
         await onHideResultsSubmit(activePoll.id);
-      } catch (err) {
-        setActionError(err instanceof Error ? err.message : 'Failed to hide results.');
-        return;
       }
-    }
-
-    setPolls((currentPolls) =>
-      currentPolls.map((poll) =>
-        poll.id === activePoll.id
-          ? { ...poll, resultVisibility: nextVisibility }
-          : poll,
-      ),
-    );
-  }
-
-  function cycleConnectionState() {
-    const currentIndex = connectionStates.indexOf(connectionState);
-    const nextIndex = (currentIndex + 1) % connectionStates.length;
-    const nextState = connectionStates[nextIndex];
-
-    if (nextState) {
-      setConnectionState(nextState);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Action failed.');
     }
   }
 
   async function handleEndSession() {
     setShowEndDialog(false);
 
-    if (onEndSessionSubmit) {
-      try {
-        await onEndSessionSubmit();
-      } catch (err) {
-        setActionError(err instanceof Error ? err.message : 'Failed to end session.');
-        return;
-      }
+    if (!onEndSessionSubmit) {
+      setActionError('Ending the session is unavailable.');
+      return;
     }
 
-    setSessionEnded(true);
+    try {
+      await onEndSessionSubmit();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Failed to end session.');
+      return;
+    }
+
     onSessionEnded?.();
   }
 
@@ -305,15 +283,6 @@ export function LiveControlRoomPage({
           <Brand aria-label="Pulse home" size="md" />
           <div className="flex items-center gap-2 sm:gap-4">
             <ConnectionStatus state={connectionState} />
-            <button
-              aria-label="Cycle connection status fixture"
-              className="inline-flex min-h-9 items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 text-xs font-semibold text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-muted)]"
-              onClick={cycleConnectionState}
-              type="button"
-            >
-              <RefreshCw aria-hidden="true" size={14} strokeWidth={1.8} />
-              <span className="hidden sm:inline">Check sync</span>
-            </button>
             <a
               className="hidden text-xs font-semibold text-[var(--color-text-secondary)] underline-offset-4 hover:text-[var(--color-primary)] hover:underline sm:inline"
               href="/host/dashboard"
@@ -329,12 +298,12 @@ export function LiveControlRoomPage({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
-                {liveControlRoomFixture.sessionName}
+                {sessionName}
               </h1>
               <StatusBadge label="Live session" tone="success" />
             </div>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              {liveControlRoomFixture.sessionSubtitle}
+              Room Code {roomCode}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -346,7 +315,7 @@ export function LiveControlRoomPage({
             />
             <div>
               <p className="font-[var(--font-mono)] text-xl font-bold leading-none">
-                {liveControlRoomFixture.participantCount}
+                {participantCount}
               </p>
               <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
                 participants connected · approximate
@@ -501,7 +470,7 @@ export function LiveControlRoomPage({
               </p>
               <div className="mt-3 flex items-start justify-between gap-3">
                 <p className="break-all font-[var(--font-mono)] text-4xl font-bold tracking-[0.1em] sm:text-5xl">
-                  {liveControlRoomFixture.roomCode}
+                  {roomCode}
                 </p>
                 <Share2
                   aria-hidden="true"
@@ -537,33 +506,31 @@ export function LiveControlRoomPage({
                   Participant presence
                 </h2>
                 <span className="font-[var(--font-mono)] text-[11px] font-bold text-[var(--color-success)]">
-                  {liveControlRoomFixture.participantCount} online
+                  {participantCount} online
                 </span>
               </div>
               <p className="text-xs text-[var(--color-text-tertiary)]">
                 Approximate and host-only
               </p>
               <ul className="space-y-2">
-                {liveControlRoomFixture.participants
-                  .slice(0, 4)
-                  .map((participant) => (
-                    <li
-                      className="flex items-center justify-between gap-3"
-                      key={participant.id}
-                    >
-                      <span className="flex min-w-0 items-center gap-2">
-                        <span className="size-2 shrink-0 rounded-full bg-[var(--color-success)]" />
-                        <span className="truncate text-sm text-[var(--color-text-primary)]">
-                          {participant.name}
-                        </span>
+                {participants.slice(0, 4).map((participant) => (
+                  <li
+                    className="flex items-center justify-between gap-3"
+                    key={participant.id}
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="size-2 shrink-0 rounded-full bg-[var(--color-success)]" />
+                      <span className="truncate text-sm text-[var(--color-text-primary)]">
+                        {participant.name}
                       </span>
-                      <span className="font-[var(--font-mono)] text-[10px] text-[var(--color-text-tertiary)]">
-                        {participant.status === 'online'
-                          ? 'Online'
-                          : participant.status}
-                      </span>
-                    </li>
-                  ))}
+                    </span>
+                    <span className="font-[var(--font-mono)] text-[10px] text-[var(--color-text-tertiary)]">
+                      {participant.status === 'online'
+                        ? 'Online'
+                        : participant.status}
+                    </span>
+                  </li>
+                ))}
               </ul>
               <button
                 className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 text-xs font-bold text-[var(--color-primary)] transition-colors hover:bg-[var(--color-surface-muted)]"
@@ -590,7 +557,7 @@ export function LiveControlRoomPage({
               <div className="mt-4 flex flex-col gap-2">
                 <a
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-4 text-sm font-semibold text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-muted)]"
-                  href="/host/sessions/team-offsite/results"
+                  href={`/host/sessions/${encodeURIComponent(sessionId)}/results`}
                 >
                   <ExternalLink
                     aria-hidden="true"
@@ -643,23 +610,23 @@ export function LiveControlRoomPage({
 
       {openPanel === 'share' ? (
         <ShareSessionPanel
-          invitationLink={liveControlRoomFixture.invitationLink}
+          invitationLink={invitationLink}
           onClose={() => setOpenPanel(null)}
-          roomCode={liveControlRoomFixture.roomCode}
+          roomCode={roomCode}
         />
       ) : null}
       {openPanel === 'presence' ? (
         <ParticipantPresencePanel
           onClose={() => setOpenPanel(null)}
-          participantCount={liveControlRoomFixture.participantCount}
-          participants={liveControlRoomFixture.participants}
+          participantCount={participantCount}
+          participants={participants}
         />
       ) : null}
       {showEndDialog ? (
         <EndSessionDialog
           onClose={() => setShowEndDialog(false)}
           onConfirm={handleEndSession}
-          sessionName={liveControlRoomFixture.sessionName}
+          sessionName={sessionName}
         />
       ) : null}
     </div>

@@ -47,21 +47,21 @@ describe('use-participant-session hooks', () => {
         startedAt: '2026-08-07T12:00:00Z',
         endedAt: null,
       },
-      activePoll: {
-        id: mockPollId,
-        sessionId: mockSessionId,
-        text: 'What feature to build next?',
-        type: 'single_choice',
-        position: 0,
-        maxSelections: null,
-        isOpen: true,
-        resultsRevealed: false,
-        hasResponses: false,
-        options: [{ id: mockOptionId, text: 'Feature A', position: 0 }],
-        createdAt: '2026-08-07T12:00:00Z',
-        updatedAt: '2026-08-07T12:00:00Z',
-      },
+      displayName: 'Avery',
+      polls: [
+        {
+          id: mockPollId,
+          text: 'What feature to build next?',
+          type: 'single_choice',
+          position: 0,
+          maxSelections: null,
+          isOpen: true,
+          resultsRevealed: false,
+          options: [{ id: mockOptionId, text: 'Feature A', position: 0 }],
+        },
+      ],
       myResponse: null,
+      participantCount: 3,
     };
 
     vi.spyOn(apiClient, 'get').mockResolvedValue(mockSnapshot);
@@ -77,7 +77,11 @@ describe('use-participant-session hooks', () => {
       headers: { Authorization: 'Bearer token-123' },
     });
     expect(result.current.data?.session.name).toBe('Live Session');
-    expect(result.current.data?.activePoll?.text).toBe('What feature to build next?');
+    expect(result.current.data?.polls[0]?.text).toBe(
+      'What feature to build next?',
+    );
+    expect(result.current.data?.polls[0]?.isOpen).toBe(true);
+    expect(result.current.data?.participantCount).toBe(3);
   });
 
   it('submits response with idempotency key via PUT /participant/polls/:id/response', async () => {

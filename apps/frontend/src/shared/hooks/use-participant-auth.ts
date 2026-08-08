@@ -1,17 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { apiClient, ApiError } from '@/shared/lib/api-client';
 import {
   joinResponseSchema,
-  participantMeResponseSchema,
   participantSnapshotSchema,
   type JoinResponse,
-  type ParticipantMeResponse,
   type ParticipantSnapshot,
 } from '@/shared/lib/contracts';
 import { setParticipantToken } from '@/shared/lib/participant-storage';
-
-export const PARTICIPANT_ME_QUERY_KEY = ['participant-me'] as const;
+import { PARTICIPANT_SESSION_QUERY_KEY } from './use-participant-session';
 
 export type JoinSessionOptions = {
   name?: string;
@@ -25,7 +22,7 @@ export function useJoinSession() {
   return useMutation<JoinResponse, ApiError, JoinSessionOptions>({
     mutationFn: async ({ roomCode, name, token }) => {
       const raw = await apiClient.post('/join', {
-        name,
+        displayName: name,
         roomCode,
         token,
       });
@@ -33,24 +30,11 @@ export function useJoinSession() {
     },
     onSuccess: (data, { roomCode }) => {
       setParticipantToken(roomCode, data.token);
-      setParticipantToken(data.session.id, data.token);
-      void queryClient.invalidateQueries({ queryKey: PARTICIPANT_ME_QUERY_KEY });
-    },
-  });
-}
-
-export function useParticipantMe(token: string | null) {
-  return useQuery<ParticipantMeResponse, ApiError>({
-    enabled: Boolean(token),
-    queryFn: async () => {
-      const raw = await apiClient.get('/participant/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      setParticipantToken(data.snapshot.session.id, data.token);
+      void queryClient.invalidateQueries({
+        queryKey: PARTICIPANT_SESSION_QUERY_KEY,
       });
-      return participantMeResponseSchema.parse(raw);
     },
-    queryKey: [...PARTICIPANT_ME_QUERY_KEY, token],
   });
 }
 
@@ -66,7 +50,7 @@ export function useUpdateParticipantName() {
     mutationFn: async ({ name, token }) => {
       const raw = await apiClient.patch(
         '/participant/me',
-        { name },
+        { displayName: name },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -76,7 +60,7 @@ export function useUpdateParticipantName() {
       return participantSnapshotSchema.parse(raw);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: PARTICIPANT_ME_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: PARTICIPANT_SESSION_QUERY_KEY });
     },
   });
 }

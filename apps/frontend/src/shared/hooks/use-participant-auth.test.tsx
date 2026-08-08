@@ -1,18 +1,35 @@
 /* oxlint-disable typescript/unbound-method */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { apiClient } from '@/shared/lib/api-client';
 import { getParticipantToken } from '@/shared/lib/participant-storage';
 import {
   useJoinSession,
-  useParticipantMe,
   useUpdateParticipantName,
 } from './use-participant-auth';
 
 const mockSessionId = '123e4567-e89b-12d3-a456-426614174000';
 const mockParticipantId = '123e4567-e89b-12d3-a456-426614174001';
+
+const mockSnapshot = {
+  session: {
+    id: mockSessionId,
+    name: 'Live Poll Session',
+    roomCode: 'ROOM01',
+    status: 'live',
+    revision: 1,
+    createdAt: '2026-08-07T12:00:00Z',
+    updatedAt: '2026-08-07T12:00:00Z',
+    startedAt: '2026-08-07T12:00:00Z',
+    endedAt: null,
+  },
+  displayName: 'Avery',
+  polls: [],
+  myResponse: null,
+  participantCount: 0,
+};
 
 describe('use-participant-auth hooks', () => {
   let queryClient: QueryClient;
@@ -40,20 +57,11 @@ describe('use-participant-auth hooks', () => {
       participant: {
         id: mockParticipantId,
         sessionId: mockSessionId,
-        name: 'Avery',
-        createdAt: '2026-08-07T12:00:00Z',
-      },
-      session: {
-        id: mockSessionId,
-        name: 'Live Poll Session',
-        roomCode: 'ROOM01',
-        status: 'live',
-        revision: 1,
+        displayName: 'Avery',
         createdAt: '2026-08-07T12:00:00Z',
         updatedAt: '2026-08-07T12:00:00Z',
-        startedAt: '2026-08-07T12:00:00Z',
-        endedAt: null,
       },
+      snapshot: mockSnapshot,
     };
 
     vi.spyOn(apiClient, 'post').mockResolvedValue(mockResponse);
@@ -66,56 +74,22 @@ describe('use-participant-auth hooks', () => {
     });
 
     expect(apiClient.post).toHaveBeenCalledWith('/join', {
-      name: 'Avery',
+      displayName: 'Avery',
       roomCode: 'ROOM01',
       token: undefined,
     });
     expect(data.token).toBe('part-token-abc');
     expect(getParticipantToken('ROOM01')).toBe('part-token-abc');
-  });
-
-  it('fetches current participant identity via GET /participant/me', async () => {
-    const mockMeResponse = {
-      participant: {
-        id: mockParticipantId,
-        sessionId: mockSessionId,
-        name: 'Avery',
-        createdAt: '2026-08-07T12:00:00Z',
-      },
-      session: {
-        id: mockSessionId,
-        name: 'Live Poll Session',
-        roomCode: 'ROOM01',
-        status: 'live',
-        revision: 1,
-        createdAt: '2026-08-07T12:00:00Z',
-        updatedAt: '2026-08-07T12:00:00Z',
-        startedAt: '2026-08-07T12:00:00Z',
-        endedAt: null,
-      },
-    };
-
-    vi.spyOn(apiClient, 'get').mockResolvedValue(mockMeResponse);
-
-    const { result } = renderHook(
-      () => useParticipantMe('part-token-abc'),
-      { wrapper },
-    );
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    expect(apiClient.get).toHaveBeenCalledWith('/participant/me', {
-      headers: { Authorization: 'Bearer part-token-abc' },
-    });
-    expect(result.current.data?.participant.name).toBe('Avery');
+    expect(getParticipantToken(mockSessionId)).toBe('part-token-abc');
   });
 
   it('updates display name via PATCH /participant/me', async () => {
     const mockUpdatedParticipant = {
       id: mockParticipantId,
       sessionId: mockSessionId,
-      name: 'Avery Renamed',
+      displayName: 'Avery Renamed',
       createdAt: '2026-08-07T12:00:00Z',
+      updatedAt: '2026-08-07T12:00:00Z',
     };
 
     vi.spyOn(apiClient, 'patch').mockResolvedValue(mockUpdatedParticipant);
@@ -129,9 +103,9 @@ describe('use-participant-auth hooks', () => {
 
     expect(apiClient.patch).toHaveBeenCalledWith(
       '/participant/me',
-      { name: 'Avery Renamed' },
+      { displayName: 'Avery Renamed' },
       { headers: { Authorization: 'Bearer part-token-abc' } },
     );
-    expect(updated.name).toBe('Avery Renamed');
+    expect(updated.displayName).toBe('Avery Renamed');
   });
 });

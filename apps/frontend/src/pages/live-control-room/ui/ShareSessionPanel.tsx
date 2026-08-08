@@ -80,7 +80,7 @@ export function ShareSessionPanel({
               {roomCode}
             </p>
             <p className="mt-3 text-sm leading-5 text-[var(--color-text-secondary)]">
-              Participants can enter this code at pulse.app/join. No participant
+              Participants can enter this code on the join page. No participant
               account is required.
             </p>
           </div>

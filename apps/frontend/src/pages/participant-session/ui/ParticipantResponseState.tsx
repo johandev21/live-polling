@@ -12,6 +12,7 @@ import type {
 import { participantResponseLabel } from '../model/participant-session';
 
 type ParticipantResponseStateProps = Readonly<{
+  changeNameHref?: string;
   connectionState: ConnectionState;
   onChangeResponse: () => void;
   participantName: string;
@@ -123,6 +124,7 @@ export function ParticipantResults({
 }
 
 export function ParticipantAcceptedResponse({
+  changeNameHref,
   connectionState,
   onChangeResponse,
   participantName,
@@ -190,12 +192,11 @@ export function ParticipantAcceptedResponse({
 
         <p className="text-xs font-semibold text-[var(--color-text-tertiary)]">
           Joining as {participantName} ·{' '}
-          <a
-            className="text-[var(--color-primary)] hover:underline"
-            href="/participant/name"
-          >
-            Change display name
-          </a>
+          {changeNameHref ? (
+            <a className="text-[var(--color-primary)] hover:underline" href={changeNameHref}>
+              Change display name
+            </a>
+          ) : null}
         </p>
       </Surface>
 

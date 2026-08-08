@@ -1,7 +1,6 @@
 export { EndedSessionHistoryPage } from './ui/EndedSessionHistoryPage';
 export type { EndedSessionHistoryPageProps } from './ui/EndedSessionHistoryPage';
 export {
-  endedSessionHistoryFixture,
   type EndedHistoryChoiceResult,
   type EndedHistoryPoll,
   type EndedHistoryPollType,

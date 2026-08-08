@@ -10,6 +10,7 @@ export type ParticipantNameEntryPageProps = Readonly<{
   initialName?: string;
   initialState?: ParticipantNameEntryState;
   isSubmitting?: boolean;
+  joinedHref?: string;
   onJoinSubmit?: (name: string) => Promise<void> | void;
   roomCode?: string;
   sessionName?: string;
@@ -20,9 +21,10 @@ export function ParticipantNameEntryPage({
   initialName = '',
   initialState = 'idle',
   isSubmitting = false,
+  joinedHref,
   onJoinSubmit,
-  roomCode = '7K4P9D',
-  sessionName = 'Team offsite · June 2025',
+  roomCode,
+  sessionName,
 }: ParticipantNameEntryPageProps = {}) {
   const [name, setName] = useState(initialName);
   const [state, setState] = useState<ParticipantNameEntryState>(initialState);
@@ -80,7 +82,7 @@ export function ParticipantNameEntryPage({
           <Brand aria-label="Pulse home" href="/" size="lg" />
           <div className="flex flex-col gap-3">
             <p className="font-[var(--font-mono)] text-xs font-bold uppercase tracking-[0.15em] text-[var(--color-primary)]">
-              {sessionName}
+              {sessionName ?? 'Join a session'}
             </p>
             <h1 className="text-3xl font-bold tracking-[-0.035em] text-[var(--color-text-primary)]">
               What should we call you?
@@ -110,13 +112,15 @@ export function ParticipantNameEntryPage({
                 </span>
                 . Your name is visible to the host only.
               </Callout>
-              <a
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--color-primary)] px-5 text-sm font-semibold text-[var(--color-text-on-primary)] transition-[filter,transform] hover:brightness-95 active:translate-y-px"
-                href={`/participant/session?roomCode=${encodeURIComponent(roomCode)}`}
-              >
-                <ArrowRight aria-hidden="true" size={17} strokeWidth={2} />
-                Open live session
-              </a>
+              {joinedHref ? (
+                <a
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--color-primary)] px-5 text-sm font-semibold text-[var(--color-text-on-primary)] transition-[filter,transform] hover:brightness-95 active:translate-y-px"
+                  href={joinedHref}
+                >
+                  <ArrowRight aria-hidden="true" size={17} strokeWidth={2} />
+                  Open live session
+                </a>
+              ) : null}
               <Button
                 className="w-full"
                 onClick={() => setState('idle')}
@@ -171,7 +175,7 @@ export function ParticipantNameEntryPage({
 
           <a
             className="text-center text-sm font-semibold text-[var(--color-primary)] hover:underline"
-            href={`/join?roomCode=${encodeURIComponent(roomCode)}`}
+            href={`/join?roomCode=${encodeURIComponent(roomCode ?? '')}`}
           >
             Use a different Room Code
           </a>

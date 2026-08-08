@@ -6,7 +6,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { DATABASE } from '../infrastructure/database/database.constants';
 import type { Database } from '../infrastructure/database/database.types';
 import * as schema from '../infrastructure/database/schema';
@@ -21,7 +21,10 @@ import {
   participantSessionSnapshotSchema,
   participantSnapshotSchema,
 } from '../contracts/participant.contract';
+import type { ResponseSnapshot } from '../contracts/response.contract';
+import { responseSnapshotSchema } from '../contracts/response.contract';
 import { PollsService } from '../polls/polls.service';
+import { PresenceService } from '../realtime/presence.service';
 import { RealtimeService } from '../realtime/realtime.service';
 import {
   InvalidDisplayNameError,
@@ -37,6 +40,7 @@ export class ParticipantsService {
     @Inject(ParticipantTokenService)
     private readonly tokens: ParticipantTokenService,
     @Inject(RealtimeService) private readonly realtime: RealtimeService,
+    @Inject(PresenceService) private readonly presence: PresenceService,
   ) {}
 
   async join(input: {
@@ -97,7 +101,7 @@ export class ParticipantsService {
 
   async snapshot(participantId: string): Promise<ParticipantSessionSnapshot> {
     const participant = await this.requireParticipant(participantId);
-    return this.buildSnapshot(participant.sessionId);
+    return this.buildSnapshot(participant.sessionId, participant.id);
   }
 
   async updateDisplayName(
@@ -135,12 +139,13 @@ export class ParticipantsService {
     return joinResponseSchema.parse({
       token,
       participant: this.toParticipantSnapshot(participant),
-      snapshot: await this.buildSnapshot(sessionId),
+      snapshot: await this.buildSnapshot(sessionId, participant.id),
     });
   }
 
   private async buildSnapshot(
     sessionId: string,
+    participantId?: string,
   ): Promise<ParticipantSessionSnapshot> {
     const [session] = await this.db
       .select()
@@ -151,6 +156,16 @@ export class ParticipantsService {
       throw new NotFoundException({ code: ERROR_CODES.SESSION_NOT_FOUND });
     }
     const groups = await this.polls.pollGroups(sessionId);
+    const activePoll = groups.find(({ poll }) => poll.isOpen)?.poll ?? null;
+    let displayName = '';
+    if (participantId) {
+      const [participantRow] = await this.db
+        .select({ displayName: schema.participants.displayName })
+        .from(schema.participants)
+        .where(eq(schema.participants.id, participantId))
+        .limit(1);
+      displayName = participantRow?.displayName ?? '';
+    }
     return participantSessionSnapshotSchema.parse({
       session: {
         id: session.id,
@@ -160,6 +175,7 @@ export class ParticipantsService {
         startedAt: session.startedAt,
         endedAt: session.endedAt,
       },
+      displayName,
       polls: groups.map(({ poll, options }) => ({
         id: poll.id,
         text: poll.text,
@@ -174,7 +190,50 @@ export class ParticipantsService {
         isOpen: poll.isOpen,
         resultsRevealed: poll.resultsRevealed,
       })),
+      myResponse:
+        participantId && activePoll
+          ? await this.responseForParticipant(participantId, activePoll.id)
+          : null,
+      participantCount: await this.safePresenceCount(sessionId),
     });
+  }
+
+  private async responseForParticipant(
+    participantId: string,
+    pollId: string,
+  ): Promise<ResponseSnapshot | null> {
+    const [response] = await this.db
+      .select()
+      .from(schema.responses)
+      .where(
+        and(
+          eq(schema.responses.participantId, participantId),
+          eq(schema.responses.pollId, pollId),
+        ),
+      )
+      .limit(1);
+    if (!response) return null;
+    const selections = await this.db
+      .select({ optionId: schema.responseOptions.optionId })
+      .from(schema.responseOptions)
+      .where(eq(schema.responseOptions.responseId, response.id));
+    return responseSnapshotSchema.parse({
+      id: response.id,
+      pollId: response.pollId,
+      participantId: response.participantId,
+      optionIds: selections.map((selection) => selection.optionId),
+      text: response.text,
+      createdAt: response.createdAt,
+      updatedAt: response.updatedAt,
+    });
+  }
+
+  private async safePresenceCount(sessionId: string): Promise<number> {
+    try {
+      return await this.presence.count(sessionId);
+    } catch {
+      return 0;
+    }
   }
 
   private normalizeName(name: string): string {

@@ -1,19 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
 
 import { Brand, ConnectionStatus } from '@/shared/ui';
-import type { ConnectionState } from '@/shared/ui';
 
 import {
-  demoResponseForPoll,
-  participantFixtureSnapshot,
-  participantPollFixtures,
   responseDraftForPoll,
-  type ParticipantPollLifecycle,
-  type ParticipantPollType,
   type ParticipantResponse,
-  type ParticipantResponseState,
-  type ParticipantResultVisibility,
-  type ParticipantSessionLifecycle,
   type ParticipantSessionSnapshot,
 } from '../model/participant-session';
 import { ParticipantAcceptedResponse } from './ParticipantResponseState';
@@ -25,6 +16,7 @@ import {
 } from './ParticipantSessionState';
 
 export type ParticipantSessionPageProps = Readonly<{
+  changeNameHref?: string;
   errorMessage?: string | null;
   initialParticipantName?: string;
   initialSnapshot?: ParticipantSessionSnapshot;
@@ -32,16 +24,6 @@ export type ParticipantSessionPageProps = Readonly<{
   isSubmitting?: boolean;
   onResponseSubmit?: (draft: ResponseDraft) => Promise<void> | void;
 }>;
-
-const selectClassName = [
-  'min-h-11 w-full rounded-[var(--radius-sm)] border border-[var(--color-border)]',
-  'bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text-primary)]',
-  'focus-visible:border-[var(--color-primary)]',
-].join(' ');
-
-function cloneResponse(value: ResponseDraft): ParticipantResponse {
-  return Array.isArray(value) ? [...value] : value;
-}
 
 function editableResponseFromStored(
   response: ParticipantResponse,
@@ -54,191 +36,55 @@ function editableResponseFromStored(
   return typeof response === 'string' ? response : [...response];
 }
 
-function demoDraftForState(
-  state: ParticipantResponseState,
-  poll: ParticipantSessionSnapshot['poll'],
-): ResponseDraft {
-  return state === 'none'
-    ? responseDraftForPoll(poll)
-    : demoResponseForPoll(poll);
-}
-
-function ParticipantStateControls({
-  snapshot,
-  onConnectionStateChange,
-  onPollLifecycleChange,
-  onPollTypeChange,
-  onResponseStateChange,
-  onResultVisibilityChange,
-  onSessionLifecycleChange,
-}: Readonly<{
-  onConnectionStateChange: (state: ConnectionState) => void;
-  onPollLifecycleChange: (lifecycle: ParticipantPollLifecycle) => void;
-  onPollTypeChange: (type: ParticipantPollType) => void;
-  onResponseStateChange: (state: ParticipantResponseState) => void;
-  onResultVisibilityChange: (visibility: ParticipantResultVisibility) => void;
-  onSessionLifecycleChange: (lifecycle: ParticipantSessionLifecycle) => void;
-  snapshot: ParticipantSessionSnapshot;
-}>) {
-  return (
-    <details className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-      <summary className="cursor-pointer text-sm font-bold text-[var(--color-text-primary)]">
-        Explore participant states
-      </summary>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <label className="flex flex-col gap-2 text-xs font-semibold text-[var(--color-text-secondary)]">
-          Session lifecycle
-          <select
-            className={selectClassName}
-            onChange={(event) =>
-              onSessionLifecycleChange(
-                event.target.value as ParticipantSessionLifecycle,
-              )
-            }
-            value={snapshot.sessionLifecycle}
-          >
-            <option value="live">Live session</option>
-            <option value="ended">Ended session</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-2 text-xs font-semibold text-[var(--color-text-secondary)]">
-          Poll lifecycle
-          <select
-            className={selectClassName}
-            onChange={(event) =>
-              onPollLifecycleChange(
-                event.target.value as ParticipantPollLifecycle,
-              )
-            }
-            value={snapshot.pollLifecycle}
-          >
-            <option value="none">Waiting - no active poll</option>
-            <option value="open">Open poll</option>
-            <option value="closed">Closed poll</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-2 text-xs font-semibold text-[var(--color-text-secondary)]">
-          Poll type
-          <select
-            className={selectClassName}
-            onChange={(event) =>
-              onPollTypeChange(event.target.value as ParticipantPollType)
-            }
-            value={snapshot.poll.type}
-          >
-            <option value="single-choice">Single-choice</option>
-            <option value="multiple-choice">Multiple-choice</option>
-            <option value="open-ended">Open-ended</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-2 text-xs font-semibold text-[var(--color-text-secondary)]">
-          Result visibility
-          <select
-            className={selectClassName}
-            onChange={(event) =>
-              onResultVisibilityChange(
-                event.target.value as ParticipantResultVisibility,
-              )
-            }
-            value={snapshot.resultVisibility}
-          >
-            <option value="hidden">Hidden from participants</option>
-            <option value="revealed">Revealed to participants</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-2 text-xs font-semibold text-[var(--color-text-secondary)]">
-          Response state
-          <select
-            className={selectClassName}
-            onChange={(event) =>
-              onResponseStateChange(
-                event.target.value as ParticipantResponseState,
-              )
-            }
-            value={snapshot.responseState}
-          >
-            <option value="none">No accepted response</option>
-            <option value="pending">Pending confirmation</option>
-            <option value="accepted">Accepted by server</option>
-            <option value="rejected">Rejected - retry needed</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-2 text-xs font-semibold text-[var(--color-text-secondary)]">
-          Connection state
-          <select
-            className={selectClassName}
-            onChange={(event) =>
-              onConnectionStateChange(event.target.value as ConnectionState)
-            }
-            value={snapshot.connectionState}
-          >
-            <option value="connected">Connected</option>
-            <option value="synchronized">Reconnected and synchronized</option>
-            <option value="reconnecting">Reconnecting</option>
-            <option value="stale">Refresh needed</option>
-            <option value="connecting">Connecting</option>
-          </select>
-        </label>
-      </div>
-      <p className="mt-4 text-xs leading-5 text-[var(--color-text-tertiary)]">
-        These local controls model session, poll, result, response, and
-        connection values independently. Reconnecting never changes an accepted
-        response.
-      </p>
-    </details>
-  );
-}
-
 export function ParticipantSessionPage({
+  changeNameHref,
   errorMessage,
-  initialParticipantName = 'Avery',
+  initialParticipantName,
   initialSnapshot,
   isLoading = false,
   isSubmitting = false,
   onResponseSubmit,
-}: ParticipantSessionPageProps = {}) {
-  const initial = initialSnapshot ?? participantFixtureSnapshot;
-  const [snapshot, setSnapshot] = useState<ParticipantSessionSnapshot>(initial);
+}: ParticipantSessionPageProps) {
+  const snapshot = initialSnapshot ?? {
+    connectionState: 'stale' as const,
+    participantCount: 0,
+    poll: {
+      id: '',
+      options: [],
+      prompt: '',
+      results: [],
+      totalResponses: 0,
+      type: 'single-choice' as const,
+    },
+    pollLifecycle: 'none' as const,
+    response: null,
+    responseState: 'none' as const,
+    resultVisibility: 'hidden' as const,
+    sessionLifecycle: 'live' as const,
+    sessionName: 'Session unavailable',
+  };
   const [draftResponse, setDraftResponse] = useState<ResponseDraft>(() =>
-    editableResponseFromStored(initial.response, initial.poll),
+    editableResponseFromStored(snapshot.response, snapshot.poll),
   );
   const [responseError, setResponseError] = useState<string>();
 
-  const activeSnapshot = initialSnapshot !== undefined ? initialSnapshot : snapshot;
-
   useEffect(() => {
-    if (snapshot.responseState !== 'pending') {
-      return;
-    }
-
-    if (!onResponseSubmit) {
-      const submittedResponse = cloneResponse(draftResponse);
-      const timeoutId = globalThis.setTimeout(() => {
-        setSnapshot((current) =>
-          current.responseState === 'pending'
-            ? {
-                ...current,
-                response: submittedResponse,
-                responseState: 'accepted',
-              }
-            : current,
-        );
-      }, 850);
-
-      return () => globalThis.clearTimeout(timeoutId);
-    }
-  }, [draftResponse, snapshot.responseState, onResponseSubmit]);
+    setDraftResponse(editableResponseFromStored(snapshot.response, snapshot.poll));
+    setResponseError(undefined);
+    // Reset the draft when the active poll changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshot.poll.id]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const { poll } = activeSnapshot;
+    const { poll } = snapshot;
 
-    if (activeSnapshot.pollLifecycle !== 'open') {
+    if (snapshot.pollLifecycle !== 'open') {
       setResponseError('This poll is no longer accepting responses.');
       return;
     }
 
-    if (activeSnapshot.connectionState === 'stale') {
+    if (snapshot.connectionState === 'stale') {
       setResponseError('Refresh the session before sending a new response.');
       return;
     }
@@ -274,67 +120,23 @@ export function ParticipantSessionPage({
 
     setResponseError(undefined);
 
-    if (onResponseSubmit) {
-      try {
-        await onResponseSubmit(draftResponse);
-      } catch (err) {
-        setResponseError(err instanceof Error ? err.message : 'Failed to send response.');
-        return;
-      }
-    } else {
-      setSnapshot((current) => ({
-        ...current,
-        response: null,
-        responseState: 'pending',
-      }));
+    if (!onResponseSubmit) {
+      setResponseError('Submitting responses is unavailable.');
+      return;
+    }
+
+    try {
+      await onResponseSubmit(draftResponse);
+    } catch (err) {
+      setResponseError(
+        err instanceof Error ? err.message : 'Failed to send response.',
+      );
     }
   }
 
   function handleChangeResponse() {
-    setDraftResponse(
-      editableResponseFromStored(activeSnapshot.response, activeSnapshot.poll),
-    );
+    setDraftResponse(editableResponseFromStored(snapshot.response, snapshot.poll));
     setResponseError(undefined);
-    setSnapshot((current) => ({
-      ...current,
-      response: null,
-      responseState: 'none',
-    }));
-  }
-
-  function handlePollTypeChange(type: ParticipantPollType) {
-    const poll = participantPollFixtures[type];
-    setDraftResponse(responseDraftForPoll(poll));
-    setResponseError(undefined);
-    setSnapshot((current) => ({
-      ...current,
-      poll,
-      response: null,
-      responseState: 'none',
-    }));
-  }
-
-  function handleResponseStateChange(responseState: ParticipantResponseState) {
-    const nextDraft = demoDraftForState(responseState, activeSnapshot.poll);
-    setDraftResponse(nextDraft);
-    setResponseError(undefined);
-    setSnapshot((current) => ({
-      ...current,
-      response: responseState === 'accepted' ? cloneResponse(nextDraft) : null,
-      responseState,
-    }));
-  }
-
-  function handlePollLifecycleChange(pollLifecycle: ParticipantPollLifecycle) {
-    setResponseError(undefined);
-    setSnapshot((current) => ({ ...current, pollLifecycle }));
-  }
-
-  function handleSessionLifecycleChange(
-    sessionLifecycle: ParticipantSessionLifecycle,
-  ) {
-    setResponseError(undefined);
-    setSnapshot((current) => ({ ...current, sessionLifecycle }));
   }
 
   if (isLoading) {
@@ -347,6 +149,17 @@ export function ParticipantSessionPage({
     );
   }
 
+  if (!initialSnapshot) {
+    return (
+      <main className="min-h-screen bg-[var(--color-bg-canvas)] px-4 py-6 sm:px-6 sm:py-10">
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-[var(--color-error)]">
+          This session could not be loaded. Check the Invitation Link and try
+          again.
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[var(--color-bg-canvas)] px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
@@ -354,25 +167,11 @@ export function ParticipantSessionPage({
           <Brand aria-label="Pulse home" href="/" size="md" />
           <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
             <p className="max-w-48 truncate text-xs font-semibold text-[var(--color-text-secondary)] sm:max-w-none">
-              {activeSnapshot.sessionName}
+              {snapshot.sessionName}
             </p>
-            <ConnectionStatus state={activeSnapshot.connectionState} />
+            <ConnectionStatus state={snapshot.connectionState} />
           </div>
         </header>
-
-        <ParticipantStateControls
-          onConnectionStateChange={(connectionState) =>
-            setSnapshot((current) => ({ ...current, connectionState }))
-          }
-          onPollLifecycleChange={handlePollLifecycleChange}
-          onPollTypeChange={handlePollTypeChange}
-          onResponseStateChange={handleResponseStateChange}
-          onResultVisibilityChange={(resultVisibility) =>
-            setSnapshot((current) => ({ ...current, resultVisibility }))
-          }
-          onSessionLifecycleChange={handleSessionLifecycleChange}
-          snapshot={activeSnapshot}
-        />
 
         {errorMessage || responseError ? (
           <p
@@ -383,51 +182,55 @@ export function ParticipantSessionPage({
           </p>
         ) : null}
 
-        {activeSnapshot.sessionLifecycle === 'ended' ? (
+        {snapshot.sessionLifecycle === 'ended' ? (
           <ParticipantEndedSessionState
-            poll={activeSnapshot.poll}
-            resultVisibility={activeSnapshot.resultVisibility}
+            poll={snapshot.poll}
+            resultVisibility={snapshot.resultVisibility}
           />
-        ) : activeSnapshot.pollLifecycle === 'none' ? (
+        ) : snapshot.pollLifecycle === 'none' ? (
           <ParticipantWaitingState
-            connectionState={activeSnapshot.connectionState}
-            participantCount={activeSnapshot.participantCount}
-            response={activeSnapshot.response}
-            responseState={activeSnapshot.responseState}
-            sessionName={activeSnapshot.sessionName}
+            connectionState={snapshot.connectionState}
+            participantCount={snapshot.participantCount}
+            response={snapshot.response}
+            responseState={snapshot.responseState}
+            sessionName={snapshot.sessionName}
           />
-        ) : activeSnapshot.pollLifecycle === 'closed' ? (
+        ) : snapshot.pollLifecycle === 'closed' ? (
           <ParticipantClosedPollState
-            poll={activeSnapshot.poll}
-            response={activeSnapshot.response}
-            responseState={activeSnapshot.responseState}
-            resultVisibility={activeSnapshot.resultVisibility}
+            poll={snapshot.poll}
+            response={snapshot.response}
+            responseState={snapshot.responseState}
+            resultVisibility={snapshot.resultVisibility}
           />
-        ) : activeSnapshot.responseState === 'accepted' ? (
+        ) : snapshot.responseState === 'accepted' ? (
           <ParticipantAcceptedResponse
-            connectionState={activeSnapshot.connectionState}
+            changeNameHref={changeNameHref}
+            connectionState={snapshot.connectionState}
             onChangeResponse={handleChangeResponse}
-            participantName={initialParticipantName}
-            poll={activeSnapshot.poll}
-            response={activeSnapshot.response}
-            resultVisibility={activeSnapshot.resultVisibility}
+            participantName={initialParticipantName ?? ''}
+            poll={snapshot.poll}
+            response={snapshot.response}
+            resultVisibility={snapshot.resultVisibility}
           />
         ) : (
           <ParticipantPoll
-            connectionState={activeSnapshot.connectionState}
+            changeNameHref={changeNameHref}
+            connectionState={snapshot.connectionState}
             draftResponse={draftResponse}
             onChangeDraft={(nextResponse) => {
               setDraftResponse(nextResponse);
               setResponseError(undefined);
             }}
             onSubmit={handleSubmit}
-            participantName={initialParticipantName}
-            poll={activeSnapshot.poll}
-            response={activeSnapshot.response}
+            participantName={initialParticipantName ?? ''}
+            poll={snapshot.poll}
+            response={snapshot.response}
             responseError={responseError}
-            responseState={isSubmitting ? 'pending' : activeSnapshot.responseState}
-            resultVisibility={activeSnapshot.resultVisibility}
-            sessionName={activeSnapshot.sessionName}
+            responseState={
+              isSubmitting ? 'pending' : snapshot.responseState
+            }
+            resultVisibility={snapshot.resultVisibility}
+            sessionName={snapshot.sessionName}
           />
         )}
 

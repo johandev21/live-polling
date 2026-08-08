@@ -29,6 +29,8 @@ export const sessionSnapshotSchema = z.object({
   updatedAt: z.date(),
   startedAt: z.date().nullable(),
   endedAt: z.date().nullable(),
+  pollCount: z.number().int().nonnegative().optional(),
+  participantCount: z.number().int().nonnegative().optional(),
 });
 
 export const sessionListResponseSchema = z.object({

@@ -26,7 +26,7 @@ const sampleEditorSession: SessionEditorSession = {
     {
       id: 'poll-1',
       options: ['Option A', 'Option B'],
-      responses: 0,
+      hasResponses: false,
       status: 'configured',
       text: 'Question One',
       type: 'single-choice',
@@ -34,7 +34,7 @@ const sampleEditorSession: SessionEditorSession = {
     {
       id: 'poll-2',
       options: ['Option C', 'Option D'],
-      responses: 0,
+      hasResponses: false,
       status: 'configured',
       text: 'Question Two',
       type: 'multiple-choice',

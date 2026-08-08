@@ -17,12 +17,13 @@ import {
 } from '@/shared/ui';
 
 import {
-  fixtureLockedPoll,
   type LockedPoll,
   type LockedPollType,
 } from '../model/edit-locked-poll';
 
 export type EditLockedPollPageProps = Readonly<{
+  errorMessage?: string | null;
+  isLoading?: boolean;
   onClosePoll?: (poll: LockedPoll) => void;
   onOpenPoll?: (poll: LockedPoll) => void;
   onViewResults?: (poll: LockedPoll) => void;
@@ -83,20 +84,44 @@ function LockedOption({
 }
 
 export function EditLockedPollPage({
+  errorMessage,
+  isLoading = false,
   onClosePoll,
   onOpenPoll,
   onViewResults,
-  poll: initialPoll = fixtureLockedPoll,
+  poll,
 }: EditLockedPollPageProps) {
-  const [pollStatus, setPollStatus] = useState(initialPoll.status);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
-  const poll: LockedPoll = { ...initialPoll, status: pollStatus };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-canvas)]">
+        <Header />
+        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-[var(--color-text-secondary)]">
+          Loading poll details...
+        </main>
+      </div>
+    );
+  }
+
+  if (!poll) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-canvas)]">
+        <Header />
+        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-[var(--color-text-secondary)]">
+          This poll could not be loaded. Return to the session editor and try
+          again.
+        </main>
+      </div>
+    );
+  }
+
+  const lockedPoll = poll;
+  const pollStatus = lockedPoll.status;
 
   function handleLifecycleAction() {
     const nextStatus = pollStatus === 'closed' ? 'open' : 'closed';
-    const nextPoll: LockedPoll = { ...poll, status: nextStatus };
-    setPollStatus(nextStatus);
+    const nextPoll: LockedPoll = { ...lockedPoll, status: nextStatus };
     setActionMessage(
       nextStatus === 'open'
         ? 'Poll opened for responses.'
@@ -111,7 +136,7 @@ export function EditLockedPollPage({
 
   function handleViewResults() {
     setActionMessage('Opening host-visible results.');
-    onViewResults?.(poll);
+    onViewResults?.(lockedPoll);
   }
 
   return (
@@ -152,6 +177,14 @@ export function EditLockedPollPage({
             <span aria-hidden="true">-</span>
             <span>{poll.responses} responses recorded</span>
           </div>
+          {errorMessage ? (
+            <p
+              aria-live="polite"
+              className="text-sm font-semibold text-[var(--color-error)]"
+            >
+              {errorMessage}
+            </p>
+          ) : null}
           {actionMessage ? (
             <p
               aria-live="polite"

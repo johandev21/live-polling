@@ -1,5 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
+import { getApiBaseUrl } from './api-client';
+
 export type SocketRole = 'host' | 'participant';
 
 export type ConnectSocketOptions = {
@@ -15,7 +17,7 @@ export function getSocketInstance(options?: ConnectSocketOptions): Socket | null
   if (typeof window === 'undefined') return null;
 
   if (!socketInstance && options) {
-    const origin = options.baseUrl || window.location.origin;
+    const origin = options.baseUrl || getApiBaseUrl();
     socketInstance = io(origin, {
       auth: {
         role: options.role,

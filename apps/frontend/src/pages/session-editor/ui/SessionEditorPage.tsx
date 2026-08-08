@@ -20,7 +20,6 @@ import type { LucideIcon } from 'lucide-react';
 import { Brand, Button, Callout, StatusBadge, Surface } from '@/shared/ui';
 
 import {
-  fixtureSessionEditorSession,
   type EditorPoll,
   type EditorPollStatus,
   type EditorPollType,
@@ -39,6 +38,13 @@ export type SessionEditorPageProps = Readonly<{
   onStartSession?: (session: SessionEditorSession) => void;
   onStartSessionSubmit?: () => Promise<void> | void;
 }>;
+
+const undefinedSession: SessionEditorSession = {
+  id: '',
+  lifecycle: 'draft',
+  name: '',
+  polls: [],
+};
 
 const pollTypeLabels: Record<EditorPollType, string> = {
   'multiple-choice': 'Multiple-choice poll',
@@ -262,7 +268,7 @@ function ReadinessRail({ session }: { session: SessionEditorSession }) {
 
 export function SessionEditorPage({
   errorMessage,
-  initialSession = fixtureSessionEditorSession,
+  initialSession,
   isLoading = false,
   onAddPoll,
   onDeletePollSubmit,
@@ -272,20 +278,41 @@ export function SessionEditorPage({
   onStartSession,
   onStartSessionSubmit,
 }: SessionEditorPageProps) {
-  const [session, setSession] = useState<SessionEditorSession>(initialSession);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
-  // Sync state if initialSession changes
-  const activeSession = initialSession !== fixtureSessionEditorSession ? initialSession : session;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-canvas)]">
+        <Header session={initialSession ?? undefinedSession} />
+        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-[var(--color-text-secondary)]">
+          Loading session details...
+        </main>
+      </div>
+    );
+  }
 
-  const isEmpty = activeSession.polls.length === 0;
-  const isDraft = activeSession.lifecycle === 'draft';
+  if (!initialSession) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-canvas)]">
+        <Header session={undefinedSession} />
+        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-[var(--color-text-secondary)]">
+          This session could not be loaded. Return to the dashboard and try
+          again.
+        </main>
+      </div>
+    );
+  }
+
+  const session = initialSession;
+
+  const isEmpty = session.polls.length === 0;
+  const isDraft = session.lifecycle === 'draft';
   const startDisabled = !isDraft || isEmpty;
   const startReason = isDraft
     ? isEmpty
       ? 'Add at least one poll before starting the session.'
       : 'Participants cannot join until you start the session.'
-    : activeSession.lifecycle === 'live'
+    : session.lifecycle === 'live'
       ? 'This live session is read-only here. Use the live control room for lifecycle actions.'
       : 'This ended session is read-only. Review the completed history instead.';
 
@@ -296,7 +323,7 @@ export function SessionEditorPage({
     }
 
     setActionMessage('Poll builder ready for a new poll.');
-    onAddPoll?.(activeSession);
+    onAddPoll?.(session);
   }
 
   function handleEditPoll(poll: EditorPoll) {
@@ -305,7 +332,7 @@ export function SessionEditorPage({
       return;
     }
 
-    if (poll.responses > 0) {
+    if (poll.hasResponses) {
       setActionMessage('This poll has responses and is locked for editing.');
       onOpenLockedPoll?.(poll);
       return;
@@ -320,19 +347,18 @@ export function SessionEditorPage({
       return;
     }
 
-    if (onDeletePollSubmit) {
-      try {
-        await onDeletePollSubmit(pollId);
-        setActionMessage('Poll removed from this draft.');
-      } catch (err) {
-        setActionMessage(err instanceof Error ? err.message : 'Failed to delete poll.');
-      }
-    } else {
-      setSession((current) => ({
-        ...current,
-        polls: current.polls.filter((poll) => poll.id !== pollId),
-      }));
+    if (!onDeletePollSubmit) {
+      setActionMessage('Poll removal is unavailable.');
+      return;
+    }
+
+    try {
+      await onDeletePollSubmit(pollId);
       setActionMessage('Poll removed from this draft.');
+    } catch (err) {
+      setActionMessage(
+        err instanceof Error ? err.message : 'Failed to delete poll.',
+      );
     }
   }
 
@@ -342,41 +368,19 @@ export function SessionEditorPage({
       return;
     }
 
-    if (onMovePollSubmit) {
-      try {
-        await onMovePollSubmit(pollId, direction);
-        setActionMessage(
-          direction === -1 ? 'Poll moved earlier.' : 'Poll moved later.',
-        );
-      } catch (err) {
-        setActionMessage(err instanceof Error ? err.message : 'Failed to reorder polls.');
-      }
-    } else {
-      setSession((current) => {
-        const currentIndex = current.polls.findIndex(
-          (poll) => poll.id === pollId,
-        );
-        const targetIndex = currentIndex + direction;
-        if (
-          currentIndex < 0 ||
-          targetIndex < 0 ||
-          targetIndex >= current.polls.length
-        ) {
-          return current;
-        }
+    if (!onMovePollSubmit) {
+      setActionMessage('Reordering is unavailable.');
+      return;
+    }
 
-        const nextPolls = [...current.polls];
-        const currentPoll = nextPolls[currentIndex];
-        const targetPoll = nextPolls[targetIndex];
-        if (!currentPoll || !targetPoll) {
-          return current;
-        }
-        nextPolls[currentIndex] = targetPoll;
-        nextPolls[targetIndex] = currentPoll;
-        return { ...current, polls: nextPolls };
-      });
+    try {
+      await onMovePollSubmit(pollId, direction);
       setActionMessage(
         direction === -1 ? 'Poll moved earlier.' : 'Poll moved later.',
+      );
+    } catch (err) {
+      setActionMessage(
+        err instanceof Error ? err.message : 'Failed to reorder polls.',
       );
     }
   }
@@ -386,61 +390,47 @@ export function SessionEditorPage({
       return;
     }
 
-    if (onStartSessionSubmit) {
-      try {
-        await onStartSessionSubmit();
-      } catch (err) {
-        setActionMessage(err instanceof Error ? err.message : 'Failed to start session.');
-        return;
-      }
+    if (!onStartSessionSubmit) {
+      setActionMessage('Starting a session is unavailable.');
+      return;
     }
 
-    const nextSession: SessionEditorSession = {
-      ...activeSession,
-      lifecycle: 'live',
-      polls: activeSession.polls.map((poll, index) =>
-        index === 0 ? { ...poll, status: 'open' } : poll,
-      ),
-    };
-    setSession(nextSession);
+    try {
+      await onStartSessionSubmit();
+    } catch (err) {
+      setActionMessage(
+        err instanceof Error ? err.message : 'Failed to start session.',
+      );
+      return;
+    }
+
     setActionMessage(
       'Session started. Participants can join with the Room Code.',
     );
-    onStartSession?.(nextSession);
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[var(--color-bg-canvas)]">
-        <Header session={activeSession} />
-        <main className="mx-auto flex w-full max-w-screen-2xl items-center justify-center py-20 text-sm font-semibold text-[var(--color-text-secondary)]">
-          Loading session details...
-        </main>
-      </div>
-    );
+    onStartSession?.(session);
   }
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-canvas)]">
-      <Header session={activeSession} />
+      <Header session={session} />
       <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
         <section className="flex flex-col gap-4">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
               <h1 className="break-words text-3xl font-bold tracking-[-0.03em] text-[var(--color-text-primary)]">
-                {activeSession.name}
+                {session.name}
               </h1>
               <StatusBadge
                 label={
-                  activeSession.lifecycle === 'draft'
+                  session.lifecycle === 'draft'
                     ? 'Draft Session'
-                    : `${activeSession.lifecycle} Session`
+                    : `${session.lifecycle} Session`
                 }
                 showDot
                 tone={
-                  activeSession.lifecycle === 'draft'
+                  session.lifecycle === 'draft'
                     ? 'warning'
-                    : activeSession.lifecycle === 'live'
+                    : session.lifecycle === 'live'
                       ? 'success'
                       : 'neutral'
                 }
@@ -465,7 +455,7 @@ export function SessionEditorPage({
               ) : (
                 <LifecycleNavigationLink
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--color-primary)] px-4 text-sm font-semibold text-[var(--color-text-on-primary)] hover:brightness-95"
-                  session={activeSession}
+                  session={session}
                 />
               )}
             </div>
@@ -475,12 +465,12 @@ export function SessionEditorPage({
               {errorMessage}
             </Callout>
           ) : null}
-          {activeSession.lifecycle === 'draft' ? (
+          {session.lifecycle === 'draft' ? (
             <Callout icon="info" tone="warning">
               Participants cannot join yet. Add or edit polls before you start
               the session.
             </Callout>
-          ) : activeSession.lifecycle === 'live' ? (
+          ) : session.lifecycle === 'live' ? (
             <Callout icon="check" tone="success">
               Participants can join this session. The first open poll is
               accepting responses.
@@ -536,11 +526,11 @@ export function SessionEditorPage({
               ) : (
                 <LifecycleNavigationLink
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--color-primary)] px-5 text-base font-semibold text-[var(--color-text-on-primary)] hover:brightness-95"
-                  session={activeSession}
+                  session={session}
                 />
               )}
             </Surface>
-            <ReadinessRail session={activeSession} />
+            <ReadinessRail session={session} />
           </section>
         ) : (
           <section className="grid gap-6 lg:grid-cols-[minmax(0,900px)_320px]">
@@ -550,8 +540,8 @@ export function SessionEditorPage({
                   className="font-[var(--font-mono)] text-xs font-bold tracking-[0.14em] text-[var(--color-primary)]"
                   id="poll-sequence-heading"
                 >
-                  Poll sequence - {activeSession.polls.length} poll
-                  {activeSession.polls.length === 1 ? '' : 's'}
+                  Poll sequence - {session.polls.length} poll
+                  {session.polls.length === 1 ? '' : 's'}
                 </h2>
                 <span className="text-xs text-[var(--color-text-tertiary)]">
                   {isDraft
@@ -560,7 +550,7 @@ export function SessionEditorPage({
                 </span>
               </div>
               <ol className="flex flex-col gap-3">
-                {activeSession.polls.map((poll, index) => (
+                {session.polls.map((poll, index) => (
                   <li key={poll.id}>
                     <Surface
                       as="article"
@@ -601,7 +591,7 @@ export function SessionEditorPage({
                           <button
                             aria-label={`Move poll ${index + 1} later`}
                             className="inline-flex size-9 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-muted)] disabled:cursor-not-allowed disabled:opacity-40"
-                            disabled={index === activeSession.polls.length - 1}
+                            disabled={index === session.polls.length - 1}
                             onClick={() => handleMovePoll(poll.id, 1)}
                             type="button"
                           >
@@ -617,7 +607,7 @@ export function SessionEditorPage({
                               className="mr-2"
                               size={14}
                             />
-                            {poll.responses > 0 ? 'View locked poll' : 'Edit'}
+                            {poll.hasResponses ? 'View locked poll' : 'Edit'}
                           </Button>
                           <button
                             aria-label={`Delete poll ${index + 1}`}
@@ -638,7 +628,7 @@ export function SessionEditorPage({
                 ))}
               </ol>
             </section>
-            <ReadinessRail session={activeSession} />
+            <ReadinessRail session={session} />
           </section>
         )}
       </main>

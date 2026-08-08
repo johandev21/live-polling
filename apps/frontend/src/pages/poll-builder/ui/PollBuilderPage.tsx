@@ -5,7 +5,6 @@ import type { SubmitEvent } from 'react';
 import { Brand, Button, Callout, Field, Surface, Textarea } from '@/shared/ui';
 
 import {
-  fixturePollDraft,
   type PollDraft,
   type PollType,
 } from '../model/poll-builder';
@@ -165,9 +164,15 @@ function normalizedOptionCounts(options: readonly string[]) {
   return counts;
 }
 
+const emptyDraft: PollDraft = {
+  type: 'single-choice',
+  text: '',
+  options: ['', ''],
+};
+
 export function PollBuilderPage({
   errorMessage,
-  initialDraft = fixturePollDraft,
+  initialDraft = emptyDraft,
   isSubmitting = false,
   onCancel,
   onSave,

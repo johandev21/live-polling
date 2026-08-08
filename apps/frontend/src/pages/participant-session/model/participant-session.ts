@@ -50,104 +50,12 @@ export type ParticipantSessionSnapshot = Readonly<{
   sessionName: string;
 }>;
 
-export const participantPollFixtures: Readonly<
-  Record<ParticipantPollType, ParticipantPoll>
-> = {
-  'multiple-choice': {
-    id: 'best-work-parts',
-    maxSelections: 2,
-    options: [
-      { id: 'deep-work', label: 'Deep work' },
-      { id: 'team-connection', label: 'Team connection' },
-      { id: 'learning-time', label: 'Learning time' },
-      { id: 'planning-time', label: 'Planning time' },
-    ],
-    prompt: 'Which parts of the week help you do your best work?',
-    results: [
-      { count: 74, id: 'deep-work', label: 'Deep work', percentage: 58 },
-      {
-        count: 35,
-        id: 'team-connection',
-        label: 'Team connection',
-        percentage: 27,
-      },
-      {
-        count: 19,
-        id: 'learning-time',
-        label: 'Learning time',
-        percentage: 15,
-      },
-    ],
-    totalResponses: 128,
-    type: 'multiple-choice',
-  },
-  'open-ended': {
-    id: 'takeaway',
-    options: [],
-    prompt: 'What is one thing you want to leave with?',
-    results: [],
-    responseLimit: 500,
-    totalResponses: 47,
-    type: 'open-ended',
-  },
-  'single-choice': {
-    id: 'make-more-time',
-    options: [
-      { id: 'deep-work', label: 'Deep work' },
-      { id: 'team-connection', label: 'Team connection' },
-      { id: 'learning-time', label: 'Learning time' },
-    ],
-    prompt: 'What should we make more time for?',
-    results: [
-      { count: 74, id: 'deep-work', label: 'Deep work', percentage: 58 },
-      {
-        count: 35,
-        id: 'team-connection',
-        label: 'Team connection',
-        percentage: 27,
-      },
-      {
-        count: 19,
-        id: 'learning-time',
-        label: 'Learning time',
-        percentage: 15,
-      },
-    ],
-    totalResponses: 128,
-    type: 'single-choice',
-  },
-};
-
-export const participantFixtureSnapshot: ParticipantSessionSnapshot = {
-  connectionState: 'connected',
-  participantCount: 128,
-  poll: participantPollFixtures['single-choice'],
-  pollLifecycle: 'open',
-  response: null,
-  responseState: 'none',
-  resultVisibility: 'hidden',
-  sessionLifecycle: 'live',
-  sessionName: 'Team offsite · June 2025',
-};
-
 export function responseDraftForPoll(poll: ParticipantPoll): string | string[] {
   if (poll.type === 'multiple-choice') {
     return [];
   }
 
   return '';
-}
-
-export function demoResponseForPoll(poll: ParticipantPoll): string | string[] {
-  if (poll.type === 'multiple-choice') {
-    return ['deep-work', 'team-connection'];
-  }
-
-  if (poll.type === 'open-ended') {
-    return 'A clear next step I can bring back to the team.';
-  }
-
-  return 'team-connection';
 }
 
 export function participantResponseLabel(
@@ -158,22 +66,20 @@ export function participantResponseLabel(
     return 'Response confirmed by the server';
   }
 
-  if (poll.type !== 'multiple-choice') {
-    return typeof response === 'string' ? response : response.join(', ');
-  }
-
-  if (!Array.isArray(response)) {
-    return response;
-  }
-
-  const labels = response
+  const labels = (Array.isArray(response) ? response : [response])
     .map(
       (optionId) =>
         poll.options.find((option) => option.id === optionId)?.label,
     )
     .filter((label): label is string => Boolean(label));
 
-  return labels.length > 0
-    ? labels.join(', ')
-    : 'Response confirmed by the server';
+  if (labels.length > 0) {
+    return labels.join(', ');
+  }
+
+  if (poll.type === 'open-ended') {
+    return typeof response === 'string' ? response : '';
+  }
+
+  return 'Response confirmed by the server';
 }

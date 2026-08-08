@@ -66,11 +66,25 @@ export class SessionsService {
   async list(userId: string): Promise<SessionSnapshot[]> {
     const hostId = await this.access.requireHostId(userId);
     const rows = await this.db
-      .select()
+      .select({
+        session: schema.sessions,
+        pollCount: sql<number>`count(distinct ${schema.polls.id})::int`,
+        participantCount: sql<number>`count(distinct ${schema.participants.id})::int`,
+      })
       .from(schema.sessions)
+      .leftJoin(schema.polls, eq(schema.polls.sessionId, schema.sessions.id))
+      .leftJoin(
+        schema.participants,
+        eq(schema.participants.sessionId, schema.sessions.id),
+      )
       .where(eq(schema.sessions.hostId, hostId))
+      .groupBy(schema.sessions.id)
       .orderBy(desc(schema.sessions.createdAt));
-    return rows.map((row) => this.toSnapshot(row));
+    return rows.map(({ session, pollCount, participantCount }) => ({
+      ...this.toSnapshot(session),
+      pollCount,
+      participantCount,
+    }));
   }
 
   async get(userId: string, sessionId: string): Promise<SessionSnapshot> {

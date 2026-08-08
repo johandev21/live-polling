@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { MAX_DISPLAY_NAME } from '../participants/participant.domain';
+import { responseSnapshotSchema } from './response.contract';
 import { sessionStatusSchema, uuidSchema } from './session.contract';
 
 export const displayNameSchema = z.string().trim().min(1).max(MAX_DISPLAY_NAME);
@@ -51,7 +52,10 @@ export const participantSessionSnapshotSchema = z.object({
     startedAt: z.date().nullable(),
     endedAt: z.date().nullable(),
   }),
+  displayName: z.string(),
   polls: z.array(participantPollSnapshotSchema),
+  myResponse: responseSnapshotSchema.nullable(),
+  participantCount: z.number().int().nonnegative(),
 });
 
 export const joinResponseSchema = z.object({

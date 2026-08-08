@@ -1,7 +1,6 @@
 export { EditLockedPollPage } from './ui/EditLockedPollPage';
 export type { EditLockedPollPageProps } from './ui/EditLockedPollPage';
 export {
-  fixtureLockedPoll,
   type LockedPoll,
   type LockedPollOption,
   type LockedPollResult,

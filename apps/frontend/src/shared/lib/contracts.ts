@@ -37,6 +37,8 @@ export const sessionSnapshotSchema = z.object({
   updatedAt: z.coerce.date(),
   startedAt: z.coerce.date().nullable(),
   endedAt: z.coerce.date().nullable(),
+  pollCount: z.number().int().nonnegative().optional(),
+  participantCount: z.number().int().nonnegative().optional(),
 });
 
 export const sessionListResponseSchema = z.object({
@@ -75,26 +77,33 @@ export type PollSnapshot = z.infer<typeof pollSnapshotSchema>;
 export const participantSnapshotSchema = z.object({
   id: z.string().uuid(),
   sessionId: z.string().uuid(),
-  name: z.string(),
+  displayName: z.string(),
   createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 export type ParticipantSnapshot = z.infer<typeof participantSnapshotSchema>;
 
-export const joinResponseSchema = z.object({
-  token: z.string(),
-  participant: participantSnapshotSchema,
-  session: sessionSnapshotSchema,
+export const participantPollSnapshotSchema = z.object({
+  id: z.string().uuid(),
+  text: z.string(),
+  type: z.enum(['single_choice', 'multiple_choice', 'open_ended']),
+  position: z.number().int().nonnegative(),
+  maxSelections: z.number().int().nonnegative().nullable(),
+  options: z.array(
+    z.object({
+      id: z.string().uuid(),
+      text: z.string(),
+      position: z.number().int().nonnegative(),
+    }),
+  ),
+  isOpen: z.boolean(),
+  resultsRevealed: z.boolean(),
 });
 
-export type JoinResponse = z.infer<typeof joinResponseSchema>;
-
-export const participantMeResponseSchema = z.object({
-  participant: participantSnapshotSchema,
-  session: sessionSnapshotSchema,
-});
-
-export type ParticipantMeResponse = z.infer<typeof participantMeResponseSchema>;
+export type ParticipantPollSnapshot = z.infer<
+  typeof participantPollSnapshotSchema
+>;
 
 export const participantResponseSchema = z.object({
   id: z.string().uuid(),
@@ -108,13 +117,72 @@ export const participantResponseSchema = z.object({
 
 export type ParticipantResponseSnapshot = z.infer<typeof participantResponseSchema>;
 
-export const participantSessionResponseSchema = z.object({
-  session: sessionSnapshotSchema,
-  activePoll: pollSnapshotSchema.nullable(),
-  myResponse: participantResponseSchema.nullable(),
+export const participantResultsSchema = z.object({
+  pollId: z.string().uuid(),
+  total: z.number().int().nonnegative(),
+  counts: z.array(
+    z.object({
+      optionId: z.string().uuid(),
+      count: z.number().int().nonnegative(),
+      percentage: z.number().nonnegative(),
+    }),
+  ),
 });
 
-export type ParticipantSessionResponse = z.infer<typeof participantSessionResponseSchema>;
+export type ParticipantResults = z.infer<typeof participantResultsSchema>;
+
+export const participantSessionSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  status: sessionStatusSchema,
+  revision: z.number().int().positive(),
+  startedAt: z.coerce.date().nullable(),
+  endedAt: z.coerce.date().nullable(),
+});
+
+export type ParticipantSession = z.infer<typeof participantSessionSchema>;
+
+export const participantSessionResponseSchema = z.object({
+  session: participantSessionSchema,
+  displayName: z.string(),
+  polls: z.array(participantPollSnapshotSchema),
+  myResponse: participantResponseSchema.nullable(),
+  participantCount: z.number().int().nonnegative(),
+});
+
+export type ParticipantSessionResponse = z.infer<
+  typeof participantSessionResponseSchema
+>;
+
+export const joinResponseSchema = z.object({
+  token: z.string(),
+  participant: participantSnapshotSchema,
+  snapshot: participantSessionResponseSchema,
+});
+
+export type JoinResponse = z.infer<typeof joinResponseSchema>;
+
+export const hostResultsSchema = z.object({
+  pollId: z.string().uuid(),
+  total: z.number().int().nonnegative(),
+  counts: z.array(
+    z.object({
+      optionId: z.string().uuid(),
+      text: z.string(),
+      count: z.number().int().nonnegative(),
+      percentage: z.number().nonnegative(),
+    }),
+  ),
+  responses: z.array(
+    z.object({
+      id: z.string().uuid(),
+      text: z.string(),
+      createdAt: z.coerce.date(),
+    }),
+  ),
+});
+
+export type HostResults = z.infer<typeof hostResultsSchema>;
 
 export const authUserSchema = z.object({
   id: z.string(),

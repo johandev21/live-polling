@@ -22,32 +22,3 @@ export type LockedPoll = Readonly<{
   text: string;
   type: LockedPollType;
 }>;
-
-export const fixtureLockedPoll: LockedPoll = {
-  id: 'poll-time',
-  options: [
-    { id: 'option-deep-work', label: 'Deep work' },
-    { id: 'option-team-connection', label: 'Team connection' },
-    { id: 'option-learning-time', label: 'Learning time' },
-  ],
-  participantResultsVisible: false,
-  responses: 32,
-  results: [
-    { count: 18, id: 'result-deep-work', label: 'Deep work', percentage: 56 },
-    {
-      count: 9,
-      id: 'result-team-connection',
-      label: 'Team connection',
-      percentage: 28,
-    },
-    {
-      count: 5,
-      id: 'result-learning-time',
-      label: 'Learning time',
-      percentage: 16,
-    },
-  ],
-  status: 'closed',
-  text: 'What should we make more time for?',
-  type: 'single-choice',
-};

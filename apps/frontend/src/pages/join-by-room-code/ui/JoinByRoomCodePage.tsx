@@ -4,7 +4,6 @@ import { ArrowRight, RefreshCw, ShieldCheck, Zap } from 'lucide-react';
 import { Brand, Button, Callout, Field, Surface, TextInput } from '@/shared/ui';
 
 import {
-  getRoomCodeStatus,
   normalizeRoomCode,
   type RoomCodeStatus,
 } from '../model/join-by-room-code';
@@ -12,7 +11,6 @@ import {
 export type JoinByRoomCodePageProps = Readonly<{
   errorMessage?: string | null;
   initialRoomCode?: string;
-  initialStatus?: RoomCodeStatus;
   isSubmitting?: boolean;
   onJoinSubmit?: (roomCode: string) => Promise<void> | void;
   statusOverride?: RoomCodeStatus;
@@ -47,7 +45,6 @@ const statusCopy = {
 export function JoinByRoomCodePage({
   errorMessage,
   initialRoomCode = '',
-  initialStatus,
   isSubmitting = false,
   onJoinSubmit,
   statusOverride,
@@ -55,12 +52,7 @@ export function JoinByRoomCodePage({
   const [roomCode, setRoomCode] = useState(() =>
     normalizeRoomCode(initialRoomCode),
   );
-  const [status, setStatus] = useState<RoomCodeStatus>(
-    initialStatus ??
-      (initialRoomCode
-        ? getRoomCodeStatus(normalizeRoomCode(initialRoomCode))
-        : 'idle'),
-  );
+  const [status, setStatus] = useState<RoomCodeStatus>('idle');
 
   const activeStatus = statusOverride ?? status;
   const codeError = activeStatus === 'invalid' ? statusCopy.invalid.body : undefined;
@@ -82,11 +74,8 @@ export function JoinByRoomCodePage({
       try {
         await onJoinSubmit(normalized);
       } catch {
-        setStatus(getRoomCodeStatus(normalized));
-        return;
+        setStatus('idle');
       }
-    } else {
-      setStatus(getRoomCodeStatus(normalized));
     }
   }
 
