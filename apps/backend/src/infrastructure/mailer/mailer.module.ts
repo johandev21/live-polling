@@ -8,17 +8,33 @@ import { MAILER, Mailer } from './mailer.constants';
     {
       provide: MAILER,
       useFactory: (): Mailer => {
+        const host = process.env.SMTP_HOST ?? '127.0.0.1';
+        const port = Number(process.env.SMTP_PORT ?? 1025);
         const transport = nodemailer.createTransport({
-          host: process.env.SMTP_HOST ?? 'localhost',
-          port: Number(process.env.SMTP_PORT ?? 1025),
+          host,
+          port,
           secure: false,
         });
+
         return {
           send: async (message) => {
-            await transport.sendMail({
-              from: process.env.MAIL_FROM ?? 'no-reply@live-polling.local',
-              ...message,
-            });
+            console.log(
+              `[Mailer] Sending email to ${message.to}: ${message.subject}\nContent:\n${message.text}`,
+            );
+            try {
+              await transport.sendMail({
+                from: process.env.MAIL_FROM ?? 'no-reply@live-polling.local',
+                ...message,
+              });
+            } catch (error) {
+              console.error(
+                `[Mailer] Failed to send email via SMTP (${host}:${port}):`,
+                error,
+              );
+              if (process.env.NODE_ENV === 'production') {
+                throw error;
+              }
+            }
           },
         };
       },

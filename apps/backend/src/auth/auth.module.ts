@@ -26,6 +26,11 @@ import { HostSessionGuard, VerifiedHostGuard } from './auth.guards';
           baseURL: baseUrl(),
           secret: requiredAuthSecret(),
           trustedOrigins: configuredOrigins(),
+          advanced: {
+            ipAddress: {
+              trustedProxies: ['127.0.0.1', '::1'],
+            },
+          },
           session: {
             expiresIn: 60 * 60 * 24 * 7,
             storeSessionInDatabase: true,
