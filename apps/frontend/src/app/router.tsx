@@ -27,6 +27,12 @@ import { ParticipantSessionPage } from '@/pages/participant-session';
 import { PollBuilderPage } from '@/pages/poll-builder';
 import { SessionEditorPage } from '@/pages/session-editor';
 
+import {
+  useCreateSession,
+  useDeleteSession,
+  useHostSessions,
+} from '@/shared/hooks/use-host-sessions';
+import type { SessionSnapshot } from '@/shared/lib/contracts';
 import { DefaultRouteFallback } from './route-fallback';
 
 function dashboardSessionSlug(id: string): string {
@@ -129,12 +135,35 @@ const invalidMagicLinkRoute = createRoute({
   validateSearch: invalidMagicLinkSearchSchema,
 });
 
+function mapSnapshotToDashboardSession(snapshot: SessionSnapshot) {
+  const updatedDate = snapshot.updatedAt ? new Date(snapshot.updatedAt) : new Date();
+  return {
+    id: snapshot.id,
+    lifecycle: snapshot.status,
+    name: snapshot.name,
+    participantCount: 0,
+    pollCount: 0,
+    roomCode: snapshot.roomCode,
+    updatedLabel: `Updated ${updatedDate.toLocaleDateString()}`,
+  };
+}
+
 function HostDashboardRouteComponent() {
   const navigate = useNavigate();
+  const { data: rawSessions, isLoading, error } = useHostSessions();
+  const deleteSession = useDeleteSession();
+
+  const sessions = rawSessions ? rawSessions.map(mapSnapshotToDashboardSession) : [];
+
   return (
     <HostDashboardPage
+      error={error ? error.message || 'Failed to load sessions' : null}
+      isLoading={isLoading}
       onCreateSession={() => {
         void navigate({ to: '/host/sessions/new' });
+      }}
+      onDeleteSession={(session) => {
+        deleteSession.mutate({ id: session.id, confirm: true });
       }}
       onOpenSession={(session) => {
         const slug = dashboardSessionSlug(session.id);
@@ -146,6 +175,7 @@ function HostDashboardRouteComponent() {
               : sessionEditorPath(slug);
         void navigate({ to: path });
       }}
+      sessions={sessions}
     />
   );
 }
@@ -158,13 +188,19 @@ const hostDashboardRoute = createRoute({
 
 function CreateSessionRouteComponent() {
   const navigate = useNavigate();
+  const createSession = useCreateSession();
+
   return (
     <CreateSessionPage
+      errorMessage={createSession.error ? createSession.error.message || 'Failed to create session' : null}
+      isSubmitting={createSession.isPending}
       onCancel={() => {
         void navigate({ to: '/host/dashboard' });
       }}
-      onContinue={() => {
-        void navigate({ to: sessionEditorPath('team-offsite') });
+      onCreateSessionSubmit={async (name) => {
+        const created = await createSession.mutateAsync({ name });
+        const slug = dashboardSessionSlug(created.id);
+        void navigate({ to: sessionEditorPath(slug) });
       }}
     />
   );

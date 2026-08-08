@@ -17,9 +17,12 @@ import {
 } from '../model/create-session';
 
 export type CreateSessionPageProps = Readonly<{
+  errorMessage?: string | null;
   initialDraft?: CreateSessionDraft;
+  isSubmitting?: boolean;
   onCancel?: () => void;
   onContinue?: (draft: CreateSessionDraft) => void;
+  onCreateSessionSubmit?: (name: string) => Promise<void> | void;
 }>;
 
 function Header({ onCancel }: { onCancel?: () => void }) {
@@ -31,8 +34,13 @@ function Header({ onCancel }: { onCancel?: () => void }) {
       >
         <a
           className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] text-sm font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)]"
-          href="/host-dashboard"
-          onClick={onCancel}
+          href="/host/dashboard"
+          onClick={(e) => {
+            if (onCancel) {
+              e.preventDefault();
+              onCancel();
+            }
+          }}
         >
           <ArrowLeft aria-hidden="true" size={17} />
           Your sessions
@@ -44,9 +52,12 @@ function Header({ onCancel }: { onCancel?: () => void }) {
 }
 
 export function CreateSessionPage({
+  errorMessage,
   initialDraft = emptyCreateSessionDraft,
+  isSubmitting = false,
   onCancel,
   onContinue,
+  onCreateSessionSubmit,
 }: CreateSessionPageProps) {
   const [sessionName, setSessionName] = useState(initialDraft.name);
   const [nameError, setNameError] = useState<string | undefined>();
@@ -66,7 +77,7 @@ export function CreateSessionPage({
     }
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedName = sessionName.trim();
 
@@ -77,11 +88,23 @@ export function CreateSessionPage({
       return;
     }
 
+    setNameError(undefined);
+
+    if (onCreateSessionSubmit) {
+      try {
+        await onCreateSessionSubmit(trimmedName);
+      } catch (err) {
+        setNameError(
+          err instanceof Error ? err.message : 'Failed to create session.',
+        );
+        return;
+      }
+    }
+
     const nextDraft: CreateSessionDraft = {
       ...draft,
       name: trimmedName,
     };
-    setNameError(undefined);
     setActionMessage('Draft session created. Add your first poll to continue.');
     onContinue?.(nextDraft);
   }
@@ -109,6 +132,12 @@ export function CreateSessionPage({
             </p>
           </div>
 
+          {errorMessage ? (
+            <Callout icon="alertCircle" title="Error creating session" tone="error">
+              {errorMessage}
+            </Callout>
+          ) : null}
+
           <Surface as="section" className="p-6 sm:p-7" padding="none">
             <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
               <Field
@@ -135,9 +164,9 @@ export function CreateSessionPage({
                 >
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button disabled={isSubmitting} type="submit">
                   <ArrowRight aria-hidden="true" className="mr-2" size={16} />
-                  Add your first poll
+                  {isSubmitting ? 'Creating session...' : 'Add your first poll'}
                 </Button>
               </div>
             </form>
