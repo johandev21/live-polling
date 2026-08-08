@@ -43,6 +43,10 @@ import {
   useHostSessions,
 } from '@/shared/hooks/use-host-sessions';
 import { useJoinSession } from '@/shared/hooks/use-participant-auth';
+import {
+  useParticipantSessionSnapshot,
+  useSubmitResponse,
+} from '@/shared/hooks/use-participant-session';
 import { getParticipantToken } from '@/shared/lib/participant-storage';
 import type { PollSnapshot, SessionSnapshot } from '@/shared/lib/contracts';
 import { DefaultRouteFallback } from './route-fallback';
@@ -581,11 +585,102 @@ const joinByCodeRoute = createRoute({
   path: '/join/$roomCode',
 });
 
+function mapBackendSnapshotToParticipantSnapshot(
+  data: any,
+): any {
+  if (!data) return undefined;
+  const { session, activePoll, myResponse } = data;
+
+  const typeMap: Record<string, string> = {
+    multiple_choice: 'multiple-choice',
+    open_ended: 'open-ended',
+    single_choice: 'single-choice',
+  };
+
+  const poll = activePoll
+    ? {
+        id: activePoll.id,
+        maxSelections: activePoll.maxSelections ?? undefined,
+        options: activePoll.options
+          ? activePoll.options.map((opt: any) => ({ id: opt.id, label: opt.text }))
+          : [],
+        prompt: activePoll.text,
+        results: [],
+        totalResponses: 0,
+        type: typeMap[activePoll.type] || 'single-choice',
+      }
+    : undefined;
+
+  let responseState = 'none';
+  let response = null;
+
+  if (myResponse) {
+    responseState = 'accepted';
+    if (activePoll?.type === 'multiple_choice') {
+      response = myResponse.optionIds || [];
+    } else if (activePoll?.type === 'open_ended') {
+      response = myResponse.text || '';
+    } else {
+      response = myResponse.optionIds?.[0] || null;
+    }
+  }
+
+  return {
+    connectionState: 'connected',
+    participantCount: 0,
+    poll,
+    pollLifecycle: !activePoll ? 'none' : activePoll.isOpen ? 'open' : 'closed',
+    response,
+    responseState,
+    resultVisibility: activePoll?.resultsRevealed ? 'revealed' : 'hidden',
+    sessionLifecycle: session.status === 'ended' ? 'ended' : 'live',
+    sessionName: session.name,
+  };
+}
+
 function ParticipantSessionRouteComponent() {
-  const { participantName } = useSearch({
-    from: participantSessionRoute.id,
-  });
-  return <ParticipantSessionPage initialParticipantName={participantName} />;
+  const { sessionSlug } = useParams({ from: participantSessionRoute.id });
+  const { participantName } = useSearch({ from: participantSessionRoute.id });
+  const token = getParticipantToken(sessionSlug || '');
+
+  const { data: rawSnapshot, isLoading } = useParticipantSessionSnapshot(token);
+  const submitResponse = useSubmitResponse();
+
+  const snapshot = mapBackendSnapshotToParticipantSnapshot(rawSnapshot);
+
+  return (
+    <ParticipantSessionPage
+      errorMessage={submitResponse.error?.message || null}
+      initialParticipantName={participantName}
+      initialSnapshot={snapshot}
+      isLoading={isLoading}
+      isSubmitting={submitResponse.isPending}
+      onResponseSubmit={async (draft) => {
+        if (!rawSnapshot?.activePoll || !token) return;
+        const pollId = rawSnapshot.activePoll.id;
+        const pollType = rawSnapshot.activePoll.type;
+
+        let optionIds: string[] | undefined;
+        let text: string | undefined;
+
+        if (pollType === 'multiple_choice') {
+          optionIds = Array.isArray(draft) ? draft : [];
+        } else if (pollType === 'open_ended') {
+          text = typeof draft === 'string' ? draft : '';
+        } else {
+          optionIds = typeof draft === 'string' && draft ? [draft] : [];
+        }
+
+        await submitResponse.mutateAsync({
+          idempotencyKey: crypto.randomUUID(),
+          optionIds,
+          pollId,
+          text,
+          token,
+        });
+      }}
+    />
+  );
 }
 
 const participantSessionRoute = createRoute({

@@ -8,8 +8,8 @@ import {
   participantFixtureSnapshot,
   participantPollFixtures,
   responseDraftForPoll,
-  type ParticipantPollType,
   type ParticipantPollLifecycle,
+  type ParticipantPollType,
   type ParticipantResponse,
   type ParticipantResponseState,
   type ParticipantResultVisibility,
@@ -25,8 +25,12 @@ import {
 } from './ParticipantSessionState';
 
 export type ParticipantSessionPageProps = Readonly<{
+  errorMessage?: string | null;
   initialParticipantName?: string;
   initialSnapshot?: ParticipantSessionSnapshot;
+  isLoading?: boolean;
+  isSubmitting?: boolean;
+  onResponseSubmit?: (draft: ResponseDraft) => Promise<void> | void;
 }>;
 
 const selectClassName = [
@@ -186,8 +190,12 @@ function ParticipantStateControls({
 }
 
 export function ParticipantSessionPage({
+  errorMessage,
   initialParticipantName = 'Avery',
   initialSnapshot,
+  isLoading = false,
+  isSubmitting = false,
+  onResponseSubmit,
 }: ParticipantSessionPageProps = {}) {
   const initial = initialSnapshot ?? participantFixtureSnapshot;
   const [snapshot, setSnapshot] = useState<ParticipantSessionSnapshot>(initial);
@@ -196,37 +204,41 @@ export function ParticipantSessionPage({
   );
   const [responseError, setResponseError] = useState<string>();
 
+  const activeSnapshot = initialSnapshot !== undefined ? initialSnapshot : snapshot;
+
   useEffect(() => {
     if (snapshot.responseState !== 'pending') {
       return;
     }
 
-    const submittedResponse = cloneResponse(draftResponse);
-    const timeoutId = globalThis.setTimeout(() => {
-      setSnapshot((current) =>
-        current.responseState === 'pending'
-          ? {
-              ...current,
-              response: submittedResponse,
-              responseState: 'accepted',
-            }
-          : current,
-      );
-    }, 850);
+    if (!onResponseSubmit) {
+      const submittedResponse = cloneResponse(draftResponse);
+      const timeoutId = globalThis.setTimeout(() => {
+        setSnapshot((current) =>
+          current.responseState === 'pending'
+            ? {
+                ...current,
+                response: submittedResponse,
+                responseState: 'accepted',
+              }
+            : current,
+        );
+      }, 850);
 
-    return () => globalThis.clearTimeout(timeoutId);
-  }, [draftResponse, snapshot.responseState]);
+      return () => globalThis.clearTimeout(timeoutId);
+    }
+  }, [draftResponse, snapshot.responseState, onResponseSubmit]);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const { poll } = snapshot;
+    const { poll } = activeSnapshot;
 
-    if (snapshot.pollLifecycle !== 'open') {
+    if (activeSnapshot.pollLifecycle !== 'open') {
       setResponseError('This poll is no longer accepting responses.');
       return;
     }
 
-    if (snapshot.connectionState === 'stale') {
+    if (activeSnapshot.connectionState === 'stale') {
       setResponseError('Refresh the session before sending a new response.');
       return;
     }
@@ -261,16 +273,26 @@ export function ParticipantSessionPage({
     }
 
     setResponseError(undefined);
-    setSnapshot((current) => ({
-      ...current,
-      response: null,
-      responseState: 'pending',
-    }));
+
+    if (onResponseSubmit) {
+      try {
+        await onResponseSubmit(draftResponse);
+      } catch (err) {
+        setResponseError(err instanceof Error ? err.message : 'Failed to send response.');
+        return;
+      }
+    } else {
+      setSnapshot((current) => ({
+        ...current,
+        response: null,
+        responseState: 'pending',
+      }));
+    }
   }
 
   function handleChangeResponse() {
     setDraftResponse(
-      editableResponseFromStored(snapshot.response, snapshot.poll),
+      editableResponseFromStored(activeSnapshot.response, activeSnapshot.poll),
     );
     setResponseError(undefined);
     setSnapshot((current) => ({
@@ -293,7 +315,7 @@ export function ParticipantSessionPage({
   }
 
   function handleResponseStateChange(responseState: ParticipantResponseState) {
-    const nextDraft = demoDraftForState(responseState, snapshot.poll);
+    const nextDraft = demoDraftForState(responseState, activeSnapshot.poll);
     setDraftResponse(nextDraft);
     setResponseError(undefined);
     setSnapshot((current) => ({
@@ -315,6 +337,16 @@ export function ParticipantSessionPage({
     setSnapshot((current) => ({ ...current, sessionLifecycle }));
   }
 
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-[var(--color-bg-canvas)] px-4 py-6 sm:px-6 sm:py-10">
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-[var(--color-text-secondary)]">
+          Loading session snapshot...
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[var(--color-bg-canvas)] px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
@@ -322,9 +354,9 @@ export function ParticipantSessionPage({
           <Brand aria-label="Pulse home" href="/" size="md" />
           <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
             <p className="max-w-48 truncate text-xs font-semibold text-[var(--color-text-secondary)] sm:max-w-none">
-              {snapshot.sessionName}
+              {activeSnapshot.sessionName}
             </p>
-            <ConnectionStatus state={snapshot.connectionState} />
+            <ConnectionStatus state={activeSnapshot.connectionState} />
           </div>
         </header>
 
@@ -339,41 +371,50 @@ export function ParticipantSessionPage({
             setSnapshot((current) => ({ ...current, resultVisibility }))
           }
           onSessionLifecycleChange={handleSessionLifecycleChange}
-          snapshot={snapshot}
+          snapshot={activeSnapshot}
         />
 
-        {snapshot.sessionLifecycle === 'ended' ? (
+        {errorMessage || responseError ? (
+          <p
+            aria-live="polite"
+            className="text-sm font-semibold text-[var(--color-error)]"
+          >
+            {errorMessage || responseError}
+          </p>
+        ) : null}
+
+        {activeSnapshot.sessionLifecycle === 'ended' ? (
           <ParticipantEndedSessionState
-            poll={snapshot.poll}
-            resultVisibility={snapshot.resultVisibility}
+            poll={activeSnapshot.poll}
+            resultVisibility={activeSnapshot.resultVisibility}
           />
-        ) : snapshot.pollLifecycle === 'none' ? (
+        ) : activeSnapshot.pollLifecycle === 'none' ? (
           <ParticipantWaitingState
-            connectionState={snapshot.connectionState}
-            participantCount={snapshot.participantCount}
-            response={snapshot.response}
-            responseState={snapshot.responseState}
-            sessionName={snapshot.sessionName}
+            connectionState={activeSnapshot.connectionState}
+            participantCount={activeSnapshot.participantCount}
+            response={activeSnapshot.response}
+            responseState={activeSnapshot.responseState}
+            sessionName={activeSnapshot.sessionName}
           />
-        ) : snapshot.pollLifecycle === 'closed' ? (
+        ) : activeSnapshot.pollLifecycle === 'closed' ? (
           <ParticipantClosedPollState
-            poll={snapshot.poll}
-            response={snapshot.response}
-            responseState={snapshot.responseState}
-            resultVisibility={snapshot.resultVisibility}
+            poll={activeSnapshot.poll}
+            response={activeSnapshot.response}
+            responseState={activeSnapshot.responseState}
+            resultVisibility={activeSnapshot.resultVisibility}
           />
-        ) : snapshot.responseState === 'accepted' ? (
+        ) : activeSnapshot.responseState === 'accepted' ? (
           <ParticipantAcceptedResponse
-            connectionState={snapshot.connectionState}
+            connectionState={activeSnapshot.connectionState}
             onChangeResponse={handleChangeResponse}
             participantName={initialParticipantName}
-            poll={snapshot.poll}
-            response={snapshot.response}
-            resultVisibility={snapshot.resultVisibility}
+            poll={activeSnapshot.poll}
+            response={activeSnapshot.response}
+            resultVisibility={activeSnapshot.resultVisibility}
           />
         ) : (
           <ParticipantPoll
-            connectionState={snapshot.connectionState}
+            connectionState={activeSnapshot.connectionState}
             draftResponse={draftResponse}
             onChangeDraft={(nextResponse) => {
               setDraftResponse(nextResponse);
@@ -381,12 +422,12 @@ export function ParticipantSessionPage({
             }}
             onSubmit={handleSubmit}
             participantName={initialParticipantName}
-            poll={snapshot.poll}
-            response={snapshot.response}
+            poll={activeSnapshot.poll}
+            response={activeSnapshot.response}
             responseError={responseError}
-            responseState={snapshot.responseState}
-            resultVisibility={snapshot.resultVisibility}
-            sessionName={snapshot.sessionName}
+            responseState={isSubmitting ? 'pending' : activeSnapshot.responseState}
+            resultVisibility={activeSnapshot.resultVisibility}
+            sessionName={activeSnapshot.sessionName}
           />
         )}
 

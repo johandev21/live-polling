@@ -96,6 +96,26 @@ export const participantMeResponseSchema = z.object({
 
 export type ParticipantMeResponse = z.infer<typeof participantMeResponseSchema>;
 
+export const participantResponseSchema = z.object({
+  id: z.string().uuid(),
+  pollId: z.string().uuid(),
+  participantId: z.string().uuid(),
+  optionIds: z.array(z.string().uuid()).optional(),
+  text: z.string().nullable().optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+export type ParticipantResponseSnapshot = z.infer<typeof participantResponseSchema>;
+
+export const participantSessionResponseSchema = z.object({
+  session: sessionSnapshotSchema,
+  activePoll: pollSnapshotSchema.nullable(),
+  myResponse: participantResponseSchema.nullable(),
+});
+
+export type ParticipantSessionResponse = z.infer<typeof participantSessionResponseSchema>;
+
 export const authUserSchema = z.object({
   id: z.string(),
   email: z.string().email(),
