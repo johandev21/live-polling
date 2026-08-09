@@ -1,19 +1,26 @@
-import type { FormEvent } from 'react';
+import { useState, useId, type FormEvent } from 'react';
 import { ArrowRight, LoaderCircle } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
+import {
+  Questionnaire,
+  QuestionnaireChoice,
+  QuestionnaireChoices,
+  QuestionnaireDescription,
+  QuestionnaireError,
+  QuestionnaireInput,
+  QuestionnaireItem,
+  QuestionnaireSubmit,
+  QuestionnaireTitle,
+} from '@/components/ui/questionnaire';
 import type {
+  ConnectionState,
   ParticipantPoll,
   ParticipantResponse,
   ParticipantResponseState,
   ParticipantResultVisibility,
-  ConnectionState,
 } from '../model/participant-session';
+import { responseFieldName } from '../model/participant-session';
 import {
   ParticipantResults,
   ReconnectingResponseNotice,
@@ -26,13 +33,11 @@ import {
   ParticipantStatusBadge,
 } from './ParticipantSessionPrimitives';
 
-export type ResponseDraft = string | string[];
+export type { ResponseDraft } from '../model/participant-session';
 
 type ParticipantPollProps = Readonly<{
   changeNameHref?: string;
   connectionState: ConnectionState;
-  draftResponse: ResponseDraft;
-  onChangeDraft: (response: ResponseDraft) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   participantName: string;
   poll: ParticipantPoll;
@@ -46,8 +51,6 @@ type ParticipantPollProps = Readonly<{
 export function ParticipantPoll({
   changeNameHref,
   connectionState,
-  draftResponse,
-  onChangeDraft,
   onSubmit,
   participantName,
   poll,
@@ -57,44 +60,98 @@ export function ParticipantPoll({
   resultVisibility,
   sessionName,
 }: ParticipantPollProps) {
+  const titleId = useId();
   const isChoicePoll = poll.type !== 'open-ended';
+  const isPending = responseState === 'pending';
+  const isStale = connectionState === 'stale';
+  const storedText = typeof response === 'string' ? response : '';
+  const storedOptionIds = Array.isArray(response) ? response : [];
+  const [responseLength, setResponseLength] = useState(storedText.length);
 
   return (
     <div className="flex flex-col gap-4">
       <ParticipantCard className="flex flex-col gap-5" padding="lg">
         <PollHeader sessionName={sessionName} />
 
-        <PollPrompt draftResponse={draftResponse} poll={poll} />
+        <Questionnaire
+          items={questionnaireItems(poll)}
+          key={poll.id}
+          onSubmit={onSubmit}
+        >
+          <QuestionnaireItem
+            aria-labelledby={titleId}
+            multiple={poll.type === 'multiple-choice'}
+            name={responseFieldName}
+            required
+          >
+            <QuestionnaireTitle
+              className="text-3xl leading-tight font-bold tracking-[-0.035em] text-foreground"
+              id={titleId}
+              render={<h1 />}
+            >
+              {poll.prompt}
+            </QuestionnaireTitle>
 
-        {connectionState === 'stale' ? <ReconnectingResponseNotice /> : null}
+            <QuestionnaireDescription>
+              {isChoicePoll
+                ? choiceInstruction(poll)
+                : openEndedInstruction(poll, responseLength)}
+            </QuestionnaireDescription>
 
-        <form className="flex flex-col gap-5" onSubmit={onSubmit}>
-          {isChoicePoll ? (
-            <ChoiceOptions
-              draftResponse={draftResponse}
-              onChangeDraft={onChangeDraft}
-              poll={poll}
-              responseState={responseState}
-            />
-          ) : (
-            <OpenEndedResponse
-              draftResponse={draftResponse}
-              onChangeDraft={onChangeDraft}
-              poll={poll}
-              responseState={responseState}
-            />
-          )}
+            {connectionState === 'stale' ? (
+              <ReconnectingResponseNotice />
+            ) : null}
 
-          {responseError ? <ResponseError message={responseError} /> : null}
+            {isChoicePoll ? (
+              <QuestionnaireChoices>
+                {poll.options.map((option) => (
+                  <QuestionnaireChoice
+                    defaultChecked={
+                      storedOptionIds.includes(option.id) ||
+                      storedText === option.id
+                    }
+                    disabled={isPending}
+                    key={option.id}
+                    value={option.id}
+                  >
+                    <span className="min-w-0 text-base font-medium wrap-break-word">
+                      {option.label}
+                    </span>
+                  </QuestionnaireChoice>
+                ))}
+              </QuestionnaireChoices>
+            ) : (
+              <OpenEndedResponse
+                isPending={isPending}
+                onChange={(value) => setResponseLength(value.length)}
+                poll={poll}
+                responseLength={responseLength}
+                storedText={storedText}
+              />
+            )}
+
+            <QuestionnaireError>
+              {requiredAnswerMessage(poll.type)}
+            </QuestionnaireError>
+
+            {responseError ? <ResponseError message={responseError} /> : null}
+          </QuestionnaireItem>
 
           <ResponseSubmissionStatus responseState={responseState} />
 
-          <SubmitActionButton
-            connectionState={connectionState}
-            hasExistingResponse={response !== null}
-            responseState={responseState}
-          />
-        </form>
+          <QuestionnaireSubmit
+            className="w-full"
+            disabled={isPending || isStale}
+            size="lg"
+          >
+            {isPending ? (
+              <LoaderCircle aria-hidden="true" className="animate-spin" />
+            ) : (
+              <ArrowRight aria-hidden="true" />
+            )}
+            {submitButtonLabel(responseState, response !== null)}
+          </QuestionnaireSubmit>
+        </Questionnaire>
 
         <ParticipantCallout icon="refreshCw" tone="neutral">
           {responseNoteText(poll)}
@@ -113,29 +170,43 @@ export function ParticipantPoll({
   );
 }
 
-const optionBaseClassName = [
-  'flex min-h-16 cursor-pointer items-center gap-3 rounded-sm border px-4 py-3',
-  'transition-[background-color,border-color,transform] hover:-translate-y-px',
-  'has-disabled:cursor-not-allowed has-disabled:hover:translate-y-0',
-].join(' ');
-
-const optionIdleClassName =
-  'border-border bg-background text-foreground';
-const optionSelectedClassName =
-  'border-primary bg-secondary text-primary';
-
-function pollInstruction(poll: ParticipantPoll, draftResponse: ResponseDraft) {
-  if (poll.type === 'multiple-choice') {
-    const count = Array.isArray(draftResponse) ? draftResponse.length : 0;
-    return `Select one or more options · ${count} selected`;
-  }
-
+function questionnaireItems(poll: ParticipantPoll) {
   if (poll.type === 'open-ended') {
-    const value = typeof draftResponse === 'string' ? draftResponse : '';
-    return `Share a response · ${value.length} / ${poll.responseLimit ?? 500} characters`;
+    return [{ name: responseFieldName, required: true }];
   }
 
-  return 'Select one option';
+  return [
+    {
+      name: responseFieldName,
+      required: true,
+      choices: poll.options.map((option) => ({ value: option.id })),
+    },
+  ];
+}
+
+function choiceInstruction(poll: ParticipantPoll): string {
+  return poll.type === 'multiple-choice'
+    ? 'Select one or more options'
+    : 'Select one option';
+}
+
+function openEndedInstruction(
+  poll: ParticipantPoll,
+  responseLength: number,
+): string {
+  return `Share a response · ${responseLength} / ${poll.responseLimit ?? 500} characters`;
+}
+
+function requiredAnswerMessage(pollType: ParticipantPoll['type']): string {
+  if (pollType === 'multiple-choice') {
+    return 'Select at least one option before submitting.';
+  }
+
+  if (pollType === 'open-ended') {
+    return 'Enter a response before submitting.';
+  }
+
+  return 'Select one option before submitting.';
 }
 
 function PollHeader({ sessionName }: Readonly<{ sessionName: string }>) {
@@ -149,51 +220,11 @@ function PollHeader({ sessionName }: Readonly<{ sessionName: string }>) {
   );
 }
 
-function PollPrompt({
-  draftResponse,
-  poll,
-}: Readonly<{ draftResponse: ResponseDraft; poll: ParticipantPoll }>) {
-  return (
-    <div className="flex flex-col gap-3">
-      <h1 className="text-3xl leading-tight font-bold tracking-[-0.035em] text-foreground">
-        {poll.prompt}
-      </h1>
-      <p className="text-sm text-muted-foreground">
-        {pollInstruction(poll, draftResponse)}
-      </p>
-    </div>
-  );
-}
-
 function ResponseError({ message }: Readonly<{ message: string }>) {
   return (
     <p className="text-sm font-semibold text-destructive" role="alert">
       {message}
     </p>
-  );
-}
-
-function SubmitActionButton({
-  connectionState,
-  hasExistingResponse,
-  responseState,
-}: Readonly<{
-  connectionState: ConnectionState;
-  hasExistingResponse: boolean;
-  responseState: ParticipantResponseState;
-}>) {
-  const isPending = responseState === 'pending';
-  const disabled = isPending || connectionState === 'stale';
-
-  return (
-    <Button className="w-full" disabled={disabled} size="lg" type="submit">
-      {isPending ? (
-        <LoaderCircle aria-hidden="true" className="animate-spin" />
-      ) : (
-        <ArrowRight aria-hidden="true" />
-      )}
-      {submitButtonLabel(responseState, hasExistingResponse)}
-    </Button>
   );
 }
 
@@ -212,163 +243,50 @@ function submitButtonLabel(
   return hasExistingResponse ? 'Update response' : 'Submit response';
 }
 
-function ChoiceOptions({
-  draftResponse,
-  onChangeDraft,
-  poll,
-  responseState,
-}: Readonly<{
-  draftResponse: ResponseDraft;
-  onChangeDraft: (response: ResponseDraft) => void;
-  poll: ParticipantPoll;
-  responseState: ParticipantResponseState;
-}>) {
-  const disabled = responseState === 'pending';
-  const multiple = poll.type === 'multiple-choice';
-  const selectedValues = Array.isArray(draftResponse) ? draftResponse : [];
-
-  return (
-    <fieldset className="flex flex-col gap-3" disabled={disabled}>
-      <legend className="sr-only">
-        {multiple ? 'Choose one or more options' : 'Choose one option'}
-      </legend>
-      {multiple ? (
-        poll.options.map((option) => (
-          <MultipleChoiceOption
-            key={option.id}
-            onChangeDraft={onChangeDraft}
-            option={option}
-            poll={poll}
-            selectedValues={selectedValues}
-          />
-        ))
-      ) : (
-        <RadioGroup
-          onValueChange={onChangeDraft}
-          value={typeof draftResponse === 'string' ? draftResponse : ''}
-        >
-          {poll.options.map((option) => (
-            <SingleChoiceOption
-              key={option.id}
-              draftResponse={draftResponse}
-              option={option}
-              poll={poll}
-            />
-          ))}
-        </RadioGroup>
-      )}
-    </fieldset>
-  );
-}
-
-function MultipleChoiceOption({
-  onChangeDraft,
-  option,
-  poll,
-  selectedValues,
-}: Readonly<{
-  onChangeDraft: (response: ResponseDraft) => void;
-  option: ParticipantPoll['options'][number];
-  poll: ParticipantPoll;
-  selectedValues: string[];
-}>) {
-  const selected = selectedValues.includes(option.id);
-  const inputId = `${poll.id}-${option.id}`;
-
-  return (
-    <Label
-      className={choiceOptionClass(selected)}
-      htmlFor={inputId}
-    >
-      <Checkbox
-        checked={selected}
-        id={inputId}
-        onCheckedChange={(checked) => {
-          onChangeDraft(
-            checked
-              ? [...selectedValues, option.id]
-              : selectedValues.filter((value) => value !== option.id),
-          );
-        }}
-      />
-      <span className="min-w-0 text-base font-semibold wrap-break-word">
-        {option.label}
-      </span>
-    </Label>
-  );
-}
-
-function SingleChoiceOption({
-  draftResponse,
-  option,
-  poll,
-}: Readonly<{
-  draftResponse: ResponseDraft;
-  option: ParticipantPoll['options'][number];
-  poll: ParticipantPoll;
-}>) {
-  const selected = draftResponse === option.id;
-  const inputId = `${poll.id}-${option.id}`;
-
-  return (
-    <Label
-      className={choiceOptionClass(selected)}
-      htmlFor={inputId}
-    >
-      <RadioGroupItem id={inputId} value={option.id} />
-      <span className="min-w-0 text-base font-semibold wrap-break-word">
-        {option.label}
-      </span>
-    </Label>
-  );
-}
-
-function choiceOptionClass(selected: boolean): string {
-  return cn(
-    optionBaseClassName,
-    selected ? optionSelectedClassName : optionIdleClassName,
-  );
-}
-
 function OpenEndedResponse({
-  draftResponse,
-  onChangeDraft,
+  isPending,
+  onChange,
   poll,
-  responseState,
+  responseLength,
+  storedText,
 }: Readonly<{
-  draftResponse: ResponseDraft;
-  onChangeDraft: (response: ResponseDraft) => void;
+  isPending: boolean;
+  onChange: (value: string) => void;
   poll: ParticipantPoll;
-  responseState: ParticipantResponseState;
+  responseLength: number;
+  storedText: string;
 }>) {
-  const value = typeof draftResponse === 'string' ? draftResponse : '';
   const responseLimit = poll.responseLimit ?? 500;
+  const inputId = `${poll.id}-response`;
 
   return (
-    <div className="flex flex-col gap-2">
-      <Label className="text-sm font-semibold text-foreground" htmlFor={`${poll.id}-response`}>Your response</Label>
-      <Textarea
-        aria-describedby={`${poll.id}-response-hint ${poll.id}-response-count`}
-        disabled={responseState === 'pending'}
-        id={`${poll.id}-response`}
+    <QuestionnaireChoices>
+      <Label
+        className="text-sm font-semibold text-foreground"
+        htmlFor={inputId}
+      >
+        Your response
+      </Label>
+      <QuestionnaireInput
+        aria-describedby={`${inputId}-hint ${inputId}-count`}
+        className="h-auto min-h-40 py-3 resize-none"
+        defaultValue={storedText}
+        disabled={isPending}
+        id={inputId}
         maxLength={responseLimit}
-        onChange={(event) => onChangeDraft(event.target.value)}
+        onChange={(event) => onChange(event.target.value)}
         placeholder="Share a thought..."
-        rows={6}
-        value={value}
+        render={<textarea rows={6} />}
       />
       <div className="flex items-start justify-between gap-4 text-xs leading-5 text-muted-foreground">
-        <span id={`${poll.id}-response-hint`}>
+        <span id={`${inputId}-hint`}>
           Responses must contain non-empty trimmed text.
         </span>
-        <span
-          className="shrink-0 font-mono"
-          id={`${poll.id}-response-count`}
-        >
-          {value.length} / {responseLimit}
+        <span className="shrink-0 font-mono" id={`${inputId}-count`}>
+          {responseLength} / {responseLimit}
         </span>
       </div>
-    </div>
+    </QuestionnaireChoices>
   );
 }
 

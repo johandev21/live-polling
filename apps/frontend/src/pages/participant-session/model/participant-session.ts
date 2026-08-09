@@ -55,12 +55,22 @@ export type ParticipantSessionSnapshot = Readonly<{
   sessionName: string;
 }>;
 
-export function responseDraftForPoll(poll: ParticipantPoll): string | string[] {
+export type ResponseDraft = string | string[];
+
+export const responseFieldName = 'response';
+
+export function responseDraftFromForm(
+  form: HTMLFormElement,
+  poll: ParticipantPoll,
+): ResponseDraft {
+  const formData = new FormData(form);
+
   if (poll.type === 'multiple-choice') {
-    return [];
+    return formData.getAll(responseFieldName).map(String);
   }
 
-  return '';
+  const value = formData.get(responseFieldName);
+  return typeof value === 'string' ? value : '';
 }
 
 export function participantResponseLabel(

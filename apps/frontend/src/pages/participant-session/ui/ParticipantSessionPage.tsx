@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 
 import {
-  responseDraftForPoll,
-  type ParticipantResponse,
+  responseDraftFromForm,
   type ParticipantSessionSnapshot,
+  type ResponseDraft,
 } from '../model/participant-session';
 import { ParticipantAcceptedResponse } from './ParticipantResponseState';
-import { ParticipantPoll, type ResponseDraft } from './ParticipantPoll';
+import { ParticipantPoll } from './ParticipantPoll';
 import {
   ParticipantClosedPollState,
   ParticipantEndedSessionState,
@@ -37,29 +37,13 @@ export function ParticipantSessionPage({
   onResponseSubmit,
 }: ParticipantSessionPageProps) {
   const snapshot = initialSnapshot ?? unavailableSnapshot;
-  const [draftResponse, setDraftResponse] = useState<ResponseDraft>(() =>
-    editableResponseFromStored(snapshot.response, snapshot.poll),
-  );
   const [responseError, setResponseError] = useState<string>();
-  const snapshotRef = useRef(snapshot);
-  snapshotRef.current = snapshot;
-
-  useEffect(() => {
-    const { response, poll } = snapshotRef.current;
-    setDraftResponse(editableResponseFromStored(response, poll));
-    setResponseError(undefined);
-    // Reset the draft when the active poll changes.
-  }, [snapshot.poll.id]);
-
-  function handleChangeDraft(nextResponse: ResponseDraft) {
-    setDraftResponse(nextResponse);
-    setResponseError(undefined);
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const error = validateDraft(snapshot, draftResponse);
+    const draft = responseDraftFromForm(event.currentTarget, snapshot.poll);
+    const error = validateDraft(snapshot, draft);
     if (error) {
       setResponseError(error);
       return;
@@ -73,7 +57,7 @@ export function ParticipantSessionPage({
     }
 
     try {
-      await onResponseSubmit(draftResponse);
+      await onResponseSubmit(draft);
     } catch (err) {
       setResponseError(
         err instanceof Error ? err.message : 'Failed to send response.',
@@ -82,9 +66,6 @@ export function ParticipantSessionPage({
   }
 
   function handleChangeResponse() {
-    setDraftResponse(
-      editableResponseFromStored(snapshot.response, snapshot.poll),
-    );
     setResponseError(undefined);
   }
 
@@ -108,10 +89,8 @@ export function ParticipantSessionPage({
 
         <SessionStateView
           changeNameHref={changeNameHref}
-          draftResponse={draftResponse}
           initialParticipantName={initialParticipantName}
           isSubmitting={isSubmitting}
-          onChangeDraft={handleChangeDraft}
           onChangeResponse={handleChangeResponse}
           onSubmit={handleSubmit}
           responseError={responseError}
@@ -142,17 +121,6 @@ const unavailableSnapshot: ParticipantSessionSnapshot = {
   sessionLifecycle: 'live',
   sessionName: 'Session unavailable',
 };
-
-function editableResponseFromStored(
-  response: ParticipantResponse,
-  poll: ParticipantSessionSnapshot['poll'],
-): ResponseDraft {
-  if (response === null) {
-    return responseDraftForPoll(poll);
-  }
-
-  return typeof response === 'string' ? response : [...response];
-}
 
 function validateDraft(
   snapshot: ParticipantSessionSnapshot,
@@ -248,10 +216,8 @@ function SessionError({ error }: Readonly<{ error?: string | null }>) {
 
 type SessionStateViewProps = Readonly<{
   changeNameHref?: string;
-  draftResponse: ResponseDraft;
   initialParticipantName?: string;
   isSubmitting: boolean;
-  onChangeDraft: (response: ResponseDraft) => void;
   onChangeResponse: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   responseError?: string;
@@ -260,10 +226,8 @@ type SessionStateViewProps = Readonly<{
 
 function SessionStateView({
   changeNameHref,
-  draftResponse,
   initialParticipantName,
   isSubmitting,
-  onChangeDraft,
   onChangeResponse,
   onSubmit,
   responseError,
@@ -331,8 +295,6 @@ function SessionStateView({
     <ParticipantPoll
       changeNameHref={changeNameHref}
       connectionState={connectionState}
-      draftResponse={draftResponse}
-      onChangeDraft={onChangeDraft}
       onSubmit={onSubmit}
       participantName={initialParticipantName ?? ''}
       poll={poll}
@@ -348,8 +310,8 @@ function SessionStateView({
 function SessionPrivacyNote() {
   return (
     <p className="px-1 text-center text-xs leading-5 text-muted-foreground">
-      Your display name is session-local. Participant results show
-      aggregates only, never names or individual open-ended responses.
+      Your display name is session-local. Participant results show aggregates
+      only, never names or individual open-ended responses.
     </p>
   );
 }
