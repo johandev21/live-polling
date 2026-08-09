@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 
 import { apiClient, ApiError } from '@/shared/lib/api-client';
 import {
@@ -6,6 +8,8 @@ import {
   ERROR_CODES,
   type AuthSessionResponse,
 } from '@/shared/lib/contracts';
+
+import { HOST_SESSIONS_QUERY_KEY } from './use-host-sessions';
 
 export const HOST_SESSION_QUERY_KEY = ['host-session'] as const;
 
@@ -32,6 +36,21 @@ export function useHostSession() {
   });
 }
 
+export function useHostSessionGuard(): boolean {
+  const navigate = useNavigate();
+  const { data, isLoading } = useHostSession();
+  const isAuthenticated = Boolean(data?.user);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (isAuthenticated) {
+      void navigate({ replace: true, to: '/host/dashboard' });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  return isLoading || isAuthenticated;
+}
+
 export type SendMagicLinkOptions = {
   email: string;
 };
@@ -45,6 +64,20 @@ export function useSendMagicLink() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: HOST_SESSION_QUERY_KEY });
+    },
+  });
+}
+
+export function useSignOutHost() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, ApiError, void>({
+    mutationFn: async () => {
+      await apiClient.post('/api/auth/sign-out');
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: HOST_SESSION_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: HOST_SESSIONS_QUERY_KEY });
     },
   });
 }

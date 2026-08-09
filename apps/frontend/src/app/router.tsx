@@ -49,6 +49,7 @@ import {
   useDeleteSession,
   useHostSessions,
 } from '@/shared/hooks/use-host-sessions';
+import { useSignOutHost, useHostSession } from '@/shared/hooks/use-host-auth';
 import { usePollResultsMap } from '@/shared/hooks/use-host-poll-results';
 import { useHostPresence } from '@/shared/hooks/use-host-presence';
 import { useJoinSession } from '@/shared/hooks/use-participant-auth';
@@ -73,6 +74,7 @@ import type {
   SessionSnapshot,
 } from '@/shared/lib/contracts';
 import { DefaultRouteFallback } from './route-fallback';
+import { SignedOutGuard } from './signed-out-guard';
 
 function dashboardSessionSlug(id: string): string {
   return id.startsWith('session-') ? id.slice('session-'.length) : id;
@@ -143,15 +145,27 @@ const landingRoute = createRoute({
   path: '/',
 });
 
+function HostEmailRouteComponent() {
+  return (
+    <SignedOutGuard>
+      <HostEmailEntryPage />
+    </SignedOutGuard>
+  );
+}
+
 const hostEmailRoute = createRoute({
-  component: HostEmailEntryPage,
+  component: HostEmailRouteComponent,
   getParentRoute: () => rootRoute,
   path: '/host/email',
 });
 
 function MagicLinkRouteComponent() {
   const { email } = useSearch({ from: magicLinkRoute.id });
-  return <MagicLinkConfirmationPage email={email} />;
+  return (
+    <SignedOutGuard>
+      <MagicLinkConfirmationPage email={email} />
+    </SignedOutGuard>
+  );
 }
 
 const magicLinkRoute = createRoute({
@@ -164,10 +178,12 @@ const magicLinkRoute = createRoute({
 function InvalidMagicLinkRouteComponent() {
   const { email, kind } = useSearch({ from: invalidMagicLinkRoute.id });
   return (
-    <InvalidMagicLinkPage
-      email={email}
-      initialKind={kind === 'invalid' ? 'invalid' : 'expired'}
-    />
+    <SignedOutGuard>
+      <InvalidMagicLinkPage
+        email={email}
+        initialKind={kind === 'invalid' ? 'invalid' : 'expired'}
+      />
+    </SignedOutGuard>
   );
 }
 
@@ -207,12 +223,17 @@ function HostDashboardRouteComponent() {
   const navigate = useNavigate();
   const { data: rawSessions, isLoading, error } = useHostSessions();
   const deleteSession = useDeleteSession();
+  const { data: hostSession, isLoading: isAuthLoading } = useHostSession();
+  const signOut = useSignOutHost();
 
   const sessions = rawSessions ? rawSessions.map(mapSnapshotToDashboardSession) : [];
 
   return (
     <HostDashboardPage
       error={error ? error.message || 'Failed to load sessions' : null}
+      hostEmail={hostSession?.user?.email}
+      hostName={hostSession?.user?.name}
+      isAuthLoading={isAuthLoading}
       isLoading={isLoading}
       onCreateSession={() => {
         void navigate({ to: '/host/sessions/new' });
@@ -229,6 +250,13 @@ function HostDashboardRouteComponent() {
               ? sessionHistoryPath(slug)
               : sessionEditorPath(slug);
         void navigate({ to: path });
+      }}
+      onSignOut={async () => {
+        try {
+          await signOut.mutateAsync();
+        } finally {
+          void navigate({ to: '/' });
+        }
       }}
       sessions={sessions}
     />
