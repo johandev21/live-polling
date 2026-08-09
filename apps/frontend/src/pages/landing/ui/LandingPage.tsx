@@ -130,9 +130,6 @@ function HeroSection() {
           <PrimaryCta>Create a free session</PrimaryCta>
           <OutlineCta>Join with a Room Code</OutlineCta>
         </div>
-        <p className="text-xs leading-5 text-muted-foreground">
-          No participant accounts · Server-confirmed responses · WCAG 2.2 AA
-        </p>
       </div>
 
       <LivePollPreview />

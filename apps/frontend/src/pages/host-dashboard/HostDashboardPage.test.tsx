@@ -1,7 +1,9 @@
 /* oxlint-disable typescript/unbound-method */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 import type { DashboardSession } from './model/host-dashboard';
 import { HostDashboardPage } from './ui/HostDashboardPage';
@@ -17,6 +19,10 @@ vi.mock('@tanstack/react-router', async () => {
     ),
   };
 });
+
+function renderDashboard(ui: React.ReactElement) {
+  return render(<TooltipProvider>{ui}</TooltipProvider>);
+}
 
 const sampleSessions: DashboardSession[] = [
   {
@@ -50,7 +56,7 @@ const sampleSessions: DashboardSession[] = [
 
 describe('HostDashboardPage', () => {
   it('renders session sections and groups sessions by status', () => {
-    render(<HostDashboardPage sessions={sampleSessions} />);
+    renderDashboard(<HostDashboardPage sessions={sampleSessions} />);
 
     expect(screen.getByRole('heading', { name: 'Your sessions' })).toBeDefined();
     expect(screen.getAllByText('Live Session 2').length).toBeGreaterThan(0);
@@ -59,7 +65,7 @@ describe('HostDashboardPage', () => {
   });
 
   it('renders empty state when session list is empty', () => {
-    render(<HostDashboardPage sessions={[]} />);
+    renderDashboard(<HostDashboardPage sessions={[]} />);
 
     expect(screen.getByText('No sessions yet')).toBeDefined();
     expect(screen.getByRole('button', { name: /Create your first session/i })).toBeDefined();
@@ -67,7 +73,7 @@ describe('HostDashboardPage', () => {
 
   it('filters sessions when filter tabs are clicked', async () => {
     const user = userEvent.setup();
-    render(<HostDashboardPage sessions={sampleSessions} />);
+    renderDashboard(<HostDashboardPage sessions={sampleSessions} />);
 
     const draftTab = screen.getByRole('tab', { name: /Draft/i });
     await user.click(draftTab);
@@ -76,23 +82,81 @@ describe('HostDashboardPage', () => {
     expect(screen.queryByText('Ended Session 3')).toBeNull();
   });
 
-  it('triggers delete callback after double click confirmation', async () => {
+  it('derives avatar initials from the signed-in host name', () => {
+    renderDashboard(
+      <HostDashboardPage
+        hostEmail="johan@example.com"
+        hostName="Johan Meier"
+        sessions={[]}
+      />,
+    );
+
+    expect(
+      screen.getByRole('button', { name: /Open account menu/i }).textContent,
+    ).toContain('JM');
+  });
+
+  it('derives avatar initials from the email when no name exists', () => {
+    renderDashboard(
+      <HostDashboardPage hostEmail="johan@example.com" sessions={[]} />,
+    );
+
+    expect(
+      screen.getByRole('button', { name: /Open account menu/i }).textContent,
+    ).toContain('JO');
+  });
+
+  it('signs out from the account menu', async () => {
+    const user = userEvent.setup();
+    const handleSignOut = vi.fn();
+    renderDashboard(
+      <HostDashboardPage
+        hostEmail="johan@example.com"
+        hostName="Johan Meier"
+        onSignOut={handleSignOut}
+        sessions={[]}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /Open account menu/i }));
+    await user.click(await screen.findByRole('menuitem', { name: /Sign out/i }));
+
+    expect(handleSignOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens help guidance from the header', async () => {
+    const user = userEvent.setup();
+    renderDashboard(<HostDashboardPage sessions={[]} />);
+
+    await user.click(screen.getByRole('button', { name: 'Help' }));
+
+    const dialog = await screen.findByRole('dialog', { name: /Help with Pulse/i });
+    expect(dialog).toBeDefined();
+    expect(within(dialog).getByText(/Room Code/i)).toBeDefined();
+    expect(within(dialog).getByText(/View results/i)).toBeDefined();
+  });
+
+  it('confirms session deletion in a dialog before calling onDeleteSession', async () => {
+    const user = userEvent.setup();
     const handleDelete = vi.fn();
-    render(
+    renderDashboard(
       <HostDashboardPage
         onDeleteSession={handleDelete}
         sessions={sampleSessions}
       />,
     );
 
-    const deleteBtn = screen.getByRole('button', { name: /Delete Draft Session 1/i });
-    fireEvent.click(deleteBtn);
+    await user.click(
+      screen.getByRole('button', { name: /Session actions for Draft Session 1/i }),
+    );
+    await user.click(
+      await screen.findByRole('menuitem', { name: 'Delete' }),
+    );
 
-    // First click prompts confirmation
-    expect(screen.getByText(/Confirm delete/i)).toBeDefined();
+    expect(screen.getByRole('alertdialog')).toBeDefined();
+    expect(screen.getByText(/will be permanently removed/i)).toBeDefined();
 
-    // Second click executes delete
-    fireEvent.click(screen.getByText(/Confirm delete/i));
+    await user.click(screen.getByRole('button', { name: 'Delete session' }));
     expect(handleDelete).toHaveBeenCalledWith(sampleSessions[0]);
   });
 });
