@@ -77,10 +77,13 @@ El servidor mantiene el estado principal de cada sesión. Esto evita perder resp
 
 ## Requisitos
 
-- Node.js en una versión compatible con las dependencias del proyecto.
-- pnpm `11.5.1`.
 - Docker Desktop con Docker Compose.
 - Git.
+
+Opcional (solo para desarrollo local sin Docker):
+
+- Node.js en una versión compatible con las dependencias del proyecto.
+- pnpm `11.5.1`.
 
 Puedes activar la versión de pnpm del proyecto con Corepack:
 
@@ -95,7 +98,7 @@ Comprueba la versión instalada:
 pnpm --version
 ```
 
-## Instalación local
+## Instalación local (Docker)
 
 ### 1. Descargar el proyecto
 
@@ -104,60 +107,27 @@ git clone https://github.com/johandev21/live-polling.git
 cd live-polling
 ```
 
-### 2. Instalar las dependencias
+### 2. Iniciar toda la aplicación
 
 ```bash
-pnpm install
+docker compose up --build
 ```
 
-### 3. Iniciar PostgreSQL, Redis y Mailpit
+O desde pnpm:
 
 ```bash
-docker compose up -d postgres redis mailpit
+pnpm docker:up
 ```
 
-Estos servicios usan los siguientes puertos locales:
+El primer inicio compila el frontend y el backend dentro de Docker, aplica las
+migraciones de la base de datos y arranca todos los servicios. Solo necesitas
+Docker Desktop: no hace falta instalar Node.js ni pnpm.
 
-- PostgreSQL: `5433`
-- Redis: `6379`
-- SMTP de Mailpit: `1025`
-- Panel web de Mailpit: `http://localhost:8025`
-
-### 4. Crear las variables de entorno del backend
-
-En macOS o Linux:
+Los valores por defecto son suficientes para el desarrollo local. Para
+sobrescribir los secretos, copia `.env.example` a `.env`:
 
 ```bash
-cp apps/backend/.env.example apps/backend/.env
-```
-
-En Windows PowerShell:
-
-```powershell
-Copy-Item apps/backend/.env.example apps/backend/.env
-```
-
-Edita `apps/backend/.env` y cambia al menos estos valores:
-
-```env
-BETTER_AUTH_SECRET=una-clave-aleatoria-de-32-caracteres-o-mas
-PARTICIPANT_TOKEN_SECRET=otra-clave-aleatoria-de-32-caracteres-o-mas
-```
-
-El archivo de ejemplo ya apunta a los servicios de Docker y a los puertos locales del proyecto.
-
-### 5. Ejecutar las migraciones
-
-```bash
-pnpm --filter backend db:migrate
-```
-
-### 6. Iniciar frontend y backend
-
-Desde la raíz del proyecto:
-
-```bash
-pnpm dev
+cp .env.example .env
 ```
 
 La aplicación estará disponible en:
@@ -166,25 +136,63 @@ La aplicación estará disponible en:
 - Backend: `http://localhost:3000`
 - Estado del backend: `http://localhost:3000/health/live`
 - Estado de dependencias: `http://localhost:3000/health/ready`
-- Panel de emails de prueba: `http://localhost:8025`
+- Correos de prueba (Mailpit): `http://localhost:8025`
 
-Los enlaces mágicos de inicio de sesión aparecen en Mailpit. No se envían a un servicio de email real durante el desarrollo local.
+### Servicios y puertos
 
-Si necesitas cambiar la URL del backend para el frontend, crea `apps/frontend/.env` con esta variable:
+| Servicio   | Acceso desde el host                    | Puerto interno | Uso                                              |
+| ---------- | --------------------------------------- | -------------- | ------------------------------------------------ |
+| frontend   | `http://localhost:5173`                 | `80`           | Aplicación web (nginx)                           |
+| backend    | `http://localhost:3000`                 | `3000`         | API, autenticación y tiempo real (Socket.io)     |
+| postgres   | `localhost:5433`                        | `5432`         | Base de datos principal                          |
+| redis      | `localhost:6379`                       | `6379`         | Presencia, límites de uso y Socket.io            |
+| mailpit    | Web `http://localhost:8025` · SMTP `localhost:1025` | `8025`/`1025` | Captura de correos de prueba                     |
 
-```env
-VITE_API_URL=http://localhost:3000
-```
+### Correos de prueba (Mailpit)
+
+Durante el desarrollo los emails no se envían a un servicio real: Mailpit los
+captura y los muestra en su panel web.
+
+1. Abre `http://localhost:8025`.
+2. Cuando pidas un enlace mágico o una verificación de email, el mensaje aparece
+   en la bandeja de entrada.
+3. Haz clic en el mensaje y después en el enlace del correo para completar la
+   acción. También puedes copiar la URL directamente del contenido.
+
+Los correos se mantienen en memoria de Mailpit mientras los contenedores estén
+activos. `docker compose down -v` los borra junto con la base de datos.
+
+## Desarrollo local sin Docker
+
+Instala las dependencias, inicia PostgreSQL, Redis y Mailpit con Docker
+(`docker compose up -d postgres redis mailpit`) y ejecuta el resto como
+siempre: `pnpm install`, crea `apps/backend/.env` a partir de
+`apps/backend/.env.example` y ejecuta `pnpm dev`.
 
 ## Flujo de prueba local
 
 1. Abre `http://localhost:5173`.
 2. Entra como host y solicita un enlace mágico.
-3. Abre el enlace desde Mailpit.
+3. Abre `http://localhost:8025`, localiza el mensaje con el enlace de inicio de
+   sesión y pulsa el enlace.
 4. Crea una sesión y añade una o más encuestas.
 5. Inicia la sesión y copia el código de sala o el enlace de invitación.
 6. Abre una ventana privada del navegador para entrar como participante.
 7. Envía respuestas y observa los cambios desde el panel del host.
+
+## Comandos de Docker
+
+```bash
+docker compose up --build   # Construye las imágenes e inicia toda la aplicación
+docker compose up -d        # Igual, pero en segundo plano (logs con docker compose logs -f)
+docker compose logs -f backend   # Sigue los logs del backend
+docker compose ps           # Estado de los servicios
+docker compose down         # Detiene los servicios
+docker compose down -v      # Detiene y borra base de datos, Redis y correos
+```
+
+La primera ejecución de `up --build` es lenta porque instala dependencias y
+compila ambas aplicaciones; las siguientes usan la caché de capas de Docker.
 
 ## Comandos útiles
 
@@ -196,6 +204,8 @@ pnpm build            # Compila todas las aplicaciones
 pnpm test             # Ejecuta las pruebas
 pnpm lint             # Revisa el código
 pnpm format:check     # Comprueba el formato
+pnpm docker:up        # Inicia toda la aplicación en Docker
+pnpm docker:down      # Detiene los servicios de Docker
 ```
 
 ### Comandos del backend

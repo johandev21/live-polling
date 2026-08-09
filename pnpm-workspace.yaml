@@ -1,6 +1,9 @@
 packages:
   - "apps/*"
 
+allowBuilds:
+  esbuild: true
+
 catalog:
   oxlint: ^1.77.0
   oxlint-tsgolint: ^7.0.2001

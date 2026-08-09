@@ -1,0 +1,9 @@
+.git
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+**/.env
+**/.env.*
+design.pen
+screens-to-build.md

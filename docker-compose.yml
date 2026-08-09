@@ -30,6 +30,58 @@ services:
     ports:
       - '127.0.0.1:1025:1025'
       - '127.0.0.1:8025:8025'
+  migrate:
+    build:
+      context: .
+      target: backend
+    command: pnpm db:migrate
+    environment: &backend-env
+      PORT: 3000
+      DATABASE_URL: postgresql://polling:polling@postgres:5432/polling
+      DATABASE_POOL_MAX: 10
+      REDIS_URL: redis://redis:6379
+      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-better-auth-secret-change-me-please-1234567890}
+      FRONTEND_ORIGINS: http://localhost:5173
+      PARTICIPANT_TOKEN_SECRET: ${PARTICIPANT_TOKEN_SECRET:-dev-participant-token-secret-change-me-1234567890}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      MAIL_FROM: no-reply@live-polling.local
+      PRESENCE_TTL_SECONDS: 30
+      PRESENCE_SWEEP_INTERVAL_MS: 10000
+    depends_on:
+      postgres:
+        condition: service_healthy
+  backend:
+    build:
+      context: .
+      target: backend
+    environment:
+      <<: *backend-env
+      NODE_ENV: production
+    ports:
+      - '127.0.0.1:3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3000/health/ready']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+  frontend:
+    build:
+      context: .
+      target: frontend
+    ports:
+      - '127.0.0.1:5173:80'
+    depends_on:
+      - backend
 
 volumes:
   postgres-data:
