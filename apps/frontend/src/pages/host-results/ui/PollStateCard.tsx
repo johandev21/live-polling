@@ -18,13 +18,13 @@ type PollStateCardProps = {
 };
 
 const lifecycleLabels = {
-  closed: 'Closed poll',
-  open: 'Open poll',
+  closed: 'Closed',
+  open: 'Open',
 } satisfies Record<HostResultPollLifecycle, string>;
 
 const visibilityLabels = {
-  hidden: 'Hidden',
-  revealed: 'Revealed',
+  hidden: 'Hidden from participants',
+  revealed: 'Revealed to participants',
 } satisfies Record<HostResultVisibility, string>;
 
 export function PollStateCard({
@@ -33,34 +33,36 @@ export function PollStateCard({
   poll,
 }: PollStateCardProps) {
   return (
-    <Card aria-labelledby="poll-state-title" className="space-y-4 p-6">
-      <h2 className="text-lg font-bold" id="poll-state-title">
-        Poll state
-      </h2>
-      <dl className="space-y-3">
-        <div className="flex items-center justify-between gap-4 text-sm">
-          <dt className="text-muted-foreground">Poll type</dt>
-          <dd className="font-bold text-primary">
+    <Card aria-labelledby="poll-state-title" className="space-y-4 p-5 sm:p-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-bold" id="poll-state-title">
+          Poll state & actions
+        </h2>
+        <Badge variant={poll.lifecycle === 'open' ? 'default' : 'secondary'}>
+          {lifecycleLabels[poll.lifecycle]}
+        </Badge>
+      </div>
+
+      <dl className="grid grid-cols-2 gap-3 rounded-lg border border-border bg-muted/40 p-3 text-xs">
+        <div>
+          <dt className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+            Type
+          </dt>
+          <dd className="mt-1 font-semibold text-foreground">
             {hostPollTypeLabel(poll.type)}
           </dd>
         </div>
-        <div className="flex items-center justify-between gap-4 text-sm">
-          <dt className="text-muted-foreground">Lifecycle</dt>
-          <dd>
-            <Badge variant={poll.lifecycle === 'open' ? 'default' : 'secondary'}>{lifecycleLabels[poll.lifecycle]}</Badge>
-          </dd>
-        </div>
-        <div className="flex items-center justify-between gap-4 text-sm">
-          <dt className="text-muted-foreground">
-            Participant visibility
+        <div>
+          <dt className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+            Visibility
           </dt>
-          <dd>
-            <Badge variant={poll.visibility === 'revealed' ? 'default' : 'secondary'}>{visibilityLabels[poll.visibility]}</Badge>
+          <dd className="mt-1 font-semibold text-foreground truncate">
+            {visibilityLabels[poll.visibility]}
           </dd>
         </div>
       </dl>
 
-      <div className="space-y-2 border-t border-border pt-4">
+      <div className="space-y-2 border-t border-border pt-3">
         <Button
           className="w-full"
           onClick={onToggleVisibility}
@@ -93,18 +95,18 @@ export function PollStateCard({
         </Button>
       </div>
 
-      <div className="flex items-start gap-3 rounded-md bg-muted p-4">
+      <div className="flex items-start gap-2.5 rounded-md border border-border/60 bg-muted/30 p-3">
         <LockKeyhole
           aria-hidden="true"
-          className="mt-0.5 shrink-0 text-primary"
-          size={17}
+          className="mt-0.5 shrink-0 text-muted-foreground"
+          size={14}
           strokeWidth={1.8}
         />
-        <p className="text-xs leading-5 text-muted-foreground">
-          You can always see host results, including results that remain hidden
-          from participants.
+        <p className="text-[11px] leading-4 text-muted-foreground">
+          Host results are always visible, including results hidden from participants.
         </p>
       </div>
     </Card>
   );
 }
+

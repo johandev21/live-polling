@@ -8,6 +8,13 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 import type { PollDraft } from '../model/poll-builder';
 
@@ -61,11 +68,8 @@ export function ChoicePollFields({
 
 function OptionsLegend() {
   return (
-    <legend className="flex flex-wrap items-baseline justify-between gap-2 text-sm font-semibold text-foreground">
-      <span>Options</span>
-      <span className="font-mono text-[10px] text-muted-foreground">
-        2-10 unique options
-      </span>
+    <legend className="text-base font-bold tracking-tight text-foreground sm:text-lg mb-1">
+      Options
     </legend>
   );
 }
@@ -129,15 +133,9 @@ function ChoiceOptionRow({
   const fieldId = `poll-option-${optionKey}`;
   return (
     <li>
-      <div className="flex items-start gap-2">
-        <span
-          aria-hidden="true"
-          className="mt-2.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-muted font-mono text-xs font-bold text-foreground"
-        >
-          {index + 1}
-        </span>
-        <Field className="min-w-0 flex-1">
-          <FieldLabel htmlFor={fieldId}>{`Option ${index + 1}`}</FieldLabel>
+      <Field className="w-full">
+        <FieldLabel htmlFor={fieldId} className="text-xs font-medium text-muted-foreground">{`Option ${index + 1}`}</FieldLabel>
+        <div className="flex items-center gap-2">
           <Input
             id={fieldId}
             aria-label={`Option ${index + 1}`}
@@ -145,19 +143,20 @@ function ChoiceOptionRow({
             onChange={(event) => onOptionChange(index, event.target.value)}
             placeholder={`Option ${index + 1}`}
             value={option}
+            className="flex-1 text-sm sm:text-base"
           />
-          {optionError ? <FieldError>{optionError}</FieldError> : null}
-        </Field>
-        <button
-          aria-label={`Remove option ${index + 1}`}
-          className="mt-1 inline-flex size-10 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40"
-          disabled={!canRemove}
-          onClick={() => onRemoveOption(index)}
-          type="button"
-        >
-          <X aria-hidden="true" size={17} />
-        </button>
-      </div>
+          <button
+            aria-label={`Remove option ${index + 1}`}
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={!canRemove}
+            onClick={() => onRemoveOption(index)}
+            type="button"
+          >
+            <X aria-hidden="true" size={16} />
+          </button>
+        </div>
+        {optionError ? <FieldError className="text-xs sm:text-sm font-medium">{optionError}</FieldError> : null}
+      </Field>
     </li>
   );
 }
@@ -180,9 +179,15 @@ function OptionActions({
         <Plus aria-hidden="true" className="mr-2" size={15} />
         Add option
       </Button>
-      <span className="text-xs text-muted-foreground">
-        Each option must be non-empty and unique.
-      </span>
+      {!canAdd ? (
+        <span className="text-xs font-medium text-muted-foreground sm:text-sm">
+          Maximum limit of 10 options reached.
+        </span>
+      ) : (
+        <span className="text-xs text-muted-foreground sm:text-sm">
+          Each option must be non-empty and unique.
+        </span>
+      )}
     </div>
   );
 }
@@ -196,32 +201,39 @@ function MaximumSelectionsField({
   onChange: (value: number | undefined) => void;
   value: number | undefined;
 }) {
+  const stringValue = value !== undefined ? String(value) : 'none';
+
   return (
     <Field>
-      <FieldLabel htmlFor="maximum-selections">
+      <FieldLabel htmlFor="maximum-selections" className="text-sm font-medium sm:text-base">
         Maximum selections (optional)
       </FieldLabel>
-      <select
-        id="maximum-selections"
-        className="min-h-12 w-full rounded-sm border border-border bg-background px-4 py-3 text-sm text-foreground focus-visible:border-ring"
-        onChange={(event) =>
-          onChange(
-            event.target.value ? Number(event.target.value) : undefined,
-          )
-        }
-        value={value ?? ''}
+      <Select
+        value={stringValue}
+        onValueChange={(val) => {
+          if (!val || val === 'none') {
+            onChange(undefined);
+          } else {
+            onChange(Number(val));
+          }
+        }}
       >
-        <option value="">No limit</option>
-        {selectionValues.map((selectionValue) => (
-          <option key={selectionValue} value={selectionValue}>
-            {selectionValue} selections
-          </option>
-        ))}
-      </select>
-      <FieldDescription>
+        <SelectTrigger id="maximum-selections" className="w-full h-10 text-sm sm:text-base">
+          <SelectValue placeholder="No limit" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">No limit</SelectItem>
+          {selectionValues.map((selectionValue) => (
+            <SelectItem key={selectionValue} value={String(selectionValue)}>
+              {selectionValue} selections
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <FieldDescription className="text-xs sm:text-sm">
         Leave this at No limit to allow any number of options.
       </FieldDescription>
-      {error ? <FieldError>{error}</FieldError> : null}
+      {error ? <FieldError className="text-xs sm:text-sm font-medium">{error}</FieldError> : null}
     </Field>
   );
 }

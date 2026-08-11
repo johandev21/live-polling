@@ -12,7 +12,7 @@ export function SignedOutGuard({ children }: SignedOutGuardProps) {
 
   if (isChecking) {
     return (
-      <main className="grid min-h-screen w-full place-items-center bg-background">
+      <main className="grid min-h-screen w-full place-items-center bg-mist-50 dark:bg-background">
         <Spinner className="size-6" />
       </main>
     );

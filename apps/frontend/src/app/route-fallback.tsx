@@ -10,7 +10,7 @@ export function DefaultRouteFallback() {
   const { pathname } = useLocation();
 
   return (
-    <main className="grid min-h-screen w-full place-items-center bg-background px-4 py-8 sm:px-6 lg:px-8">
+    <main className="grid min-h-screen w-full place-items-center bg-mist-50 dark:bg-background px-4 py-8 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <Card>
           <CardContent className="flex flex-col gap-6 pt-6">

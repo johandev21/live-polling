@@ -92,7 +92,13 @@ export class PresenceService {
   }
 
   private async ensureConnected() {
-    if (this.redis.status === 'wait') await this.redis.connect();
+    if (
+      this.redis.status === 'wait' ||
+      this.redis.status === 'close' ||
+      this.redis.status === 'end'
+    ) {
+      await this.redis.connect().catch(() => undefined);
+    }
   }
 
   private membersKey(sessionId: string): string {

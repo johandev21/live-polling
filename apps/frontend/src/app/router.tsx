@@ -1,7 +1,7 @@
 /* oxlint-disable react/only-export-components */
 import { useState } from 'react';
 import {
-  createRootRoute,
+  createRootRouteWithContext,
   createRoute,
   createRouter,
   Outlet,
@@ -11,6 +11,14 @@ import {
   useSearch,
 } from '@tanstack/react-router';
 import { z } from 'zod';
+
+export type RouterContext = {
+  auth: {
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    user: { email: string; id: string; name?: string | null } | null;
+  };
+};
 
 import { CreateSessionPage } from '@/pages/create-session';
 import { EditLockedPollPage } from '@/pages/edit-locked-poll';
@@ -134,7 +142,7 @@ const participantSessionSearchSchema = z.object({
   roomCode: z.string().optional(),
 });
 
-export const rootRoute = createRootRoute({
+export const rootRoute = createRootRouteWithContext<RouterContext>()({
   component: Outlet,
   notFoundComponent: DefaultRouteFallback,
 });
@@ -1203,6 +1211,13 @@ const routeTree = rootRoute.addChildren([
 ]);
 
 export const router = createRouter({
+  context: {
+    auth: {
+      isAuthenticated: false,
+      isLoading: true,
+      user: null,
+    },
+  },
   defaultPreload: 'intent',
   routeTree,
 });

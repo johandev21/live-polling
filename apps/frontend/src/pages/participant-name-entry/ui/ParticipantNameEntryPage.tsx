@@ -89,7 +89,7 @@ export function ParticipantNameEntryPage({
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:grid lg:place-items-center lg:px-8">
+    <main className="min-h-screen bg-mist-50 dark:bg-background px-4 py-8 sm:px-6 lg:grid lg:place-items-center lg:px-8">
       <section className="mx-auto w-full max-w-4xl">
         <Card className="grid w-full overflow-hidden p-0 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,1fr)]">
           <NameEntryPanel
@@ -378,38 +378,38 @@ function DifferentRoomCodeLink({ roomCode }: { roomCode?: string }) {
 
 function NamePrivacyAside() {
   return (
-    <aside className="flex flex-col justify-between gap-10 bg-primary p-7 text-primary-foreground sm:p-9">
+    <aside className="flex flex-col justify-between gap-10 bg-muted/60 p-7 text-foreground sm:p-9">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-3">
           <h2 className="text-2xl font-bold tracking-[-0.03em]">
             Your name is visible to the host.
           </h2>
-          <p className="text-sm leading-6 text-primary-foreground/80">
+          <p className="text-sm leading-6 text-muted-foreground">
             Other participants will not see your display name or your
             individual responses.
           </p>
         </div>
-        <div className="flex gap-3 rounded-lg bg-foreground/10 p-4">
+        <div className="flex gap-3 rounded-lg bg-muted p-4">
           <EyeOff
             aria-hidden="true"
-            className="mt-0.5 shrink-0 text-primary-foreground/80"
+            className="mt-0.5 shrink-0 text-muted-foreground"
             size={18}
           />
-          <p className="text-sm leading-5 text-primary-foreground">
+          <p className="text-sm leading-5 text-foreground">
             Your identity is session-local and not verified.
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm font-semibold">
           <ShieldCheck
             aria-hidden="true"
-            className="text-primary-foreground/80"
+            className="text-muted-foreground"
             size={18}
           />
-          Duplicate names are allowed.
+          <span>Private participant session</span>
         </div>
       </div>
-      <p className="text-xs leading-5 text-primary-foreground/80">
-        You can use a different display name in another browser or device.
+      <p className="text-xs leading-5 text-muted-foreground">
+        Identity is remembered on this browser until the session ends.
       </p>
     </aside>
   );

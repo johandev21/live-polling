@@ -186,9 +186,9 @@ export type HostResults = z.infer<typeof hostResultsSchema>;
 
 export const authUserSchema = z.object({
   id: z.string(),
-  email: z.string().email(),
-  name: z.string().optional(),
-  emailVerified: z.boolean().optional(),
+  email: z.string(),
+  name: z.string().nullable().optional(),
+  emailVerified: z.boolean().nullable().optional(),
 });
 
 export const authSessionSchema = z.object({

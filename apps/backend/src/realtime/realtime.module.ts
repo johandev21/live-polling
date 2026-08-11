@@ -58,7 +58,8 @@ class SocketAdapterShutdown implements OnApplicationShutdown {
             throw new Error('REDIS_URL is required');
           })();
         const pubClient = new Redis(url, {
-          retryStrategy: () => null,
+          maxRetriesPerRequest: null,
+          retryStrategy: (times) => Math.min(times * 100, 3_000),
         }).on('error', () => undefined);
         guardPublishRejections(pubClient, () => {
           metrics.countRealtimeFailure('publish');

@@ -12,12 +12,18 @@ export function OpenEndedResults({ poll }: OpenEndedResultsProps) {
   return (
     <Card
       aria-labelledby="open-ended-results-title"
-      className="space-y-5 p-8 sm:p-10"
+      className="space-y-6 p-6 sm:p-8"
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-bold" id="open-ended-results-title">
-          Chronological responses
-        </h2>
+        <div>
+          <h2 className="text-xl font-bold" id="open-ended-results-title">
+            Chronological responses
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Open-ended poll, host-visible response text ({poll.totalResponses}{' '}
+            total)
+          </p>
+        </div>
         <span className="inline-flex items-center gap-2 font-mono text-[10px] font-bold text-foreground">
           <span
             aria-hidden="true"
@@ -26,46 +32,35 @@ export function OpenEndedResults({ poll }: OpenEndedResultsProps) {
           Updating live
         </span>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Open-ended poll · Host-visible response text
-      </p>
 
-      <div className="flex items-center justify-between gap-4 rounded-md bg-secondary p-4">
-        <span className="text-sm font-semibold text-muted-foreground">
-          Total response count
-        </span>
-        <span className="font-mono text-2xl font-bold text-primary">
-          {poll.totalResponses}
-        </span>
-      </div>
-
-      <p className="text-xs leading-5 text-muted-foreground">
-        Responses are shown in chronological order and remain anonymous to
-        participants.
-      </p>
-
-      <ol className="space-y-2" aria-label="Chronological response list">
+      <ol
+        aria-label="Chronological response list"
+        className="grid grid-cols-1 gap-3 md:grid-cols-2"
+      >
         {poll.openEndedResponses.map((response) => (
           <li key={response.id}>
-           <Card className="flex items-start gap-3 border-0 bg-muted p-6">
-              <Clock3
-                aria-hidden="true"
-                className="mt-0.5 shrink-0 text-primary"
-                size={16}
-                strokeWidth={1.8}
-              />
-              <div className="min-w-0">
-                <p className="font-mono text-[10px] font-bold text-muted-foreground">
+            <div className="flex h-full flex-col justify-between rounded-lg border border-border bg-muted/40 p-4 transition-colors hover:bg-muted/60">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock3 aria-hidden="true" size={14} strokeWidth={1.8} />
+                <span className="font-mono text-[10px] font-bold">
                   {response.submittedAt}
-                </p>
-                <blockquote className="mt-1 text-sm leading-5 wrap-break-word text-foreground">
-                  “{response.text}”
-                </blockquote>
+                </span>
               </div>
-           </Card>
+              <blockquote className="mt-2 text-sm leading-5 wrap-break-word text-foreground">
+                “{response.text}”
+              </blockquote>
+            </div>
           </li>
         ))}
       </ol>
+
+      <div className="border-t border-border pt-4">
+        <p className="text-[11px] leading-4 text-muted-foreground">
+          Responses are shown in chronological order and remain anonymous to
+          participants.
+        </p>
+      </div>
     </Card>
   );
 }
+

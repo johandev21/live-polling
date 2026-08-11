@@ -100,7 +100,7 @@ export function JoinByRoomCodePage({
     : '/join/invitation';
 
   return (
-    <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:grid lg:place-items-center lg:px-8">
+    <main className="min-h-screen bg-mist-50 dark:bg-background px-4 py-8 sm:px-6 lg:grid lg:place-items-center lg:px-8">
       <section className="mx-auto w-full max-w-4xl">
         <Card className="grid w-full overflow-hidden p-0 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,1fr)]">
           <JoinPanel
@@ -359,13 +359,13 @@ function InvitationLink({ invitationPath }: { invitationPath: string }) {
 
 function BenefitsAside() {
   return (
-    <aside className="flex flex-col justify-between gap-10 bg-primary p-7 text-primary-foreground sm:p-9">
+    <aside className="flex flex-col justify-between gap-10 bg-muted/60 p-7 text-foreground sm:p-9">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-3">
           <h2 className="text-2xl font-bold tracking-[-0.03em]">
             No account needed.
           </h2>
-          <p className="text-sm leading-6 text-primary-foreground/80">
+          <p className="text-sm leading-6 text-muted-foreground">
             Participants join with a session-local identity. Your display
             name is visible to the host, not to other participants.
           </p>
@@ -378,7 +378,7 @@ function BenefitsAside() {
           </BenefitItem>
         </ul>
       </div>
-      <p className="text-xs leading-5 text-primary-foreground/80">
+      <p className="text-xs leading-5 text-muted-foreground">
         You can use a different identity in another browser or device.
       </p>
     </aside>

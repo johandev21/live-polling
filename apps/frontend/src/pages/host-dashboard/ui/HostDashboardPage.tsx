@@ -1,20 +1,21 @@
 import { useState } from 'react';
 import {
   AlertCircle,
-  ArrowUpRight,
+  Check,
+  Copy,
   FilePlus2,
   History,
   Layers,
   LogOut,
   MoreHorizontal,
-  PencilLine,
   Plus,
   Radio,
   Trash2,
-  Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
+import { ModeToggle } from '@/components/mode-toggle';
+import { cn } from '@/lib/utils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   AlertDialog,
@@ -49,8 +50,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Brand } from '@/shared/ui/brand';
+import { GlassHeader } from '@/shared/ui/glass-header';
+
+
 
 import {
   type DashboardSession,
@@ -91,14 +94,6 @@ const lifecycleLabels: Record<SessionLifecycle, string> = {
   live: 'Live Session',
 };
 
-const sessionActions: Record<
-  SessionLifecycle,
-  Readonly<{ icon: LucideIcon; label: string; variant: 'default' | 'outline' }>
-> = {
-  draft: { icon: PencilLine, label: 'Continue setup', variant: 'outline' },
-  live: { icon: Radio, label: 'Open live session', variant: 'default' },
-  ended: { icon: History, label: 'View results', variant: 'outline' },
-};
 
 const emptyStateCopy: Record<SessionFilter, Readonly<{ title: string; description: string }>> = {
   all: {
@@ -190,7 +185,7 @@ export function HostDashboardPage({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-mist-50 dark:bg-background">
       <Header
         hostEmail={hostEmail}
         hostName={hostName}
@@ -222,6 +217,7 @@ export function HostDashboardPage({
           <>
             {liveSessions.length > 0 ? (
               <QuickAccessSection
+                onDeleteSession={handleRequestDelete}
                 onOpenSession={handleOpenSession}
                 sessions={liveSessions}
               />
@@ -258,7 +254,7 @@ export function HostDashboardPage({
                   onFilterChange={setActiveFilter}
                 />
               ) : (
-                <ul className="grid grid-cols-1 gap-3">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                   {visibleSessions.map((session) => (
                     <SessionLibraryCard
                       key={session.id}
@@ -303,16 +299,17 @@ function Header({
     : 'Open account menu';
 
   return (
-    <header className="border-b border-border bg-background">
+    <GlassHeader containerClassName="max-w-(--breakpoint-2xl) px-4 sm:px-6 lg:px-16">
       <nav
         aria-label="Host navigation"
-        className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-between p-4 sm:px-6 lg:px-16"
+        className="flex w-full items-center justify-between"
       >
         <Brand aria-label="Pulse home" href="/" size="md" />
         <div className="flex items-center gap-2 sm:gap-4">
           <HelpDialog />
+          <ModeToggle />
           {isAuthLoading ? (
-            <Skeleton aria-hidden="true" className="size-9 rounded-full" />
+            <Skeleton aria-hidden="true" className="size-9 rounded-avatar" />
           ) : (
             <AccountMenu
               accountMenuLabel={accountMenuLabel}
@@ -324,7 +321,7 @@ function Header({
           )}
         </div>
       </nav>
-    </header>
+    </GlassHeader>
   );
 }
 
@@ -343,23 +340,21 @@ function AccountMenu({
 }) {
   return (
     <DropdownMenu>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <DropdownMenuTrigger
-              aria-label={accountMenuLabel}
-              className="rounded-full"
-            >
-              <Avatar className="size-9 transition-opacity hover:opacity-90">
-                <AvatarFallback className="bg-muted text-sm font-bold text-foreground">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-          }
-        />
-        <TooltipContent>{accountName}</TooltipContent>
-      </Tooltip>
+      <DropdownMenuTrigger
+        aria-label={accountMenuLabel}
+        render={
+          <Button
+            className="size-9 rounded-avatar p-0"
+            variant="ghost"
+          />
+        }
+      >
+        <Avatar className="size-9">
+          <AvatarFallback>
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel>
@@ -458,9 +453,11 @@ function DashboardIntro({
 }
 
 function QuickAccessSection({
+  onDeleteSession,
   onOpenSession,
   sessions,
 }: {
+  onDeleteSession?: (session: DashboardSession) => void;
   onOpenSession: (session: DashboardSession) => void;
   sessions: readonly DashboardSession[];
 }) {
@@ -480,10 +477,11 @@ function QuickAccessSection({
           {sessions.length} active session{pluralSuffix(sessions.length)}
         </p>
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {sessions.map((session) => (
           <LiveSessionCard
             key={session.id}
+            onDeleteClick={onDeleteSession}
             onOpenSession={onOpenSession}
             session={session}
           />
@@ -494,9 +492,11 @@ function QuickAccessSection({
 }
 
 function LiveSessionCard({
+  onDeleteClick,
   onOpenSession,
   session,
 }: {
+  onDeleteClick?: (session: DashboardSession) => void;
   onOpenSession: (session: DashboardSession) => void;
   session: DashboardSession;
 }) {
@@ -504,35 +504,54 @@ function LiveSessionCard({
     onOpenSession(session);
   }
 
+  function handleDelete() {
+    if (onDeleteClick) onDeleteClick(session);
+  }
+
   return (
-    <Card className="group/card p-5 transition-shadow duration-150 focus-within:ring-2 focus-within:ring-ring/50 hover:shadow-sm hover:ring-primary/40 sm:flex-row sm:items-center sm:justify-between">
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <Radio aria-hidden="true" className="text-foreground" size={16} />
+    <Card
+      aria-label={`Open live session ${session.name}`}
+      className="group/card relative flex h-full flex-col justify-between rounded-2xl border-0 bg-card p-5 cursor-pointer select-none transition-colors hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_1.2%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 shadow-xs hover:shadow-sm"
+      onClick={handleOpen}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleOpen();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between">
           <SessionStatus lifecycle={session.lifecycle} />
+          {onDeleteClick ? (
+            <SessionMenuButton onDeleteClick={handleDelete} session={session} />
+          ) : null}
         </div>
-        <h3 className="mt-2.5">
-          <button
-            aria-label={`Open live session ${session.name}`}
-            className="inline-flex max-w-full items-center gap-1.5 rounded-md text-lg font-bold text-foreground underline-offset-4 transition-colors hover:underline active:opacity-80"
-            onClick={handleOpen}
-            type="button"
-          >
-            <span className="truncate">{session.name}</span>
-            <ArrowUpRight
-              aria-hidden="true"
-              className="size-4 shrink-0 opacity-0 transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100"
-            />
-          </button>
+
+        {session.roomCode ? (
+          <div className="my-3.5 flex flex-col items-center justify-center rounded-xl bg-[color-mix(in_oklch,var(--muted),var(--foreground)_3%)] px-4 py-3.5 text-center">
+            <span className="text-[0.65rem] font-bold tracking-[0.2em] uppercase text-muted-foreground">
+              ROOM CODE
+            </span>
+            <span className="mt-0.5 font-mono text-2xl sm:text-3xl font-extrabold tracking-widest text-foreground">
+              {session.roomCode}
+            </span>
+          </div>
+        ) : null}
+
+        <h3 className="mt-1 text-xl sm:text-2xl font-extrabold tracking-tight text-foreground line-clamp-2">
+          {session.name}
         </h3>
-        <p className="mt-1 font-mono text-xs text-muted-foreground">
-          Room Code {session.roomCode}
-        </p>
       </div>
-      <Button onClick={handleOpen} size="sm">
-        Open live session
-        <ArrowUpRight aria-hidden="true" size={15} />
-      </Button>
+
+      <div className="mt-4 flex items-center justify-between text-xs font-medium text-muted-foreground">
+        <span>{session.pollCount} poll{pluralSuffix(session.pollCount)}</span>
+        {session.participantCount > 0 ? (
+          <span>{getParticipantLabel(session)}</span>
+        ) : null}
+      </div>
     </Card>
   );
 }
@@ -638,78 +657,54 @@ function SessionLibraryCard({
 
   return (
     <li className="min-w-0">
-      <Card className="group/card p-5 transition-shadow duration-150 focus-within:ring-2 focus-within:ring-ring/50 hover:shadow-sm hover:ring-foreground/20 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <SessionStatus lifecycle={session.lifecycle} />
-            <span className="font-mono text-xs text-muted-foreground">
-              {session.updatedLabel}
-            </span>
+      <Card
+        aria-label={`Open ${session.name}`}
+        className="group/card relative flex h-full flex-col justify-between rounded-2xl border-0 bg-card p-5 cursor-pointer select-none transition-colors hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_1.2%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 shadow-xs hover:shadow-sm"
+        onClick={handleOpen}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleOpen();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <SessionStatus lifecycle={session.lifecycle} />
+            </div>
+            <SessionMenuButton
+              onDeleteClick={handleDelete}
+              session={session}
+            />
           </div>
-          <h3 className="mt-2.5">
-            <button
-              aria-label={`Open ${session.name}`}
-              className="inline-flex max-w-full items-center gap-1.5 rounded-md text-lg font-bold text-foreground underline-offset-4 transition-colors hover:underline active:opacity-80"
-              onClick={handleOpen}
-              type="button"
-            >
-              <span className="truncate">{session.name}</span>
-              <ArrowUpRight
-                aria-hidden="true"
-                className="size-4 shrink-0 opacity-0 transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100"
-              />
-            </button>
+
+          {session.roomCode ? (
+            <div className="my-3.5 flex flex-col items-center justify-center rounded-xl bg-[color-mix(in_oklch,var(--muted),var(--foreground)_3%)] px-4 py-3.5 text-center">
+              <span className="text-[0.65rem] font-bold tracking-[0.2em] uppercase text-muted-foreground">
+                ROOM CODE
+              </span>
+              <span className="mt-0.5 font-mono text-2xl sm:text-3xl font-extrabold tracking-wider text-foreground">
+                {session.roomCode}
+              </span>
+            </div>
+          ) : null}
+
+          <h3 className="mt-1 text-xl sm:text-2xl font-extrabold tracking-tight text-foreground line-clamp-2">
+            {session.name}
           </h3>
-          <SessionMetadataLine session={session} />
         </div>
-        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
-          <SessionActionButton
-            lifecycle={session.lifecycle}
-            onOpen={handleOpen}
-          />
-          <SessionMenuButton
-            onDeleteClick={handleDelete}
-            session={session}
-          />
+
+        <div className="mt-4 flex items-center justify-between text-xs font-medium text-muted-foreground">
+          <span>{session.pollCount} poll{pluralSuffix(session.pollCount)}</span>
+          {session.participantCount > 0 ? (
+            <span>{getParticipantLabel(session)}</span>
+          ) : null}
         </div>
       </Card>
     </li>
-  );
-}
-
-function SessionMetadataLine({ session }: { session: DashboardSession }) {
-  return (
-    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
-      <span className="inline-flex items-center gap-1.5">
-        <Layers aria-hidden="true" size={15} />
-        {session.pollCount} poll{pluralSuffix(session.pollCount)}
-      </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Users aria-hidden="true" size={15} />
-        {getParticipantLabel(session)}
-      </span>
-      {session.lifecycle !== 'ended' ? (
-        <span className="font-mono text-xs text-muted-foreground">
-          Room Code {session.roomCode}
-        </span>
-      ) : null}
-    </div>
-  );
-}
-
-function SessionActionButton({
-  lifecycle,
-  onOpen,
-}: {
-  lifecycle: SessionLifecycle;
-  onOpen: () => void;
-}) {
-  const { icon: ActionIcon, label, variant } = sessionActions[lifecycle];
-  return (
-    <Button onClick={onOpen} size="sm" variant={variant}>
-      <ActionIcon aria-hidden="true" size={15} />
-      {label}
-    </Button>
   );
 }
 
@@ -720,23 +715,57 @@ function SessionMenuButton({
   onDeleteClick: () => void;
   session: DashboardSession;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopyCode(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (session.roomCode) {
+      void navigator.clipboard.writeText(session.roomCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Session actions for ${session.name}`}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
         render={
-          <Button size="icon-sm" variant="ghost">
-            <MoreHorizontal aria-hidden="true" />
+          <Button
+            className="size-7 rounded-md text-muted-foreground hover:text-foreground"
+            onClick={(e) => e.stopPropagation()}
+            size="icon-sm"
+            variant="ghost"
+          >
+            <MoreHorizontal aria-hidden="true" size={16} />
           </Button>
         }
       />
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="min-w-44">
+        {session.roomCode ? (
+          <DropdownMenuItem
+            className="gap-2 px-2.5 py-1.5 whitespace-nowrap"
+            onClick={handleCopyCode}
+          >
+            {copied ? (
+              <Check aria-hidden="true" className="size-4 text-emerald-500" />
+            ) : (
+              <Copy aria-hidden="true" className="size-4" />
+            )}
+            {copied ? 'Copied code!' : 'Copy room code'}
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem
-          className="gap-2 px-2.5 py-1.5"
-          onClick={onDeleteClick}
+          className="gap-2 px-2.5 py-1.5 whitespace-nowrap"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeleteClick();
+          }}
           variant="destructive"
         >
-          <Trash2 aria-hidden="true" />
+          <Trash2 aria-hidden="true" className="size-4" />
           Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -781,16 +810,20 @@ function DeleteSessionDialog({
 
 function LoadingState() {
   return (
-    <div className="flex flex-col gap-3" role="status">
-      {[0, 1, 2].map((item) => (
-        <Card className="p-5" key={item}>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0 flex-1 space-y-3">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-5 w-56 max-w-full" />
-              <Skeleton className="h-3 w-72 max-w-full" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" role="status">
+      {[0, 1, 2, 3].map((item) => (
+        <Card className="flex flex-col justify-between rounded-2xl p-5 min-h-[200px]" key={item}>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-20 rounded-md" />
+              <Skeleton className="size-6 rounded-md" />
             </div>
-            <Skeleton className="h-7 w-28" />
+            <Skeleton className="h-16 w-full rounded-xl" />
+            <Skeleton className="h-5 w-3/4 rounded-md" />
+          </div>
+          <div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-24" />
           </div>
         </Card>
       ))}
@@ -800,18 +833,29 @@ function LoadingState() {
 }
 
 function SessionStatus({ lifecycle }: { lifecycle: SessionLifecycle }) {
+  const isLive = lifecycle === 'live';
   return (
     <Badge
       variant={
-        lifecycle === 'live'
+        isLive
           ? 'default'
           : lifecycle === 'draft'
             ? 'secondary'
             : 'outline'
       }
+      className={cn(
+        'gap-1.5 font-medium text-xs py-0.5 px-2.5',
+        isLive && 'bg-primary text-primary-foreground'
+      )}
       role="status"
     >
-      <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+      <span
+        aria-hidden="true"
+        className={cn(
+          'size-1.5 rounded-full',
+          isLive ? 'bg-emerald-400 animate-pulse' : 'bg-current opacity-60'
+        )}
+      />
       {lifecycleLabels[lifecycle]}
     </Badge>
   );

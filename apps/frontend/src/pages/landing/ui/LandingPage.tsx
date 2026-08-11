@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ArrowUpRight, LogIn } from 'lucide-react';
 
+import { ModeToggle } from '@/components/mode-toggle';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -56,7 +57,7 @@ const workflowSteps: readonly WorkflowStep[] = [
 
 export function LandingPage() {
   return (
-    <main className="min-h-screen overflow-x-clip bg-background">
+    <main className="min-h-screen overflow-x-clip bg-mist-50 dark:bg-background">
       <SiteHeader />
       <HeroSection />
       <ProofBar />
@@ -90,6 +91,7 @@ function SiteHeader() {
       </nav>
 
       <div className="flex items-center gap-3">
+        <ModeToggle />
         <a
           className="hidden text-sm font-semibold text-foreground transition-colors hover:text-primary sm:inline-flex"
           href="/host/email"

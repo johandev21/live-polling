@@ -12,10 +12,13 @@ import {
   ParticipantEndedSessionState,
   ParticipantWaitingState,
 } from './ParticipantSessionState';
+import { ModeToggle } from '@/components/mode-toggle';
 import {
   ParticipantBrand,
   ParticipantConnectionStatus,
 } from './ParticipantSessionPrimitives';
+import { GlassHeader } from '@/shared/ui/glass-header';
+
 
 export type ParticipantSessionPageProps = Readonly<{
   changeNameHref?: string;
@@ -78,13 +81,12 @@ export function ParticipantSessionPage({
   }
 
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
-        <SessionHeader
-          connectionState={snapshot.connectionState}
-          sessionName={snapshot.sessionName}
-        />
-
+    <div className="min-h-screen bg-mist-50 font-sans text-foreground dark:bg-background">
+      <SessionHeader
+        connectionState={snapshot.connectionState}
+        sessionName={snapshot.sessionName}
+      />
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6 sm:px-6 sm:py-10">
         <SessionError error={errorMessage || responseError} />
 
         <SessionStateView
@@ -98,8 +100,8 @@ export function ParticipantSessionPage({
         />
 
         <SessionPrivacyNote />
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
 
@@ -163,7 +165,7 @@ function validateDraft(
 
 function SessionLoadingState() {
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-mist-50 dark:bg-background px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
         Loading session snapshot...
       </div>
@@ -173,7 +175,7 @@ function SessionLoadingState() {
 
 function SessionUnavailableState() {
   return (
-    <main className="min-h-screen bg-background px-4 py-6 sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-mist-50 dark:bg-background px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-destructive">
         This session could not be loaded. Check the Invitation Link and try
         again.
@@ -190,15 +192,18 @@ function SessionHeader({
   sessionName: string;
 }>) {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 px-1">
-      <ParticipantBrand aria-label="Pulse home" href="/" />
-      <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
-        <p className="max-w-48 truncate text-xs font-semibold text-muted-foreground sm:max-w-none">
-          {sessionName}
-        </p>
-        <ParticipantConnectionStatus state={connectionState} />
-      </div>
-    </header>
+    <GlassHeader containerClassName="max-w-3xl px-4 sm:px-6">
+      <nav aria-label="Participant session navigation" className="flex w-full flex-wrap items-center justify-between gap-4">
+        <ParticipantBrand aria-label="Pulse home" href="/" />
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
+          <p className="max-w-48 truncate text-xs font-semibold text-muted-foreground sm:max-w-none">
+            {sessionName}
+          </p>
+          <ParticipantConnectionStatus state={connectionState} />
+          <ModeToggle />
+        </div>
+      </nav>
+    </GlassHeader>
   );
 }
 

@@ -31,7 +31,13 @@ export class HealthService {
 
   private async checkRedis(): Promise<string> {
     try {
-      if (this.redis.status === 'wait') await this.redis.connect();
+      if (
+        this.redis.status === 'wait' ||
+        this.redis.status === 'close' ||
+        this.redis.status === 'end'
+      ) {
+        await this.redis.connect();
+      }
       await this.redis.ping();
       return 'ok';
     } catch {

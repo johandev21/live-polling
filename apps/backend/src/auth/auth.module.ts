@@ -134,5 +134,11 @@ function configuredOrigins(): string[] {
 }
 
 async function connectRedis(redis: Redis) {
-  if (redis.status === 'wait') await redis.connect();
+  if (
+    redis.status === 'wait' ||
+    redis.status === 'close' ||
+    redis.status === 'end'
+  ) {
+    await redis.connect().catch(() => undefined);
+  }
 }

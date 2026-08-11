@@ -16,7 +16,13 @@ export class RateLimitService {
     windowSeconds: number,
     max: number,
   ): Promise<RateLimitResult> {
-    if (this.redis.status === 'wait') await this.redis.connect();
+    if (
+      this.redis.status === 'wait' ||
+      this.redis.status === 'close' ||
+      this.redis.status === 'end'
+    ) {
+      await this.redis.connect().catch(() => undefined);
+    }
     const value = await this.redis.incr(key);
     if (value === 1) await this.redis.expire(key, windowSeconds);
     if (value > max) {

@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogContent,
 } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 type LiveRoomDialogProps = {
   children: ReactNode;
@@ -25,7 +26,7 @@ export function LiveRoomDialog({
       <DialogContent
         aria-describedby={descriptionId}
         aria-labelledby={titleId}
-        className={className}
+        className={cn('gap-0 p-0 overflow-hidden max-w-[calc(100%-2rem)] sm:max-w-2xl', className)}
         showCloseButton={false}
       >
         {children}

@@ -67,6 +67,12 @@
       "skillPath": "feature-sliced-design/SKILL.md",
       "computedHash": "ae998ddc1f15b59d06fbb28b4809cf27dcc6fe2481b02e132f5b0ef1da6589fa"
     },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "93f53fd1c0352d3d7ec17b8f73d7351bf76f4821e55d123c9d2abc2c53ba48e4"
+    },
     "grill-me": {
       "source": "mattpocock/skills",
       "sourceType": "github",

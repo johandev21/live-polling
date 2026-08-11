@@ -7,12 +7,15 @@ import {
   Play,
 } from 'lucide-react';
 
+import { ModeToggle } from '@/components/mode-toggle';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Brand } from '@/shared/ui/brand';
+import { GlassHeader } from '@/shared/ui/glass-header';
+
 
 import {
   type LockedPoll,
@@ -75,7 +78,7 @@ export function EditLockedPollPage({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-mist-50 dark:bg-background">
       <Header />
       <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
         <PollHeader
@@ -100,7 +103,7 @@ export function EditLockedPollPage({
 
 function PollLoadingState() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-mist-50 dark:bg-background">
       <Header />
       <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
         Loading poll details...
@@ -111,7 +114,7 @@ function PollLoadingState() {
 
 function PollUnavailableState() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-mist-50 dark:bg-background">
       <Header />
       <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
         This poll could not be loaded. Return to the session editor and try
@@ -388,10 +391,10 @@ function LockedOption({
 
 function Header() {
   return (
-    <header className="border-b border-border bg-background">
+    <GlassHeader containerClassName="max-w-(--breakpoint-2xl) px-4 sm:px-6 lg:px-16">
       <nav
         aria-label="Locked poll navigation"
-        className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-between p-4 sm:px-6 lg:px-16"
+        className="flex w-full items-center justify-between"
       >
         <a
           className="inline-flex items-center gap-2 rounded-sm text-sm font-semibold text-muted-foreground hover:text-foreground"
@@ -400,8 +403,11 @@ function Header() {
           <ArrowLeft aria-hidden="true" size={17} />
           Session editor
         </a>
-        <Brand aria-label="Pulse home" href="/" size="sm" />
+        <div className="flex items-center gap-3">
+          <ModeToggle />
+          <Brand aria-label="Pulse home" href="/" size="sm" />
+        </div>
       </nav>
-    </header>
+    </GlassHeader>
   );
 }

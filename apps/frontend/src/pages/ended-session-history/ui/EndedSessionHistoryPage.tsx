@@ -1,9 +1,13 @@
 import type { ReactNode } from 'react';
 import { ArrowLeft, Clock3, LockKeyhole } from 'lucide-react';
 
+import { ModeToggle } from '@/components/mode-toggle';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Brand } from '@/shared/ui/brand';
+import { GlassHeader } from '@/shared/ui/glass-header';
+
 
 import {
   type EndedHistoryChoiceResult,
@@ -48,7 +52,7 @@ export function EndedSessionHistoryPage({
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-mist-50 dark:bg-background text-foreground">
       <HistoryNavBar />
       <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-col gap-7 px-4 py-7 sm:px-6 sm:py-10 lg:px-16">
         <SessionSummaryHeader history={history} />
@@ -63,7 +67,7 @@ export function EndedSessionHistoryPage({
 
 function CenteredNotice({ children }: { children: ReactNode }) {
   return (
-    <main className="grid min-h-screen place-items-center bg-background px-4">
+    <main className="grid min-h-screen place-items-center bg-mist-50 dark:bg-background px-4">
       <Card className="p-8 sm:p-10">{children}</Card>
     </main>
   );
@@ -71,27 +75,21 @@ function CenteredNotice({ children }: { children: ReactNode }) {
 
 function HistoryNavBar() {
   return (
-    <header className="border-b border-border bg-card">
-      <nav className="mx-auto flex w-full max-w-(--breakpoint-2xl) items-center justify-between gap-4 p-4 sm:px-6 lg:px-16">
-        <a
-          aria-label="Pulse home"
-          className="inline-flex items-center gap-2.5"
-          href="/"
-        >
-          <span aria-hidden="true" className="size-7 rounded-full bg-primary" />
-          <span className="text-xl leading-none font-bold tracking-tight">
-            pulse
-          </span>
-        </a>
-        <a
-          className="text-muted-foreground"
-          href="/host/dashboard"
-        >
-          <ArrowLeft aria-hidden="true" size={15} strokeWidth={1.8} />
-          Back to dashboard
-        </a>
+    <GlassHeader containerClassName="max-w-(--breakpoint-2xl) px-4 sm:px-6 lg:px-16">
+      <nav aria-label="Session history navigation" className="flex w-full items-center justify-between gap-4">
+        <Brand aria-label="Pulse home" href="/" size="md" />
+        <div className="flex items-center gap-3">
+          <ModeToggle />
+          <a
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+            href="/host/dashboard"
+          >
+            <ArrowLeft aria-hidden="true" size={15} strokeWidth={1.8} />
+            <span>Back to dashboard</span>
+          </a>
+        </div>
       </nav>
-    </header>
+    </GlassHeader>
   );
 }
 
@@ -117,7 +115,7 @@ function SessionSummaryHeader({
         </p>
       </div>
       <p className="text-sm text-muted-foreground">
-        Ended {history.endedAt} · {history.polls.length} polls ·{' '}
+        Ended {history.endedAt}, {history.polls.length} polls,{' '}
         {history.totalResponses} total responses
       </p>
     </header>
@@ -151,10 +149,10 @@ function PollHistoryCard({ poll }: { poll: EndedHistoryPoll }) {
     <Card className="flex flex-col gap-3 p-4">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <h3 className="min-w-0 text-base font-bold wrap-break-word text-foreground">
-          {String(poll.number).padStart(2, '0')} · {poll.prompt}
+          {String(poll.number)}: {poll.prompt}
         </h3>
         <span className="shrink-0 font-mono text-[10px] text-muted-foreground sm:text-right">
-          {pollTypeLabels[poll.type]} · {poll.totalResponses} responses
+          {pollTypeLabels[poll.type]}, {poll.totalResponses} responses
         </span>
       </header>
 
@@ -269,36 +267,36 @@ function SessionTotals({ history }: { history: EndedSessionHistoryData }) {
   return (
     <Card
       aria-labelledby="session-totals-heading"
-      className="flex flex-col gap-5 bg-primary p-6 text-primary-foreground"
+      className="flex flex-col gap-5 p-6"
     >
       <h2
-        className="font-mono text-[11px] font-bold tracking-[0.14em] text-primary-foreground/80"
+        className="font-mono text-[11px] font-bold tracking-[0.14em] text-muted-foreground"
         id="session-totals-heading"
       >
         SESSION TOTALS
       </h2>
       <dl className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4">
-          <dt className="font-mono text-2xl font-bold text-primary-foreground">
+          <dt className="font-mono text-2xl font-bold text-foreground">
             {history.polls.length}
           </dt>
-          <dd className="text-sm text-primary-foreground/80">
+          <dd className="text-sm text-muted-foreground">
             polls
           </dd>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <dt className="font-mono text-2xl font-bold text-primary-foreground">
+          <dt className="font-mono text-2xl font-bold text-foreground">
             {history.totalResponses}
           </dt>
-          <dd className="text-sm text-primary-foreground/80">
+          <dd className="text-sm text-muted-foreground">
             total responses
           </dd>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <dt className="font-mono text-2xl font-bold text-primary-foreground">
+          <dt className="font-mono text-2xl font-bold text-foreground">
             {history.endedAt}
           </dt>
-          <dd className="text-sm text-primary-foreground/80">
+          <dd className="text-sm text-muted-foreground">
             ended
           </dd>
         </div>
