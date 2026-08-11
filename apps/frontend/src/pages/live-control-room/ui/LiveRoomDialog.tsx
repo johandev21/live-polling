@@ -26,7 +26,7 @@ export function LiveRoomDialog({
       <DialogContent
         aria-describedby={descriptionId}
         aria-labelledby={titleId}
-        className={cn('gap-0 p-0 overflow-hidden max-w-[calc(100%-2rem)] sm:max-w-2xl', className)}
+        className={cn('max-w-[calc(100%-2rem)] gap-0 overflow-hidden p-0 sm:max-w-2xl', className)}
         showCloseButton={false}
       >
         {children}

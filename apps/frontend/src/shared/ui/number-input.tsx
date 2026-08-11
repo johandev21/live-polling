@@ -75,7 +75,7 @@ export function NumberInput({
         placeholder={placeholder}
         onChange={handleInputChange}
         disabled={disabled}
-        className="h-9 w-24 text-center text-sm font-semibold sm:text-base [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        className="h-9 w-24 [appearance:textfield] text-center text-sm font-semibold sm:text-base [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
       <Button
         type="button"

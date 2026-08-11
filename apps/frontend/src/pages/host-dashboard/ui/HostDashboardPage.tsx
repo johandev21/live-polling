@@ -254,7 +254,7 @@ export function HostDashboardPage({
                   onFilterChange={setActiveFilter}
                 />
               ) : (
-                <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {visibleSessions.map((session) => (
                     <SessionLibraryCard
                       key={session.id}
@@ -477,7 +477,7 @@ function QuickAccessSection({
           {sessions.length} active session{pluralSuffix(sessions.length)}
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {sessions.map((session) => (
           <LiveSessionCard
             key={session.id}
@@ -511,7 +511,7 @@ function LiveSessionCard({
   return (
     <Card
       aria-label={`Open live session ${session.name}`}
-      className="group/card relative flex h-full flex-col justify-between rounded-2xl border-0 bg-card p-5 cursor-pointer select-none transition-colors hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_1.2%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 shadow-xs hover:shadow-sm"
+      className="group/card relative flex h-full cursor-pointer flex-col justify-between rounded-2xl border-0 bg-card p-5 shadow-xs transition-colors select-none hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_1.2%)] hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
       onClick={handleOpen}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -532,16 +532,16 @@ function LiveSessionCard({
 
         {session.roomCode ? (
           <div className="my-3.5 flex flex-col items-center justify-center rounded-xl bg-[color-mix(in_oklch,var(--muted),var(--foreground)_3%)] px-4 py-3.5 text-center">
-            <span className="text-[0.65rem] font-bold tracking-[0.2em] uppercase text-muted-foreground">
+            <span className="text-[0.65rem] font-bold tracking-[0.2em] text-muted-foreground uppercase">
               ROOM CODE
             </span>
-            <span className="mt-0.5 font-mono text-2xl sm:text-3xl font-extrabold tracking-widest text-foreground">
+            <span className="mt-0.5 font-mono text-2xl font-extrabold tracking-widest text-foreground sm:text-3xl">
               {session.roomCode}
             </span>
           </div>
         ) : null}
 
-        <h3 className="mt-1 text-xl sm:text-2xl font-extrabold tracking-tight text-foreground line-clamp-2">
+        <h3 className="mt-1 line-clamp-2 text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
           {session.name}
         </h3>
       </div>
@@ -659,7 +659,7 @@ function SessionLibraryCard({
     <li className="min-w-0">
       <Card
         aria-label={`Open ${session.name}`}
-        className="group/card relative flex h-full flex-col justify-between rounded-2xl border-0 bg-card p-5 cursor-pointer select-none transition-colors hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_1.2%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 shadow-xs hover:shadow-sm"
+        className="group/card relative flex h-full cursor-pointer flex-col justify-between rounded-2xl border-0 bg-card p-5 shadow-xs transition-colors select-none hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_1.2%)] hover:shadow-sm focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
         onClick={handleOpen}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -683,16 +683,16 @@ function SessionLibraryCard({
 
           {session.roomCode ? (
             <div className="my-3.5 flex flex-col items-center justify-center rounded-xl bg-[color-mix(in_oklch,var(--muted),var(--foreground)_3%)] px-4 py-3.5 text-center">
-              <span className="text-[0.65rem] font-bold tracking-[0.2em] uppercase text-muted-foreground">
+              <span className="text-[0.65rem] font-bold tracking-[0.2em] text-muted-foreground uppercase">
                 ROOM CODE
               </span>
-              <span className="mt-0.5 font-mono text-2xl sm:text-3xl font-extrabold tracking-wider text-foreground">
+              <span className="mt-0.5 font-mono text-2xl font-extrabold tracking-wider text-foreground sm:text-3xl">
                 {session.roomCode}
               </span>
             </div>
           ) : null}
 
-          <h3 className="mt-1 text-xl sm:text-2xl font-extrabold tracking-tight text-foreground line-clamp-2">
+          <h3 className="mt-1 line-clamp-2 text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
             {session.name}
           </h3>
         </div>
@@ -810,9 +810,9 @@ function DeleteSessionDialog({
 
 function LoadingState() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" role="status">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" role="status">
       {[0, 1, 2, 3].map((item) => (
-        <Card className="flex flex-col justify-between rounded-2xl p-5 min-h-[200px]" key={item}>
+        <Card className="flex min-h-[200px] flex-col justify-between rounded-2xl p-5" key={item}>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Skeleton className="h-4 w-20 rounded-md" />
@@ -844,7 +844,7 @@ function SessionStatus({ lifecycle }: { lifecycle: SessionLifecycle }) {
             : 'outline'
       }
       className={cn(
-        'gap-1.5 font-medium text-xs py-0.5 px-2.5',
+        'gap-1.5 px-2.5 py-0.5 text-xs font-medium',
         isLive && 'bg-primary text-primary-foreground'
       )}
       role="status"
@@ -853,7 +853,7 @@ function SessionStatus({ lifecycle }: { lifecycle: SessionLifecycle }) {
         aria-hidden="true"
         className={cn(
           'size-1.5 rounded-full',
-          isLive ? 'bg-emerald-400 animate-pulse' : 'bg-current opacity-60'
+          isLive ? 'animate-pulse bg-emerald-400' : 'bg-current opacity-60'
         )}
       />
       {lifecycleLabels[lifecycle]}

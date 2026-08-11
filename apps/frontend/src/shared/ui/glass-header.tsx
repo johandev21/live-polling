@@ -13,7 +13,7 @@ export function GlassHeader({
 }: GlassHeaderProps) {
   return (
     <header
-      className={`sticky top-0 z-40 w-full glass-effect transition-all ${className}`}
+      className={`glass-effect sticky top-0 z-40 w-full transition-all ${className}`}
     >
       <div
         className={`mx-auto flex w-full items-center justify-between gap-4 py-3 ${containerClassName}`}

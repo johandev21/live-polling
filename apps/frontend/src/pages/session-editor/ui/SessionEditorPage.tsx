@@ -414,7 +414,7 @@ function EmptyPollState({
     <Card className="flex flex-col gap-6 p-6 sm:p-8">
       <div className="space-y-1">
         <h2 className="text-lg font-bold text-foreground sm:text-xl">No polls yet</h2>
-        <p className="text-sm text-muted-foreground leading-relaxed sm:text-base">
+        <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
           {isDraft
             ? 'Add polls to your session deck. You can choose single-choice, multiple-choice, or open-ended questions.'
             : 'This session has no configured polls.'}
@@ -422,23 +422,23 @@ function EmptyPollState({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-md border border-border/80 bg-muted/30 p-4 space-y-1">
+        <div className="space-y-1 rounded-md border border-border/80 bg-muted/30 p-4">
           <div className="flex items-center gap-2 text-xs font-semibold text-foreground sm:text-sm">
-            <CircleDot size={15} className="text-muted-foreground shrink-0" />
+            <CircleDot size={15} className="shrink-0 text-muted-foreground" />
             <span>Single-choice</span>
           </div>
           <p className="text-xs text-muted-foreground sm:text-sm">Participants pick one option.</p>
         </div>
-        <div className="rounded-md border border-border/80 bg-muted/30 p-4 space-y-1">
+        <div className="space-y-1 rounded-md border border-border/80 bg-muted/30 p-4">
           <div className="flex items-center gap-2 text-xs font-semibold text-foreground sm:text-sm">
-            <ListChecks size={15} className="text-muted-foreground shrink-0" />
+            <ListChecks size={15} className="shrink-0 text-muted-foreground" />
             <span>Multiple-choice</span>
           </div>
           <p className="text-xs text-muted-foreground sm:text-sm">Participants select multiple options.</p>
         </div>
-        <div className="rounded-md border border-border/80 bg-muted/30 p-4 space-y-1">
+        <div className="space-y-1 rounded-md border border-border/80 bg-muted/30 p-4">
           <div className="flex items-center gap-2 text-xs font-semibold text-foreground sm:text-sm">
-            <MessageSquare size={15} className="text-muted-foreground shrink-0" />
+            <MessageSquare size={15} className="shrink-0 text-muted-foreground" />
             <span>Open-ended</span>
           </div>
           <p className="text-xs text-muted-foreground sm:text-sm">Freeform text responses.</p>
@@ -500,7 +500,7 @@ function PollSequenceList({
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:text-sm">
+        <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase sm:text-sm">
           Poll Sequence ({session.polls.length} {pollCountLabel})
         </h2>
         <span className="text-xs text-muted-foreground sm:text-sm">
@@ -578,7 +578,7 @@ function SortablePollRow({
       <Card
         className={cn(
           'flex flex-col gap-4 p-4 transition-all duration-150 sm:flex-row sm:items-center sm:gap-5',
-          isDragging ? 'z-50 shadow-md ring-2 ring-primary/40 opacity-75 bg-card' : 'hover:shadow-sm',
+          isDragging ? 'z-50 bg-card opacity-75 shadow-md ring-2 ring-primary/40' : 'hover:shadow-sm',
         )}
       >
         <div className="flex items-center gap-3 sm:flex-col">
@@ -588,7 +588,7 @@ function SortablePollRow({
           {isDraft ? (
             <button
               type="button"
-              className="hidden touch-none cursor-grab items-center justify-center p-1 text-muted-foreground hover:text-foreground active:cursor-grabbing sm:flex rounded hover:bg-muted"
+              className="hidden cursor-grab touch-none items-center justify-center rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground active:cursor-grabbing sm:flex"
               aria-label={`Drag to reorder poll ${index + 1}`}
               {...attributes}
               {...listeners}
@@ -652,7 +652,7 @@ function PollType({ poll }: { poll: EditorPoll }) {
   const TypeIcon = pollTypeIcons[poll.type];
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:text-sm">
-      <TypeIcon aria-hidden="true" className="text-foreground shrink-0" size={14} />
+      <TypeIcon aria-hidden="true" className="shrink-0 text-foreground" size={14} />
       <span>{pollTypeLabels[poll.type]}</span>
       <span className="font-medium text-foreground">
         {pollStatusLabels[poll.status]}
@@ -685,7 +685,7 @@ function ReadinessSidebar({
         <h2 className="text-base font-bold text-foreground sm:text-lg">
           {isDraft ? 'Session Control' : 'Session Status'}
         </h2>
-        <p className="mt-1 text-xs text-muted-foreground leading-relaxed sm:text-sm">
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
           {startReason}
         </p>
       </div>
@@ -702,7 +702,7 @@ function ReadinessSidebar({
             <span>Start session</span>
           </Button>
           {!hasPolls ? (
-            <p className="text-xs text-muted-foreground text-center sm:text-sm">
+            <p className="text-center text-xs text-muted-foreground sm:text-sm">
               Add 1+ poll to enable starting
             </p>
           ) : null}
@@ -715,12 +715,12 @@ function ReadinessSidebar({
       )}
 
       <div className="space-y-3">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block sm:text-sm">
+        <span className="block text-xs font-semibold tracking-wider text-muted-foreground uppercase sm:text-sm">
           Checklist
         </span>
         <ul className="space-y-2.5 text-xs sm:text-sm">
           <li className="flex items-center justify-between">
-            <span className="flex items-center gap-2 text-foreground font-medium">
+            <span className="flex items-center gap-2 font-medium text-foreground">
               <CircleCheck
                 className={hasName ? 'text-primary' : 'text-muted-foreground/40'}
                 size={16}
@@ -730,7 +730,7 @@ function ReadinessSidebar({
             <span className="text-muted-foreground">{hasName ? 'Set' : 'Missing'}</span>
           </li>
           <li className="flex items-center justify-between">
-            <span className="flex items-center gap-2 text-foreground font-medium">
+            <span className="flex items-center gap-2 font-medium text-foreground">
               <CircleCheck
                 className={hasPolls ? 'text-primary' : 'text-muted-foreground/40'}
                 size={16}
@@ -742,7 +742,7 @@ function ReadinessSidebar({
             </span>
           </li>
           <li className="flex items-center justify-between">
-            <span className="flex items-center gap-2 text-foreground font-medium">
+            <span className="flex items-center gap-2 font-medium text-foreground">
               <CircleCheck
                 className={!isDraft ? 'text-primary' : 'text-muted-foreground/40'}
                 size={16}

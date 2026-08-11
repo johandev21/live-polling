@@ -114,7 +114,7 @@ export function OpenEndedPollFields({
           <Textarea
             id="response-preview"
             aria-describedby="response-preview-count"
-            className="max-h-48 break-all text-sm sm:text-base"
+            className="max-h-48 text-sm break-all sm:text-base"
             maxLength={Math.max(responseLimit, responsePreview.length)}
             onChange={(event) => onResponsePreviewChange(event.target.value)}
             placeholder="Share a thought..."

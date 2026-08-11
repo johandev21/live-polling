@@ -80,7 +80,7 @@ export function HostResultsPage({
   }
 
   return (
-    <div className="min-h-screen bg-mist-50 dark:bg-background text-foreground">
+    <div className="min-h-screen bg-mist-50 text-foreground dark:bg-background">
       <AppHeader sessionId={sessionId} />
 
       <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
@@ -92,7 +92,7 @@ export function HostResultsPage({
 
         {errorMessage ? <ErrorMessage message={errorMessage} /> : null}
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_22rem]">
           <div className="space-y-4">
             <PollQuestionHeader
               nextPoll={nextPoll}
@@ -290,7 +290,7 @@ function PollQuestionHeader({
         </h2>
       </div>
 
-      <div className="flex items-center gap-1.5 shrink-0">
+      <div className="flex shrink-0 items-center gap-1.5">
         <button
           aria-label="Previous poll"
           className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
@@ -421,7 +421,7 @@ function PollNavigation({
                       {hostPollTypeLabel(item.type)}
                     </Badge>
                   </div>
-                  <span className="mt-1 block truncate text-xs font-semibold leading-4">
+                  <span className="mt-1 block truncate text-xs leading-4 font-semibold">
                     Poll {formatPollNumber(item.number)}: {item.question}
                   </span>
                 </div>
@@ -439,7 +439,7 @@ function PollNavigation({
 
 function LoadingState() {
   return (
-    <main className="grid min-h-screen place-items-center bg-mist-50 dark:bg-background px-4">
+    <main className="grid min-h-screen place-items-center bg-mist-50 px-4 dark:bg-background">
       <Card className="p-8 sm:p-10">
         <p className="text-sm font-semibold text-muted-foreground">
           Loading results...
@@ -451,7 +451,7 @@ function LoadingState() {
 
 function EmptyState() {
   return (
-    <main className="grid min-h-screen place-items-center bg-mist-50 dark:bg-background px-4">
+    <main className="grid min-h-screen place-items-center bg-mist-50 px-4 dark:bg-background">
       <Card className="p-8 sm:p-10">
         <p className="text-sm text-muted-foreground">
           No results available.

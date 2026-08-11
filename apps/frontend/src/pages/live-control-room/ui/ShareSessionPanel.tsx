@@ -99,7 +99,7 @@ function DialogHeader({ onClose }: { onClose: () => void }) {
 function RoomCodeSection({ roomCode }: { roomCode: string }) {
   return (
     <div className="space-y-1.5">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
         Room Code
       </p>
       <p className="font-mono text-4xl font-bold tracking-widest text-primary sm:text-5xl">
@@ -126,7 +126,7 @@ function InvitationLinkSection({
   return (
     <div className="space-y-2">
       <label
-        className="text-xs font-medium text-muted-foreground block"
+        className="block text-xs font-medium text-muted-foreground"
         htmlFor="invitation-link"
       >
         Invitation Link
@@ -176,7 +176,7 @@ function SharingNote() {
         size={16}
         strokeWidth={1.8}
       />
-      <p className="text-xs text-muted-foreground leading-relaxed sm:text-sm">
+      <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
         Share privately with your group. The Room Code works on every device,
         and the Invitation Link takes participants directly to the join flow.
       </p>

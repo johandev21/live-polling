@@ -41,7 +41,7 @@ export function ChoiceResults({ poll }: ChoiceResultsProps) {
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
-        <div className="hidden border-b border-border bg-muted/40 px-4 py-2.5 font-mono text-[10px] font-bold tracking-wider text-muted-foreground uppercase sm:grid sm:grid-cols-[1fr_2fr_4rem_5rem] sm:gap-4 sm:items-center">
+        <div className="hidden border-b border-border bg-muted/40 px-4 py-2.5 font-mono text-[10px] font-bold tracking-wider text-muted-foreground uppercase sm:grid sm:grid-cols-[1fr_2fr_4rem_5rem] sm:items-center sm:gap-4">
           <span>Option</span>
           <span>Distribution</span>
           <span className="text-right">%</span>
@@ -61,10 +61,10 @@ export function ChoiceResults({ poll }: ChoiceResultsProps) {
               <li key={option.id}>
                 <div
                   aria-label={`${option.label}: ${percentage} percent of responses (${option.count} responses)`}
-                  className="flex flex-col gap-2 p-4 transition-colors hover:bg-muted/30 sm:grid sm:grid-cols-[1fr_2fr_4rem_5rem] sm:gap-4 sm:items-center"
+                  className="flex flex-col gap-2 p-4 transition-colors hover:bg-muted/30 sm:grid sm:grid-cols-[1fr_2fr_4rem_5rem] sm:items-center sm:gap-4"
                   role="group"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate text-sm font-semibold text-foreground">
                       {option.label}
                     </span>
@@ -88,7 +88,7 @@ export function ChoiceResults({ poll }: ChoiceResultsProps) {
                     </span>
                   </div>
 
-                  <div className="hidden font-mono text-xs text-muted-foreground text-right sm:block">
+                  <div className="hidden text-right font-mono text-xs text-muted-foreground sm:block">
                     {option.count}
                   </div>
                 </div>

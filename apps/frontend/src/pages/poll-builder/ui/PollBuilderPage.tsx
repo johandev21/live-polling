@@ -329,7 +329,7 @@ function PollTextField({
       </FieldLabel>
       <Textarea
         id="poll-text"
-        className="max-h-48 break-all text-sm sm:text-base"
+        className="max-h-48 text-sm break-all sm:text-base"
         maxLength={500}
         onChange={(event) => onTextChange(event.target.value)}
         placeholder="What would you like to ask?"
@@ -341,7 +341,7 @@ function PollTextField({
           ? `${draft.text.length} / 500 characters`
           : 'Ask one clear prompt.'}
       </FieldDescription>
-      {pollTextError ? <FieldError className="text-xs sm:text-sm font-medium">{pollTextError}</FieldError> : null}
+      {pollTextError ? <FieldError className="text-xs font-medium sm:text-sm">{pollTextError}</FieldError> : null}
     </Field>
   );
 }
@@ -406,7 +406,7 @@ function ParticipantPreview({
         PARTICIPANT PREVIEW
       </p>
       <h2
-        className="text-xl font-bold leading-tight wrap-break-word text-foreground sm:text-2xl"
+        className="text-xl leading-tight font-bold wrap-break-word text-foreground sm:text-2xl"
         id="participant-preview-heading"
       >
         {draft.text.trim() || 'Your poll text'}

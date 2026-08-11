@@ -269,7 +269,7 @@ function OpenEndedResponse({
       </Label>
       <QuestionnaireInput
         aria-describedby={`${inputId}-hint ${inputId}-count`}
-        className="h-auto min-h-40 py-3 resize-none"
+        className="h-auto min-h-40 resize-none py-3"
         defaultValue={storedText}
         disabled={isPending}
         id={inputId}

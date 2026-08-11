@@ -165,7 +165,7 @@ function validateDraft(
 
 function SessionLoadingState() {
   return (
-    <main className="min-h-screen bg-mist-50 dark:bg-background px-4 py-6 sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-mist-50 px-4 py-6 sm:px-6 sm:py-10 dark:bg-background">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-muted-foreground">
         Loading session snapshot...
       </div>
@@ -175,7 +175,7 @@ function SessionLoadingState() {
 
 function SessionUnavailableState() {
   return (
-    <main className="min-h-screen bg-mist-50 dark:bg-background px-4 py-6 sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-mist-50 px-4 py-6 sm:px-6 sm:py-10 dark:bg-background">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center py-20 text-sm font-semibold text-destructive">
         This session could not be loaded. Check the Invitation Link and try
         again.

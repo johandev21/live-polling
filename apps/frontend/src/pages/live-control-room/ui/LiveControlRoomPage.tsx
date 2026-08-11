@@ -337,9 +337,9 @@ function ControlRoomHeader({
   return (
     <GlassHeader>
       <div className="flex w-full flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex min-w-0 items-center gap-3">
           <Brand aria-label="Pulse home" href="/" size="sm" />
-          <h1 className="text-lg font-bold tracking-tight text-foreground truncate sm:text-xl">
+          <h1 className="truncate text-lg font-bold tracking-tight text-foreground sm:text-xl">
             {sessionName}
           </h1>
           <StatusBadge label="Live" tone="success" />
@@ -347,7 +347,7 @@ function ControlRoomHeader({
 
         <div className="flex items-center gap-3">
           <span className="hidden items-center gap-1.5 font-mono text-xs text-muted-foreground sm:inline-flex">
-            Code: <strong className="text-foreground font-semibold">{roomCode}</strong>
+            Code: <strong className="font-semibold text-foreground">{roomCode}</strong>
           </span>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Users aria-hidden="true" size={14} className="text-primary" />
@@ -357,7 +357,7 @@ function ControlRoomHeader({
           <ConnectionStatus state={connectionState} />
           <ModeToggle />
           <a
-            className="text-xs font-medium text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+            className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             href="/host/dashboard"
           >
             Exit
@@ -396,11 +396,11 @@ function ActivePollCard({
   const isHidden = poll.resultVisibility === 'hidden';
 
   return (
-    <Card className="flex flex-col h-[540px] sm:h-[580px] lg:h-[600px] p-6 sm:p-7 justify-between">
+    <Card className="flex h-[540px] flex-col justify-between p-6 sm:h-[580px] sm:p-7 lg:h-[600px]">
       {/* Poll Header & Status - Fixed top */}
-      <div className="space-y-2 shrink-0 pb-2">
+      <div className="shrink-0 space-y-2 pb-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+          <span className="text-xs font-semibold tracking-wider text-primary uppercase">
             Active Poll ({formatPollNumber(poll.position)} of {formatPollNumber(pollCount)})
           </span>
           <div className="flex items-center gap-2">
@@ -421,24 +421,24 @@ function ActivePollCard({
         </div>
 
         <h2
-          className="text-xl font-bold leading-snug tracking-tight text-foreground sm:text-2xl lg:text-3xl line-clamp-2"
+          className="line-clamp-2 text-xl leading-snug font-bold tracking-tight text-foreground sm:text-2xl lg:text-3xl"
           id="active-poll-title"
         >
           {poll.question}
         </h2>
 
-        <p className="text-xs text-muted-foreground font-medium sm:text-sm">
+        <p className="text-xs font-medium text-muted-foreground sm:text-sm">
           {pollTypeLabel(poll.type)}, responses update live
         </p>
       </div>
 
       {/* Live Results Visualization - Scrollable middle container */}
-      <div className="flex-1 min-h-0 overflow-y-auto py-2 pr-1">
+      <div className="min-h-0 flex-1 overflow-y-auto py-2 pr-1">
         <PollResults poll={poll} />
       </div>
 
       {/* Action Controls Bar - Fixed bottom */}
-      <div className="flex flex-col gap-3 shrink-0 pt-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex shrink-0 flex-col gap-3 pt-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <Button onClick={onToggleLifecycle} size="sm" variant={isOpen ? 'secondary' : 'default'}>
             {isOpen ? (
@@ -496,11 +496,11 @@ function FullscreenPollView({
   const isHidden = poll.resultVisibility === 'hidden';
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-between bg-background p-6 sm:p-10 text-foreground overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex flex-col justify-between overflow-y-auto bg-background p-6 text-foreground sm:p-10">
       {/* Top Header Bar */}
-      <header className="flex items-center justify-between gap-4 pb-2 shrink-0">
+      <header className="flex shrink-0 items-center justify-between gap-4 pb-2">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold text-foreground truncate hidden sm:inline">
+          <span className="hidden truncate text-xs font-semibold text-foreground sm:inline">
             {sessionName}
           </span>
           <StatusBadge
@@ -549,9 +549,9 @@ function FullscreenPollView({
       </header>
 
       {/* Main Focus Content Area */}
-      <main className="my-auto py-8 max-w-4xl mx-auto w-full space-y-8">
-        <div className="text-center space-y-3">
-          <h2 className="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+      <main className="mx-auto my-auto w-full max-w-4xl space-y-8 py-8">
+        <div className="space-y-3 text-center">
+          <h2 className="text-2xl leading-tight font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
             {poll.question}
           </h2>
           <p className="text-sm font-medium text-muted-foreground">
@@ -565,7 +565,7 @@ function FullscreenPollView({
       </main>
 
       {/* Bottom Floating Controls Bar */}
-      <footer className="flex flex-col gap-4 pt-2 shrink-0 sm:flex-row sm:items-center sm:justify-between max-w-4xl mx-auto w-full">
+      <footer className="mx-auto flex w-full max-w-4xl shrink-0 flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <Button onClick={onToggleLifecycle} size="sm" variant={isOpen ? 'secondary' : 'default'}>
             {isOpen ? <Pause aria-hidden="true" size={15} /> : <Play aria-hidden="true" size={15} />}
@@ -601,9 +601,9 @@ function PollSequenceCard({
 }) {
   return (
     <Card aria-labelledby="poll-sequence-title" className="p-5">
-      <div className="flex items-center justify-between gap-4 mb-3">
+      <div className="mb-3 flex items-center justify-between gap-4">
         <h2
-          className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+          className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
           id="poll-sequence-title"
         >
           Poll Sequence
@@ -649,7 +649,7 @@ function PollSequenceButton({
           {pollTypeShortLabels[poll.type]}
         </span>
       </div>
-      <span className="mt-1 line-clamp-2 block text-xs font-semibold text-foreground leading-snug">
+      <span className="mt-1 line-clamp-2 block text-xs leading-snug font-semibold text-foreground">
         {poll.question}
       </span>
     </button>
@@ -666,7 +666,7 @@ function ShareSessionCard({
   return (
     <Card className="flex flex-col gap-4 p-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           Share session
         </p>
         <p className="mt-1 font-mono text-4xl font-bold tracking-widest break-all text-foreground">
@@ -722,7 +722,7 @@ function PresenceSummaryCard({
                 {participant.name}
               </span>
             </span>
-            <span className="text-xs text-muted-foreground font-medium">
+            <span className="text-xs font-medium text-muted-foreground">
               {getParticipantStatusLabel(participant.status)}
             </span>
           </li>
@@ -750,7 +750,7 @@ function SessionToolsCard({
   sessionId: string;
 }) {
   return (
-    <Card aria-labelledby="session-tools-title" className="p-5 space-y-3">
+    <Card aria-labelledby="session-tools-title" className="space-y-3 p-5">
       <h2 className="text-base font-bold text-foreground sm:text-lg" id="session-tools-title">
         Session tools
       </h2>
@@ -849,7 +849,7 @@ function EndedSessionState({
   return (
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-12">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-3xl items-center justify-center">
-        <Card className="w-full p-8 text-center sm:p-10 space-y-4">
+        <Card className="w-full space-y-4 p-8 text-center sm:p-10">
           <StatusBadge label="Ended session" tone="neutral" />
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {sessionName} is now read-only
@@ -876,7 +876,7 @@ function PollResults({ poll }: { poll: LivePoll }) {
     return (
       <div className="space-y-3">
         <div className="flex items-baseline justify-between gap-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
             Latest responses
           </h3>
           <span className="text-xs font-semibold text-primary">

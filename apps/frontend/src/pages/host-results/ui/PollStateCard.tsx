@@ -45,7 +45,7 @@ export function PollStateCard({
 
       <dl className="grid grid-cols-2 gap-3 rounded-lg border border-border bg-muted/40 p-3 text-xs">
         <div>
-          <dt className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <dt className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
             Type
           </dt>
           <dd className="mt-1 font-semibold text-foreground">
@@ -53,10 +53,10 @@ export function PollStateCard({
           </dd>
         </div>
         <div>
-          <dt className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <dt className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
             Visibility
           </dt>
-          <dd className="mt-1 font-semibold text-foreground truncate">
+          <dd className="mt-1 truncate font-semibold text-foreground">
             {visibilityLabels[poll.visibility]}
           </dd>
         </div>

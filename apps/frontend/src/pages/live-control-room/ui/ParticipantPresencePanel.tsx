@@ -60,14 +60,14 @@ export function ParticipantPresencePanel({
 
       <Card className="flex flex-col gap-3 border-0 bg-muted/40 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
         <div className="flex items-center gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-background border border-border text-primary">
+          <span className="grid size-10 shrink-0 place-items-center rounded-full border border-border bg-background text-primary">
             <Users aria-hidden="true" size={18} strokeWidth={1.8} />
           </span>
           <div>
             <p className="text-base font-semibold text-foreground sm:text-lg">
               {participantCount} connected
             </p>
-            <p className="text-xs text-muted-foreground font-medium">
+            <p className="text-xs font-medium text-muted-foreground">
               {onlineCount} shown online now
             </p>
           </div>
@@ -78,7 +78,7 @@ export function ParticipantPresencePanel({
       </Card>
 
       <ScrollArea className="max-h-[min(50vh,24rem)] p-5 sm:px-7">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           Connected participants
         </h3>
         <ul className="mt-3 space-y-2">

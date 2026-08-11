@@ -52,7 +52,7 @@ export function EndedSessionHistoryPage({
   }
 
   return (
-    <div className="min-h-screen bg-mist-50 dark:bg-background text-foreground">
+    <div className="min-h-screen bg-mist-50 text-foreground dark:bg-background">
       <HistoryNavBar />
       <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-col gap-7 px-4 py-7 sm:px-6 sm:py-10 lg:px-16">
         <SessionSummaryHeader history={history} />
@@ -67,7 +67,7 @@ export function EndedSessionHistoryPage({
 
 function CenteredNotice({ children }: { children: ReactNode }) {
   return (
-    <main className="grid min-h-screen place-items-center bg-mist-50 dark:bg-background px-4">
+    <main className="grid min-h-screen place-items-center bg-mist-50 px-4 dark:bg-background">
       <Card className="p-8 sm:p-10">{children}</Card>
     </main>
   );

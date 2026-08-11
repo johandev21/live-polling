@@ -24,7 +24,7 @@ export function AuthShell({
   const bodyId = useId();
 
   return (
-    <main className="min-h-screen bg-mist-50 dark:bg-background lg:grid lg:grid-cols-[minmax(19rem,36vw)_minmax(0,1fr)]">
+    <main className="min-h-screen bg-mist-50 lg:grid lg:grid-cols-[minmax(19rem,36vw)_minmax(0,1fr)] dark:bg-background">
       <aside
         aria-describedby={bodyId}
         aria-labelledby={headingId}

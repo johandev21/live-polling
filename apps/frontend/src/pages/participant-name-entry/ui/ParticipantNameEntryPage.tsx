@@ -89,7 +89,7 @@ export function ParticipantNameEntryPage({
   }
 
   return (
-    <main className="min-h-screen bg-mist-50 dark:bg-background px-4 py-8 sm:px-6 lg:grid lg:place-items-center lg:px-8">
+    <main className="min-h-screen bg-mist-50 px-4 py-8 sm:px-6 lg:grid lg:place-items-center lg:px-8 dark:bg-background">
       <section className="mx-auto w-full max-w-4xl">
         <Card className="grid w-full overflow-hidden p-0 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,1fr)]">
           <NameEntryPanel

@@ -68,7 +68,7 @@ export function ChoicePollFields({
 
 function OptionsLegend() {
   return (
-    <legend className="text-base font-bold tracking-tight text-foreground sm:text-lg mb-1">
+    <legend className="mb-1 text-base font-bold tracking-tight text-foreground sm:text-lg">
       Options
     </legend>
   );
@@ -155,7 +155,7 @@ function ChoiceOptionRow({
             <X aria-hidden="true" size={16} />
           </button>
         </div>
-        {optionError ? <FieldError className="text-xs sm:text-sm font-medium">{optionError}</FieldError> : null}
+        {optionError ? <FieldError className="text-xs font-medium sm:text-sm">{optionError}</FieldError> : null}
       </Field>
     </li>
   );
@@ -218,7 +218,7 @@ function MaximumSelectionsField({
           }
         }}
       >
-        <SelectTrigger id="maximum-selections" className="w-full h-10 text-sm sm:text-base">
+        <SelectTrigger id="maximum-selections" className="h-10 w-full text-sm sm:text-base">
           <SelectValue placeholder="No limit" />
         </SelectTrigger>
         <SelectContent>
@@ -233,7 +233,7 @@ function MaximumSelectionsField({
       <FieldDescription className="text-xs sm:text-sm">
         Leave this at No limit to allow any number of options.
       </FieldDescription>
-      {error ? <FieldError className="text-xs sm:text-sm font-medium">{error}</FieldError> : null}
+      {error ? <FieldError className="text-xs font-medium sm:text-sm">{error}</FieldError> : null}
     </Field>
   );
 }

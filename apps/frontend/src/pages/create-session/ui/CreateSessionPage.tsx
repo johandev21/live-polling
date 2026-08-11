@@ -204,9 +204,9 @@ function CreateSessionCard({
             Session name <span aria-hidden="true" className="text-destructive">*</span>
           </FieldLabel>
           <span
-            className={`text-xs font-mono sm:text-sm ${
+            className={`font-mono text-xs sm:text-sm ${
               remainingChars < 10
-                ? 'text-destructive font-bold'
+                ? 'font-bold text-destructive'
                 : 'text-muted-foreground'
             }`}
           >
@@ -228,7 +228,7 @@ function CreateSessionCard({
           Required, up to 120 characters
         </FieldDescription>
 
-        {nameError ? <FieldError className="text-xs sm:text-sm font-medium">{nameError}</FieldError> : null}
+        {nameError ? <FieldError className="text-xs font-medium sm:text-sm">{nameError}</FieldError> : null}
       </Field>
 
       {/* Suggested Title Chips */}
