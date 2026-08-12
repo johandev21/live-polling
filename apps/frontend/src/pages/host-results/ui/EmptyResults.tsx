@@ -1,5 +1,3 @@
-import { BarChart3 } from 'lucide-react';
-
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 
@@ -15,39 +13,38 @@ export function EmptyResults({ poll }: EmptyResultsProps) {
       aria-labelledby="empty-results-title"
       className="flex flex-col items-center justify-center p-8 text-center sm:p-12"
     >
-      <div className="flex items-center gap-2">
-        <Badge variant="outline">{hostPollTypeLabel(poll.type)}</Badge>
-        <Badge variant="secondary">No responses</Badge>
+      <div className="flex items-center gap-2.5">
+        <Badge variant="outline" className="px-2.5 py-0.5 text-xs font-medium">
+          {hostPollTypeLabel(poll.type)}
+        </Badge>
+        <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium">
+          No responses
+        </Badge>
       </div>
 
       <h2
-        className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl"
+        className="mt-5 text-xl font-semibold tracking-tight sm:text-2xl"
         id="empty-results-title"
       >
         No responses yet
       </h2>
 
-      <p className="mt-2 max-w-md text-xs leading-5 text-muted-foreground sm:text-sm">
+      <p className="mt-2 max-w-md text-sm text-muted-foreground">
         There are no effective responses recorded for this poll yet.
       </p>
 
-      <div className="mt-6 flex items-center justify-center gap-3 rounded-lg border border-border bg-muted/40 px-6 py-4">
-        <BarChart3
-          aria-hidden="true"
-          className="text-muted-foreground"
-          size={24}
-          strokeWidth={1.8}
-        />
-        <span className="font-mono text-xs font-bold text-muted-foreground">
+      <div className="mt-6 rounded-lg bg-muted/40 px-6 py-3">
+        <span className="font-mono text-sm font-medium text-muted-foreground">
           0 total responses
         </span>
       </div>
 
-      <p className="mt-5 max-w-sm text-[11px] leading-4 text-muted-foreground">
+      <p className="mt-5 max-w-sm text-xs font-normal text-muted-foreground">
         You can reveal results even when the response count is zero.
         Participants will see the empty state once results are revealed.
       </p>
     </Card>
   );
 }
+
 

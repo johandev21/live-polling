@@ -10,7 +10,7 @@ async function bootstrap() {
   });
   app.enableShutdownHooks();
   app.enableCors({
-    origin: (process.env.FRONTEND_ORIGINS ?? 'http://localhost:5173')
+    origin: (process.env.FRONTEND_ORIGINS ?? 'http://localhost:5173,http://127.0.0.1:5173')
       .split(',')
       .map((origin) => origin.trim())
       .filter(Boolean),

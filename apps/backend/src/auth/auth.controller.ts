@@ -1,7 +1,7 @@
-import { Controller, Get, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { Session } from '@thallesp/nestjs-better-auth';
 import type { UserSession } from '@thallesp/nestjs-better-auth';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 
 import { VerifiedHostGuard } from './auth.guards';
@@ -27,10 +27,14 @@ export class AuthController {
   }
 
   @Get('callback')
-  callback(@Res() res: Response) {
-    const frontendOrigin = (process.env.FRONTEND_ORIGINS ?? 'http://localhost:5173')
-      .split(',')[0]
-      ?.trim() || 'http://localhost:5173';
-    return res.redirect(302, `${frontendOrigin}/host/dashboard`);
+  callback(@Req() req: Request, @Res() res: Response) {
+    const origins = (process.env.FRONTEND_ORIGINS ?? 'http://localhost:5173,http://127.0.0.1:5173')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+    const referer = req.headers.referer || req.headers.origin;
+    const matched = referer ? origins.find((o) => referer.startsWith(o)) : null;
+    const targetOrigin = matched || origins[0] || 'http://localhost:5173';
+    return res.redirect(302, `${targetOrigin}/host/dashboard`);
   }
 }

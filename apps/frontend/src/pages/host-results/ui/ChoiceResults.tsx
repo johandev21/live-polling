@@ -20,35 +20,31 @@ export function ChoiceResults({ poll }: ChoiceResultsProps) {
       aria-labelledby="choice-results-title"
       className="space-y-6 p-6 sm:p-8"
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold" id="choice-results-title">
+          <h2 className="text-lg font-semibold sm:text-xl" id="choice-results-title">
             Response breakdown
           </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             {poll.type === 'multiple-choice'
               ? 'Multiple-choice poll, percentage of effective responses'
               : 'Single-choice poll, percentage of effective responses'}
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 font-mono text-[10px] font-bold text-foreground">
-          <span
-            aria-hidden="true"
-            className="size-1.5 rounded-full bg-primary"
-          />
+        <Badge variant="secondary" className="w-fit px-2.5 py-0.5 text-xs font-medium">
           Updating live
-        </span>
+        </Badge>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        <div className="hidden border-b border-border bg-muted/40 px-4 py-2.5 font-mono text-[10px] font-bold tracking-wider text-muted-foreground uppercase sm:grid sm:grid-cols-[1fr_2fr_4rem_5rem] sm:items-center sm:gap-4">
+      <div className="space-y-3">
+        <div className="hidden px-4 py-2 text-xs font-medium tracking-wider text-muted-foreground uppercase sm:grid sm:grid-cols-[1fr_2fr_5rem_6rem] sm:items-center sm:gap-4">
           <span>Option</span>
           <span>Distribution</span>
           <span className="text-right">%</span>
           <span className="text-right">Responses</span>
         </div>
 
-        <ul className="divide-y divide-border">
+        <ul className="space-y-2.5">
           {poll.options.map((option) => {
             const percentage = calculatePercentage(
               option.count,
@@ -61,34 +57,34 @@ export function ChoiceResults({ poll }: ChoiceResultsProps) {
               <li key={option.id}>
                 <div
                   aria-label={`${option.label}: ${percentage} percent of responses (${option.count} responses)`}
-                  className="flex flex-col gap-2 p-4 transition-colors hover:bg-muted/30 sm:grid sm:grid-cols-[1fr_2fr_4rem_5rem] sm:items-center sm:gap-4"
+                  className="flex flex-col gap-3 rounded-xl bg-muted/40 p-4 transition-colors hover:bg-muted/60 sm:grid sm:grid-cols-[1fr_2fr_5rem_6rem] sm:items-center sm:gap-4"
                   role="group"
                 >
                   <div className="flex min-w-0 items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-foreground">
+                    <span className="truncate text-sm font-medium text-foreground sm:text-base">
                       {option.label}
                     </span>
                     {isLeading ? (
-                      <Badge className="h-4 px-1 text-[9px]" variant="secondary">
+                      <Badge className="px-2 py-0.5 text-xs font-medium" variant="secondary">
                         Top choice
                       </Badge>
                     ) : null}
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <Progress className="h-2 flex-1" value={percentage} />
+                    <Progress className="h-2.5 flex-1" value={percentage} />
                   </div>
 
                   <div className="flex items-center justify-between sm:justify-end">
-                    <span className="font-mono text-sm font-bold text-primary">
+                    <span className="font-mono text-sm font-semibold text-foreground sm:text-base">
                       {percentage}%
                     </span>
-                    <span className="font-mono text-xs text-muted-foreground sm:hidden">
+                    <span className="text-xs font-normal text-muted-foreground sm:hidden">
                       {option.count} resp
                     </span>
                   </div>
 
-                  <div className="hidden text-right font-mono text-xs text-muted-foreground sm:block">
+                  <div className="hidden text-right font-mono text-sm font-normal text-muted-foreground sm:block">
                     {option.count}
                   </div>
                 </div>
@@ -98,22 +94,20 @@ export function ChoiceResults({ poll }: ChoiceResultsProps) {
         </ul>
       </div>
 
-      <div className="flex flex-col justify-between gap-4 border-t border-border pt-4 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground">
-            Total effective responses:
-          </span>
-          <span className="font-mono text-sm font-bold text-foreground">
+      <div className="flex flex-col justify-between gap-3 pt-2 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
+          <span>Total effective responses:</span>
+          <span className="font-mono text-sm font-semibold text-foreground">
             {poll.totalResponses}
           </span>
         </div>
 
         {poll.type === 'multiple-choice' ? (
-          <p className="text-[11px] leading-4 text-muted-foreground">
+          <p className="text-xs font-normal text-muted-foreground">
             Percentages may total &gt;100% due to multiple selections.
           </p>
         ) : (
-          <p className="text-[11px] leading-4 text-muted-foreground">
+          <p className="text-xs font-normal text-muted-foreground">
             Reflects one effective response per participant.
           </p>
         )}
@@ -121,3 +115,4 @@ export function ChoiceResults({ poll }: ChoiceResultsProps) {
     </Card>
   );
 }
+

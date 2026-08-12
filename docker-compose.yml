@@ -42,7 +42,7 @@ services:
       REDIS_URL: redis://redis:6379
       BETTER_AUTH_URL: http://localhost:3000
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-better-auth-secret-change-me-please-1234567890}
-      FRONTEND_ORIGINS: http://localhost:5173
+      FRONTEND_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
       PARTICIPANT_TOKEN_SECRET: ${PARTICIPANT_TOKEN_SECRET:-dev-participant-token-secret-change-me-1234567890}
       SMTP_HOST: mailpit
       SMTP_PORT: 1025

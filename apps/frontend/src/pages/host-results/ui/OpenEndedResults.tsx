@@ -1,5 +1,4 @@
-import { Clock3 } from 'lucide-react';
-
+import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 
 import type { HostResultPoll } from '../model/host-results';
@@ -14,39 +13,34 @@ export function OpenEndedResults({ poll }: OpenEndedResultsProps) {
       aria-labelledby="open-ended-results-title"
       className="space-y-6 p-6 sm:p-8"
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold" id="open-ended-results-title">
+          <h2 className="text-lg font-semibold sm:text-xl" id="open-ended-results-title">
             Chronological responses
           </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             Open-ended poll, host-visible response text ({poll.totalResponses}{' '}
             total)
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 font-mono text-[10px] font-bold text-foreground">
-          <span
-            aria-hidden="true"
-            className="size-1.5 rounded-full bg-primary"
-          />
+        <Badge variant="secondary" className="w-fit px-2.5 py-0.5 text-xs font-medium">
           Updating live
-        </span>
+        </Badge>
       </div>
 
       <ol
         aria-label="Chronological response list"
-        className="grid grid-cols-1 gap-3 md:grid-cols-2"
+        className="grid grid-cols-1 gap-4 md:grid-cols-2"
       >
         {poll.openEndedResponses.map((response) => (
           <li key={response.id}>
-            <div className="flex h-full flex-col justify-between rounded-lg border border-border bg-muted/40 p-4 transition-colors hover:bg-muted/60">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock3 aria-hidden="true" size={14} strokeWidth={1.8} />
-                <span className="font-mono text-[10px] font-bold">
+            <div className="flex h-full flex-col justify-between rounded-xl bg-muted/40 p-4 transition-colors hover:bg-muted/60 sm:p-5">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-medium text-muted-foreground">
                   {response.submittedAt}
                 </span>
               </div>
-              <blockquote className="mt-2 text-sm leading-5 wrap-break-word text-foreground">
+              <blockquote className="mt-3 text-sm sm:text-base font-normal leading-relaxed text-foreground">
                 “{response.text}”
               </blockquote>
             </div>
@@ -54,8 +48,8 @@ export function OpenEndedResults({ poll }: OpenEndedResultsProps) {
         ))}
       </ol>
 
-      <div className="border-t border-border pt-4">
-        <p className="text-[11px] leading-4 text-muted-foreground">
+      <div className="pt-2">
+        <p className="text-xs font-normal text-muted-foreground">
           Responses are shown in chronological order and remain anonymous to
           participants.
         </p>
@@ -63,4 +57,5 @@ export function OpenEndedResults({ poll }: OpenEndedResultsProps) {
     </Card>
   );
 }
+
 

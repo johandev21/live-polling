@@ -9,7 +9,6 @@ import {
   LogIn,
   Menu,
   ShieldCheck,
-  Sparkles,
   Users,
   X,
   Zap,
@@ -345,11 +344,6 @@ function FluidNav() {
 function HeroSection() {
   return (
     <section className="mx-auto flex max-w-6xl flex-col items-center px-4 pt-12 pb-16 text-center sm:px-6 lg:pt-20 lg:pb-24">
-      <Badge className="mb-6 rounded-full border border-border bg-card px-3.5 py-1 text-xs font-semibold tracking-wide text-foreground shadow-sm">
-        <Sparkles className="mr-1.5 size-3.5 text-primary" />
-        Live polling without friction
-      </Badge>
-
       <h1 className="max-w-[680px] bg-linear-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-4xl font-bold tracking-tight text-balance text-transparent sm:text-5xl lg:text-6xl">
         Make every voice part of the live moment
       </h1>

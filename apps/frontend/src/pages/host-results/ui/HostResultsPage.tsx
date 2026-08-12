@@ -1,7 +1,6 @@
 import {
   ChevronLeft,
   ChevronRight,
-  RefreshCw,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -9,7 +8,6 @@ import { ModeToggle } from '@/components/mode-toggle';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { GlassHeader } from '@/shared/ui/glass-header';
-
 
 import {
   hostPollTypeLabel,
@@ -83,7 +81,7 @@ export function HostResultsPage({
     <div className="min-h-screen bg-mist-50 text-foreground dark:bg-background">
       <AppHeader sessionId={sessionId} />
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <ResultsHeader
           poll={selectedPoll}
           pollCount={polls.length}
@@ -92,8 +90,8 @@ export function HostResultsPage({
 
         {errorMessage ? <ErrorMessage message={errorMessage} /> : null}
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="space-y-4">
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="space-y-6">
             <PollQuestionHeader
               nextPoll={nextPoll}
               onSelectPoll={setSelectedPollId}
@@ -104,7 +102,7 @@ export function HostResultsPage({
             <ResultsPanel poll={selectedPoll} />
           </div>
 
-          <aside className="space-y-4">
+          <aside className="space-y-6">
             <PollStateCard
               onToggleLifecycle={handleToggleLifecycle}
               onToggleVisibility={handleToggleVisibility}
@@ -117,13 +115,6 @@ export function HostResultsPage({
             />
           </aside>
         </div>
-
-        <AdjacentPollNavigation
-          nextPoll={nextPoll}
-          onSelectPoll={setSelectedPollId}
-          previousPoll={previousPoll}
-          selectedPoll={selectedPoll}
-        />
       </main>
     </div>
   );
@@ -134,9 +125,9 @@ function AppHeader({ sessionId }: { sessionId: string }) {
     <GlassHeader>
       <div className="flex w-full items-center justify-between gap-4">
         <Brand />
-        <div className="flex items-center gap-3 sm:gap-5">
+        <div className="flex items-center gap-4 sm:gap-6">
           <a
-            className="hidden text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-primary hover:underline sm:inline"
+            className="hidden text-sm font-medium text-muted-foreground underline-offset-4 hover:text-primary hover:underline sm:inline"
             href={`/host/sessions/${encodeURIComponent(sessionId)}/live`}
           >
             Back to control room
@@ -151,10 +142,8 @@ function AppHeader({ sessionId }: { sessionId: string }) {
 
 function LiveUpdatesBadge() {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1.5 font-mono text-[10px] font-bold text-foreground">
-      <RefreshCw aria-hidden="true" size={13} strokeWidth={1.8} />
-      <span className="hidden sm:inline">Live updates</span>
-      <span className="sm:hidden">Live</span>
+    <span className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-medium text-foreground">
+      Live updates
     </span>
   );
 }
@@ -169,25 +158,21 @@ function ResultsHeader({
   sessionName: string;
 }) {
   return (
-    <header className="border-b border-border pb-6">
+    <header className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+        <div className="min-w-0 space-y-2">
+          <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+            HOST RESULTS
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               {sessionName}
             </h1>
-            <Badge variant="default">
-              <span
-                aria-hidden="true"
-                className="size-1.5 rounded-full bg-current"
-              />
+            <Badge variant="secondary" className="px-2.5 py-1 text-xs font-medium">
               Live session
             </Badge>
           </div>
         </div>
-        <p className="font-mono text-[10px] font-bold tracking-[0.14em] text-primary">
-          HOST RESULTS
-        </p>
       </div>
 
       <PollSummaryBar poll={poll} pollCount={pollCount} />
@@ -218,44 +203,30 @@ function PollSummaryBar({
   }
 
   return (
-    <div className="mt-5 grid grid-cols-2 gap-3 rounded-lg border border-border bg-card p-3.5 sm:grid-cols-4 sm:p-4">
-      <div className="border-r border-border/40 pr-3 last:border-r-0 sm:pr-4">
-        <span className="block font-mono text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+    <div className="grid grid-cols-1 gap-4 rounded-xl border border-border/80 bg-card p-5 sm:grid-cols-3 sm:p-6">
+      <div>
+        <span className="block text-xs font-medium tracking-wider text-muted-foreground uppercase">
           Total Responses
         </span>
-        <span className="mt-1 block font-mono text-xl font-bold text-foreground sm:text-2xl">
+        <span className="mt-1.5 block font-mono text-2xl font-bold text-foreground sm:text-3xl">
           {poll.totalResponses}
         </span>
       </div>
 
-      <div className="border-r border-border/40 pr-3 last:border-r-0 sm:pr-4">
-        <span className="block font-mono text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+      <div>
+        <span className="block text-xs font-medium tracking-wider text-muted-foreground uppercase">
           Poll Type
         </span>
-        <span className="mt-1 block text-xs font-semibold text-foreground">
+        <span className="mt-1.5 block text-sm font-medium text-foreground sm:text-base">
           {hostPollTypeLabel(poll.type)}
         </span>
       </div>
 
-      <div className="border-r border-border/40 pr-3 last:border-r-0 sm:pr-4">
-        <span className="block font-mono text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-          Status & Visibility
-        </span>
-        <div className="mt-1 flex flex-wrap items-center gap-1">
-          <Badge className="h-4 px-1.5 text-[9px]" variant={poll.lifecycle === 'open' ? 'default' : 'secondary'}>
-            {poll.lifecycle}
-          </Badge>
-          <Badge className="h-4 px-1.5 text-[9px]" variant={poll.visibility === 'revealed' ? 'default' : 'secondary'}>
-            {poll.visibility}
-          </Badge>
-        </div>
-      </div>
-
       <div>
-        <span className="block font-mono text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+        <span className="block text-xs font-medium tracking-wider text-muted-foreground uppercase">
           Top Outcome
         </span>
-        <span className="mt-1 block truncate text-xs font-semibold text-foreground">
+        <span className="mt-1.5 block truncate text-sm font-medium text-foreground sm:text-base">
           {topOutcome}
         </span>
       </div>
@@ -277,42 +248,41 @@ function PollQuestionHeader({
   selectedPoll: HostResultPoll;
 }) {
   return (
-    <Card className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-xs font-bold text-primary">
+    <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <div className="min-w-0 space-y-1.5">
+        <div className="flex items-center gap-2.5">
+          <span className="text-sm font-medium text-muted-foreground">
             Poll {formatPollNumber(selectedPoll.number)} of {formatPollNumber(pollCount)}
           </span>
-          <Badge variant="outline">{hostPollTypeLabel(selectedPoll.type)}</Badge>
+          <Badge variant="outline" className="text-xs font-medium">
+            {hostPollTypeLabel(selectedPoll.type)}
+          </Badge>
         </div>
-        <h2 className="mt-1 text-base font-bold text-foreground sm:text-lg">
+        <h2 className="text-lg font-semibold text-foreground sm:text-xl">
           {selectedPoll.question}
         </h2>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1.5">
+      <div className="flex shrink-0 items-center gap-2">
         <button
           aria-label="Previous poll"
-          className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
           disabled={!previousPoll}
           onClick={() => previousPoll && onSelectPoll(previousPoll.id)}
           type="button"
         >
-          <ChevronLeft aria-hidden="true" size={15} strokeWidth={1.8} />
-          <span className="hidden sm:inline">Prev</span>
+          <ChevronLeft aria-hidden="true" size={16} strokeWidth={1.8} />
+          <span>Previous</span>
         </button>
-        <span className="font-mono text-xs text-muted-foreground">
-          {selectedPoll.number}/{pollCount}
-        </span>
         <button
           aria-label="Next poll"
-          className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-xs font-semibold text-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
           disabled={!nextPoll}
           onClick={() => nextPoll && onSelectPoll(nextPoll.id)}
           type="button"
         >
-          <span className="hidden sm:inline">Next</span>
-          <ChevronRight aria-hidden="true" size={15} strokeWidth={1.8} />
+          <span>Next</span>
+          <ChevronRight aria-hidden="true" size={16} strokeWidth={1.8} />
         </button>
       </div>
     </Card>
@@ -323,7 +293,7 @@ function ErrorMessage({ message }: { message: string }) {
   return (
     <p
       aria-live="polite"
-      className="mt-4 text-xs font-semibold text-destructive"
+      className="mt-4 text-sm font-medium text-destructive"
     >
       {message}
     </p>
@@ -334,47 +304,6 @@ function ResultsPanel({ poll }: { poll: HostResultPoll }) {
   if (poll.totalResponses === 0) return <EmptyResults poll={poll} />;
   if (poll.type === 'open-ended') return <OpenEndedResults poll={poll} />;
   return <ChoiceResults poll={poll} />;
-}
-
-function AdjacentPollNavigation({
-  nextPoll,
-  onSelectPoll,
-  previousPoll,
-  selectedPoll,
-}: {
-  nextPoll?: HostResultPoll;
-  onSelectPoll: (pollId: string) => void;
-  previousPoll?: HostResultPoll;
-  selectedPoll: HostResultPoll;
-}) {
-  return (
-    <nav
-      aria-label="Adjacent poll navigation"
-      className="mt-8 flex items-center justify-between gap-3 border-t border-border pt-4 lg:max-w-[calc(100%-20rem-1.5rem)] xl:max-w-[calc(100%-22rem-1.5rem)]"
-    >
-      <button
-        className="inline-flex min-h-9 items-center gap-1 rounded-md border border-border px-3 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-        disabled={!previousPoll}
-        onClick={() => previousPoll && onSelectPoll(previousPoll.id)}
-        type="button"
-      >
-        <ChevronLeft aria-hidden="true" size={16} strokeWidth={1.8} />
-        Previous poll
-      </button>
-      <span className="hidden max-w-md truncate text-center text-xs font-semibold text-muted-foreground sm:block">
-        {formatPollNumber(selectedPoll.number)}: {selectedPoll.question}
-      </span>
-      <button
-        className="inline-flex min-h-9 items-center gap-1 rounded-md border border-border px-3 text-xs font-semibold text-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-40"
-        disabled={!nextPoll}
-        onClick={() => nextPoll && onSelectPoll(nextPoll.id)}
-        type="button"
-      >
-        Next poll
-        <ChevronRight aria-hidden="true" size={16} strokeWidth={1.8} />
-      </button>
-    </nav>
-  );
 }
 
 function PollNavigation({
@@ -390,13 +319,13 @@ function PollNavigation({
     <Card aria-labelledby="poll-navigation-title" className="p-5 sm:p-6">
       <div className="flex items-center justify-between">
         <h2
-          className="font-mono text-[10px] font-bold tracking-[0.14em] text-muted-foreground"
+          className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
           id="poll-navigation-title"
         >
           SESSION POLLS ({polls.length})
         </h2>
       </div>
-      <ul className="mt-3 space-y-1.5">
+      <ul className="mt-4 space-y-2">
         {polls.map((item) => {
           const isCurrent = item.id === poll.id;
 
@@ -406,27 +335,27 @@ function PollNavigation({
                 aria-current={isCurrent ? 'page' : undefined}
                 className={
                   isCurrent
-                    ? 'flex w-full items-start justify-between gap-3 rounded-md bg-secondary p-3 text-left text-primary ring-1 ring-primary/40'
-                    : 'flex w-full items-start justify-between gap-3 rounded-md p-3 text-left text-muted-foreground transition-colors hover:bg-muted/60'
+                    ? 'flex w-full items-start justify-between gap-3 rounded-lg bg-secondary p-3.5 text-left text-primary ring-1 ring-primary/40'
+                    : 'flex w-full items-start justify-between gap-3 rounded-lg p-3.5 text-left text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground'
                 }
                 onClick={() => onSelect(item.id)}
                 type="button"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-[10px] font-bold">
-                      {formatPollNumber(item.number)}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Poll {formatPollNumber(item.number)}
                     </span>
-                    <Badge className="h-4 px-1 text-[9px]" variant="outline">
+                    <Badge className="px-1.5 py-0.5 text-xs font-medium" variant="outline">
                       {hostPollTypeLabel(item.type)}
                     </Badge>
                   </div>
-                  <span className="mt-1 block truncate text-xs leading-4 font-semibold">
+                  <span className="mt-1 block truncate text-sm font-medium leading-snug">
                     Poll {formatPollNumber(item.number)}: {item.question}
                   </span>
                 </div>
-                <span className="shrink-0 font-mono text-[10px] font-bold text-muted-foreground">
-                  {item.totalResponses} resp
+                <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                  {item.totalResponses} {item.totalResponses === 1 ? 'resp' : 'resp'}
                 </span>
               </button>
             </li>
@@ -441,7 +370,7 @@ function LoadingState() {
   return (
     <main className="grid min-h-screen place-items-center bg-mist-50 px-4 dark:bg-background">
       <Card className="p-8 sm:p-10">
-        <p className="text-sm font-semibold text-muted-foreground">
+        <p className="text-base font-medium text-muted-foreground">
           Loading results...
         </p>
       </Card>
@@ -453,7 +382,7 @@ function EmptyState() {
   return (
     <main className="grid min-h-screen place-items-center bg-mist-50 px-4 dark:bg-background">
       <Card className="p-8 sm:p-10">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-base font-medium text-muted-foreground">
           No results available.
         </p>
       </Card>
@@ -477,4 +406,5 @@ function Brand() {
 function formatPollNumber(number: number): string {
   return String(number);
 }
+
 
